@@ -67,6 +67,11 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerTick);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onTravel);
+        FloorOneAdapter.register(crawler -> {
+            if (engine != null) {
+                apply(engine.handle(new Event.StairwellUsed(crawler)));
+            }
+        });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (elimination != null) {
                 elimination.onDeath(e);
@@ -111,18 +116,25 @@ public final class CrawlAdapter {
             player.sendSystemMessage(Component.literal("Floor " + floor + " dimension is missing"));
             return;
         }
+        BlockPos spawn = floor == 1 ? FloorOneAdapter.prepareSpawn(level) : stonePlatform(level);
+        // Inventory travels with the player; only the position and dimension change.
+        player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
+    }
+
+    /** Placeholder arrival platform for floors that have no generator yet. */
+    private static BlockPos stonePlatform(ServerLevel level) {
         BlockPos spawn = new BlockPos(0, 64, 0);
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
                 level.setBlockAndUpdate(spawn.offset(x, -1, z), Blocks.STONE.defaultBlockState());
             }
         }
-        // Inventory travels with the player; only the position and dimension change.
-        player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
+        return spawn;
     }
 
     private static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
+        FloorOneAdapter.init(server);
         Clock clock = () -> server.getTickCount();
         CrawlConfig config = configFromSystemProperties();
         engine = new CrawlEngine(clock, config, loadHostLines(),
@@ -151,6 +163,7 @@ public final class CrawlAdapter {
             timerHud.clear();
         }
         timerHud = null;
+        FloorOneAdapter.clear();
         engine = null;
         server = null;
     }
@@ -171,6 +184,7 @@ public final class CrawlAdapter {
     private static void onServerTick(ServerTickEvent.Post event) {
         if (engine != null) {
             apply(engine.tick());
+            FloorOneAdapter.tick(server);
         }
     }
 

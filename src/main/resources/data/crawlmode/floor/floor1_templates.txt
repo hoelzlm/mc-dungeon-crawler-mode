@@ -1,0 +1,565 @@
+// Floor 1 templates (marble halls). Generated once from a script, then hand-tuned as plain text.
+// Format documented in FloorTemplate. Templates are separated by lines of "---".
+name hall_pillars
+role room
+height 8
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1-3
+######nnnn######
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 4-6
+################
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+################
+layer 7
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCLCCCCLCCCLCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCLCCCCLCCCLCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCLCCCCLCCCLCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name hall_colonnade
+role room
+height 8
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1-3
+######nnnn######
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+w..P........P..e
+w..............e
+w..............e
+w..P........P..e
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+######ssss######
+layer 4-6
+################
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+################
+layer 7
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCLCCCCCCCCLCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCLCCCCCCCCLCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name hall_mossy
+role room
+height 8
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+layer 0
+FFFFFFFFFFFFFFFF
+FMFFFFMFFFFMFFFF
+FFMFFFFMFFFFMFFF
+FFFMFFFFMFFFFMFF
+FFFFMFFFFMFFFFMF
+FFFFFMFFFFMFFFFF
+FMFFFFMFFFFMFFFF
+FFMFFFFMFFFFMFFF
+FFFMFFFFMFFFFMFF
+FFFFMFFFFMFFFFMF
+FFFFFMFFFFMFFFFF
+FMFFFFMFFFFMFFFF
+FFMFFFFMFFFFMFFF
+FFFMFFFFMFFFFMFF
+FFFFMFFFFMFFFFMF
+FFFFFFFFFFFFFFFF
+layer 1-3
+######nnnn######
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#..............#
+#..P........P..#
+#..............#
+#..............#
+######ssss######
+layer 4-6
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+################
+layer 7
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCLCCCCLCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCLCCCCLCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name hall_open
+role room
+height 8
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1-3
+######nnnn######
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 4-6
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+################
+layer 7
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCLCCCCCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCLCCCCCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name stairwell_hall
+role stairwell_room
+height 8
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+palette X minecraft:end_portal_frame
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1
+######nnnn######
+#...#..........#
+#.X.k..........#
+#...#..........#
+#####......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 2
+######nnnn######
+#...#..........#
+#...k..........#
+#...#..........#
+#####......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 3
+######nnnn######
+#...#..........#
+#...#..........#
+#...#..........#
+#####......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 4
+################
+#####..........#
+#####..........#
+#####..........#
+#####......P...#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+################
+layer 5-6
+################
+#..............#
+#..............#
+#..............#
+#..........P...#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+################
+layer 7
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCLCCCCCCCCCCCCC
+CCCCCCCCCCCCLCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name corridor_plain
+role corridor
+height 6
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1-4
+######nnnn######
+######nnnn######
+######nnnn######
+######nnnn######
+######nnnn######
+######nnnn######
+wwwwww....eeeeee
+wwwwww....eeeeee
+wwwwww....eeeeee
+wwwwww....eeeeee
+######ssss######
+######ssss######
+######ssss######
+######ssss######
+######ssss######
+######ssss######
+layer 5
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCLCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCLCCCCLCCC
+CCCLCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name corridor_ribbed
+role corridor
+height 6
+palette # minecraft:quartz_bricks
+palette F minecraft:polished_diorite
+palette C minecraft:smooth_quartz
+palette P minecraft:quartz_pillar
+palette L minecraft:verdant_froglight
+palette M minecraft:moss_block
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1-4
+######nnnn######
+#####PnnnnP#####
+######nnnn######
+######nnnn######
+#####PnnnnP#####
+#P##P#nnnn#P##P#
+wwwwww....eeeeee
+wwwwww....eeeeee
+wwwwww....eeeeee
+wwwwww....eeeeee
+#P##P#ssss#P##P#
+#####PssssP#####
+######ssss######
+######ssss######
+#####PssssP#####
+######ssss######
+layer 5
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCLCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCLCCCCLCCC
+CCCLCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
