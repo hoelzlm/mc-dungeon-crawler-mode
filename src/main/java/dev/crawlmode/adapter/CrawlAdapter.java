@@ -116,7 +116,8 @@ public final class CrawlAdapter {
     private static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
         Clock clock = () -> server.getTickCount();
-        engine = new CrawlEngine(clock, configFromSystemProperties(), loadHostLines(), EliminationBridge.configFor(server));
+        engine = new CrawlEngine(clock, configFromSystemProperties(), loadHostLines(),
+                LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server));
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
     }
 
@@ -180,6 +181,8 @@ public final class CrawlAdapter {
                         speak(player, says.line());
                     }
                 }
+                case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
+                case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
                     if (player != null) {

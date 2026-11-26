@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.IntUnaryOperator;
 
 /**
  * The Crawl rules, with no Minecraft dependency (ADR 0002). Events and ticks in, effects out.
@@ -18,6 +19,8 @@ public final class CrawlEngine {
     private final Set<UUID> eliminated = new LinkedHashSet<>();
     private long startedAt;
     private final Set<UUID> crawlers = new LinkedHashSet<>();
+    private final LootTables loot;
+    private final IntUnaryOperator lootPick;
     private boolean apocalypseHappened;
     private boolean finalWarningGiven;
 
@@ -26,10 +29,24 @@ public final class CrawlEngine {
     }
 
     public CrawlEngine(Clock clock, CrawlConfig config, HostLineSource host) {
-        this(clock, config, host, EliminationConfig.DEFAULT);
+        this(clock, config, host, null, bound -> 0);
     }
 
     public CrawlEngine(Clock clock, CrawlConfig config, HostLineSource host, EliminationConfig elimination) {
+        this(clock, config, host, null, bound -> 0, elimination);
+    }
+
+    /** @param lootPick returns a number in {@code [0, bound)}; injected so rolls can be faked. */
+    public CrawlEngine(
+            Clock clock, CrawlConfig config, HostLineSource host, LootTables loot, IntUnaryOperator lootPick) {
+        this(clock, config, host, loot, lootPick, EliminationConfig.DEFAULT);
+    }
+
+    public CrawlEngine(
+            Clock clock, CrawlConfig config, HostLineSource host, LootTables loot, IntUnaryOperator lootPick,
+            EliminationConfig elimination) {
+        this.loot = loot;
+        this.lootPick = lootPick;
         this.elimination = elimination;
         this.clock = clock;
         this.config = config;
@@ -54,6 +71,7 @@ public final class CrawlEngine {
             case Event.FreshCrawlChosen chosen -> freshCrawl(chosen.crawler());
             case Event.LeaveChosen chosen -> canChoose(chosen.crawler())
                     ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
+            case Event.LootBoxGranted granted -> openLootBox(granted);
         };
     }
 
@@ -94,6 +112,18 @@ public final class CrawlEngine {
         finalWarningGiven = false;
         startedAt = clock.nowTicks();
         return List.of(new Effect.RestoreWorld(crawler));
+    }
+
+    private List<Effect> openLootBox(Event.LootBoxGranted granted) {
+        if (loot == null) {
+            return List.of();
+        }
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.LootBoxOpening(granted.crawler(), granted.tier()));
+        host.lineFor("lootbox." + granted.tier().key())
+                .ifPresent(line -> effects.add(new Effect.HostSays(granted.crawler(), line)));
+        effects.add(new Effect.GrantLoot(granted.crawler(), granted.tier(), loot.open(granted.tier(), lootPick)));
+        return effects;
     }
 
     public boolean apocalypseHappened() {

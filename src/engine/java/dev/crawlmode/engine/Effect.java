@@ -20,4 +20,10 @@ public sealed interface Effect {
 
     /** The Crawler chose to leave the game. */
     record Leave(UUID crawler) implements Effect {}
+
+    /** The short opening animation of a Loot Box. */
+    record LootBoxOpening(UUID crawler, LootTier tier) implements Effect {}
+
+    /** Hand the rolled rewards to a Crawler. */
+    record GrantLoot(UUID crawler, LootTier tier, java.util.List<LootItem> items) implements Effect {}
 }

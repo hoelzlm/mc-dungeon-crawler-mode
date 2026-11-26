@@ -1,0 +1,126 @@
+package dev.crawlmode.engine;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
+class LootBoxTest {
+    private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    private static final String VALID = """
+            copper rolls 1
+            copper gear minecraft:iron_sword weight=1 enchant=crawlmode:blazing:1
+            copper food minecraft:bread weight=3 count=4
+            silver rolls 2
+            silver aid echo_chime weight=1
+            gold rolls 3
+            gold gear minecraft:diamond_axe weight=1
+            radiant rolls 4
+            radiant gear minecraft:netherite_sword weight=1 enchant=minecraft:sharpness:5
+            """;
+
+    private static LootTables tables(String text) {
+        return LootTables.load(new StringReader(text));
+    }
+
+    private static CrawlEngine engine(LootTables tables, int pick) {
+        HostLineSource host = DataFileHostLineSource.load(
+                new StringReader("lootbox.copper: A shiny copper thing!"), bound -> 0);
+        CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables, bound -> Math.min(pick, bound - 1));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        return engine;
+    }
+
+    @Test
+    void openingAnimatesThenTheHostSpeaksThenTheLootIsGranted() {
+        var engine = engine(tables(VALID), 0);
+
+        List<Effect> effects = engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.BOSS_KILL));
+
+        assertEquals(
+                List.of(
+                        new Effect.LootBoxOpening(CARL, LootTier.COPPER),
+                        new Effect.HostSays(CARL, new HostLine("lootbox.copper", "A shiny copper thing!")),
+                        new Effect.GrantLoot(
+                                CARL,
+                                LootTier.COPPER,
+                                List.of(new LootItem(LootItem.Kind.GEAR, "minecraft:iron_sword", 1,
+                                        Map.of("crawlmode:blazing", 1))))),
+                effects);
+    }
+
+    @Test
+    void everyGrantSourceOpensABox() {
+        var engine = engine(tables(VALID), 0);
+        for (LootSource source : LootSource.values()) {
+            assertEquals(3, engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, source)).size(),
+                    source.name());
+        }
+    }
+
+    @Test
+    void entriesAreChosenByWeightAndRolledOncePerRoll() {
+        var engine = engine(tables(VALID), 3); // total weight 4; index 3 lands on the bread
+
+        var grant = (Effect.GrantLoot) engine.handle(
+                new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.ACHIEVEMENT)).getLast();
+
+        assertEquals(List.of(new LootItem(LootItem.Kind.FOOD, "minecraft:bread", 4, Map.of())), grant.items());
+
+        var radiant = (Effect.GrantLoot) engine.handle(
+                new Event.LootBoxGranted(CARL, LootTier.RADIANT, LootSource.FLOOR_MILESTONE)).getLast();
+        assertEquals(4, radiant.items().size());
+    }
+
+    @Test
+    void higherTiersRollAtLeastAsManyTimes() {
+        var t = tables(VALID);
+        assertTrue(t.rolls(LootTier.COPPER) < t.rolls(LootTier.RADIANT));
+        String shrinking = VALID.replace("gold rolls 3", "gold rolls 1");
+        assertThrows(LootTableFormatException.class, () -> tables(shrinking));
+    }
+
+    @Test
+    void aMissingTierFailsLoading() {
+        String noRadiant = VALID.lines().filter(l -> !l.startsWith("radiant")).reduce("", (a, b) -> a + b + "\n");
+        assertThrows(LootTableFormatException.class, () -> tables(noRadiant));
+    }
+
+    @Test
+    void malformedEntriesFailLoadingWithTheLineNumber() {
+        for (String bad : List.of(
+                "bronze rolls 1",
+                "copper rolls 0",
+                "copper gear minecraft:iron_sword weight=0",
+                "copper gear minecraft:iron_sword",
+                "copper aid compass weight=1",
+                "copper toy minecraft:stick weight=1",
+                "copper gear minecraft:stick weight=1 enchant=bad")) {
+            var e = assertThrows(LootTableFormatException.class, () -> tables(bad + "\n" + VALID), bad);
+            assertTrue(e.getMessage().contains("line 1"), e.getMessage());
+        }
+    }
+
+    @Test
+    void theShippedTablesLoadAndOnlyUseRealStairwellAids() {
+        var in = LootBoxTest.class.getResourceAsStream("/data/crawlmode/loot/tables.txt");
+        var t = LootTables.load(new InputStreamReader(in));
+        var aids = Set.of("seekers_draught", "echo_chime", "revealing_lantern", "fragment_map");
+        for (LootTier tier : LootTier.values()) {
+            assertTrue(t.entries(tier).size() > 0);
+        }
+        assertTrue(Arrays.stream(LootTier.values())
+                .flatMap(x -> t.entries(x).stream())
+                .filter(i -> i.kind() == LootItem.Kind.AID)
+                .allMatch(i -> aids.contains(i.id())));
+    }
+}
