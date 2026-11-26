@@ -77,6 +77,11 @@ public final class CrawlAdapter {
                 apply(engine.handle(new Event.StairwellUsed(crawler)));
             }
         });
+        SafeRoomAdapter.register(e -> {
+            if (engine != null) {
+                apply(engine.handle(e));
+            }
+        });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (engine != null) {
                 AchievementAdapter.eventFor(e).ifPresent(ev -> apply(engine.handle(ev)));
@@ -126,6 +131,7 @@ public final class CrawlAdapter {
             return;
         }
         BlockPos spawn = TemplateFloorAdapter.prepareSpawn(level);
+        SafeRoomAdapter.placePlaceholderDoor(level, spawn);
         player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
     }
 
@@ -161,6 +167,7 @@ public final class CrawlAdapter {
         }
         timerHud = null;
         TemplateFloorAdapter.clear();
+        SafeRoomAdapter.clear();
         engine = null;
         server = null;
     }
@@ -229,6 +236,8 @@ public final class CrawlAdapter {
                 case Effect.ShowWinScreen win -> WinAdapter.showWinScreen(server, win);
                 case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
                 case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
+                case Effect.EnterSafeRoom enter -> SafeRoomAdapter.enter(server, enter);
+                case Effect.ExitSafeRoom exit -> SafeRoomAdapter.exit(server, exit);
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
                     if (player != null) {

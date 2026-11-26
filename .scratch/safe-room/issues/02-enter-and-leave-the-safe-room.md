@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] First entry creates a dedicated dimension for that Crawler; later entries reuse it
-- [ ] Entry and exit are instant, with no channel time and no cooldown
-- [ ] Exit returns the Crawler to the origin door, tracked per Crawler in the engine
-- [ ] A Crawler cannot enter or see another Crawler's room
-- [ ] Engine tests cover entry, exit and origin tracking through the Crawl engine seam
+- [x] First entry creates a dedicated dimension for that Crawler; later entries reuse it
+- [x] Entry and exit are instant, with no channel time and no cooldown
+- [x] Exit returns the Crawler to the origin door, tracked per Crawler in the engine
+- [x] A Crawler cannot enter or see another Crawler's room
+- [x] Engine tests cover entry, exit and origin tracking through the Crawl engine seam

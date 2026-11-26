@@ -27,6 +27,8 @@ public final class CrawlEngine {
     public static final int FINAL_FLOOR = 3;
     private final Set<UUID> winners = new LinkedHashSet<>();
     private final Map<UUID, Integer> floorOf = new HashMap<>();
+    private final Map<UUID, DoorPos> safeRoomOrigin = new HashMap<>();
+    private final Set<UUID> safeRoomsCreated = new LinkedHashSet<>();
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -86,6 +88,8 @@ public final class CrawlEngine {
             case Event.FreshCrawlChosen chosen -> freshCrawl(chosen.crawler());
             case Event.LeaveChosen chosen -> canChoose(chosen.crawler())
                     ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
+            case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
+            case Event.SafeRoomExited exited -> exitSafeRoom(exited.crawler());
             case Event.LootBoxGranted granted -> openLootBox(granted);
             case Event.StairwellUsed used -> {
                 boolean onTimerFloor = Integer.valueOf(timerFloor).equals(floorOf.get(used.crawler()));
@@ -152,6 +156,20 @@ public final class CrawlEngine {
         return effects;
     }
 
+    private List<Effect> enterSafeRoom(UUID crawler, DoorPos door) {
+        if (!apocalypseHappened || !crawlers.contains(crawler) || eliminated.contains(crawler)
+                || winners.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        safeRoomOrigin.put(crawler, door);
+        return List.of(new Effect.EnterSafeRoom(crawler, safeRoomsCreated.add(crawler)));
+    }
+
+    private List<Effect> exitSafeRoom(UUID crawler) {
+        DoorPos door = safeRoomOrigin.remove(crawler);
+        return door == null ? List.of() : List.of(new Effect.ExitSafeRoom(crawler, door));
+    }
+
     private List<Effect> freshCrawl(UUID crawler) {
         if (!canChoose(crawler)) {
             return List.of();
@@ -163,6 +181,8 @@ public final class CrawlEngine {
         floorTimer.reset();
         timerFloor = 1;
         floorOf.clear();
+        safeRoomOrigin.clear();
+        safeRoomsCreated.clear();
         windowAnnounced = false;
         startedAt = clock.nowTicks();
         return List.of(new Effect.RestoreWorld(crawler));

@@ -26,4 +26,8 @@ public sealed interface Effect {
     record Collapse(UUID crawler, int floor) implements Effect {}
 
     record ShowWinScreen(UUID crawler) implements Effect {}
+
+    record EnterSafeRoom(UUID crawler, boolean firstEntry) implements Effect {}
+
+    record ExitSafeRoom(UUID crawler, DoorPos door) implements Effect {}
 }

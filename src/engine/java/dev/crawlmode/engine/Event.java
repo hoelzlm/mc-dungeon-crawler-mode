@@ -22,4 +22,8 @@ public sealed interface Event {
     record MobKilled(UUID crawler, dev.crawlmode.engine.faction.Rank rank) implements Event {}
 
     record Triggered(UUID crawler, String trigger) implements Event {}
+
+    record SafeRoomDoorUsed(UUID crawler, DoorPos door) implements Event {}
+
+    record SafeRoomExited(UUID crawler) implements Event {}
 }
