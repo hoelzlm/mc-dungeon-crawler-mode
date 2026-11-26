@@ -5,3 +5,4 @@ run/
 .idea/
 .claude/settings.local.json
 .claude/worktrees/
+.vscode/

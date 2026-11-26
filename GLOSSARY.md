@@ -80,3 +80,11 @@ _Avoid_: Lobby, hub, bunker
 **Safe Room Door**:
 A visible entrance to the **Safe Room** found on a **Floor**, at least four per **Floor**. Every door leads to the same **Safe Room** of the **Crawler** using it, and leaving returns them to the door they came through.
 _Avoid_: Portal, entrance
+
+**Floor Map**:
+A **Crawler**'s own map of the **Floor** they are on, part of the game's interface and shown as a corner minimap or held open full-screen. It starts empty on every **Floor** and fills in as the **Crawler** explores, with **Safe Room Doors** shown prominently once revealed, and a **Boss** defeat revealing a larger area. It marks monsters in red, **NPCs** in white and other **Crawlers** in blue. It is hidden inside the **Safe Room** and for an eliminated **Crawler**.
+_Avoid_: Minimap (for the whole concept), radar, waypoint map
+
+**NPC**:
+A non-hostile character of the **Crawl** that a **Crawler** can trade with, get items from, learn from, or keep as a pet. Not yet designed.
+_Avoid_: Villager, vendor

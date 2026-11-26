@@ -29,6 +29,8 @@ neoForge {
     runs {
         client {
             client()
+            environment 'XDG_SESSION_TYPE', 'x11'
+            environment 'WAYLAND_DISPLAY', ''
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         server {
