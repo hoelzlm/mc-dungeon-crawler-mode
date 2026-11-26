@@ -53,7 +53,8 @@ public final class CrawlAdapter {
     private static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
         Clock clock = () -> server.getTickCount();
-        engine = new CrawlEngine(clock, new CrawlConfig(DEFAULT_APOCALYPSE_DELAY_TICKS), loadHostLines());
+        engine = new CrawlEngine(clock, new CrawlConfig(DEFAULT_APOCALYPSE_DELAY_TICKS), loadHostLines(),
+                LootBoxAdapter.loadTables(), new Random()::nextInt);
     }
 
     private static void onServerStopped(ServerStoppedEvent event) {
@@ -104,6 +105,8 @@ public final class CrawlAdapter {
                         speak(player, says.line());
                     }
                 }
+                case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
+                case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
                     if (player != null) {

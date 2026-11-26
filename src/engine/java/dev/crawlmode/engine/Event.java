@@ -7,4 +7,7 @@ public sealed interface Event {
     record CrawlerJoined(UUID crawler) implements Event {}
 
     record ApocalypseCommanded() implements Event {}
+
+    /** A Crawler earned a Loot Box (Achievement, Boss kill or floor milestone). */
+    record LootBoxGranted(UUID crawler, LootTier tier, LootSource source) implements Event {}
 }
