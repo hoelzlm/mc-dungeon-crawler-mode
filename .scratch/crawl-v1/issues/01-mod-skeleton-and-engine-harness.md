@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Mod loads in a dev client and server without errors
-- [ ] Engine can be driven in plain unit tests with a fake clock
-- [ ] One smoke test passes through the engine interface (event in, effect out)
-- [ ] Latest stable NeoForge and Minecraft versions are verified against official docs
+- [ ] Mod loads in a dev client and server without errors (dedicated server: mod discovered and loaded by FML, no errors in mod loading; full server start and runClient not verified, see report)
+- [x] Engine can be driven in plain unit tests with a fake clock
+- [x] One smoke test passes through the engine interface (event in, effect out)
+- [x] Latest stable NeoForge and Minecraft versions are verified against official docs (MC 26.3, NeoForge 26.3.0.118, Java 25; see gradle.properties)
