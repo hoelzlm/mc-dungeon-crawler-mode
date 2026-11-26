@@ -9,3 +9,9 @@ apocalypse-start: Welcome, contestant! The world ends on day three. Do enjoy the
 apocalypse-start: Ooh, a fresh face! Pack a snack. In a few days you will not be leaving this planet, or what remains of it!
 apocalypse-soon: Five minutes, contestants! Say goodbye to the sun. It never really liked you anyway!
 apocalypse-soon: The countdown is nearly over! Final hugs, final loot, final regrets!
+
+elimination: And that is the end of you! The audience is delighted. You may watch the others suffer from the cheap seats.
+elimination: Splat! Thank you for your service as a cautionary tale. Spectator seating is to your left.
+
+game-over: Oh dear, you died alone, with nobody to laugh at you except me and several million viewers! Another Crawl, or do you flee?
+game-over: Game over, contestant! A dazzling failure. Shall we begin again, or will you slink away?

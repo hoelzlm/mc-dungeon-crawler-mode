@@ -14,7 +14,9 @@ public final class CrawlEngine {
     private final Clock clock;
     private final CrawlConfig config;
     private final HostLineSource host;
-    private final long startedAt;
+    private final EliminationConfig elimination;
+    private final Set<UUID> eliminated = new LinkedHashSet<>();
+    private long startedAt;
     private final Set<UUID> crawlers = new LinkedHashSet<>();
     private boolean apocalypseHappened;
     private boolean finalWarningGiven;
@@ -24,6 +26,11 @@ public final class CrawlEngine {
     }
 
     public CrawlEngine(Clock clock, CrawlConfig config, HostLineSource host) {
+        this(clock, config, host, EliminationConfig.DEFAULT);
+    }
+
+    public CrawlEngine(Clock clock, CrawlConfig config, HostLineSource host, EliminationConfig elimination) {
+        this.elimination = elimination;
         this.clock = clock;
         this.config = config;
         this.host = host;
@@ -34,13 +41,59 @@ public final class CrawlEngine {
         return switch (event) {
             case Event.CrawlerJoined joined -> {
                 crawlers.add(joined.crawler());
+                if (eliminated.contains(joined.crawler())) {
+                    yield List.of(new Effect.Spectate(joined.crawler()));
+                }
                 if (apocalypseHappened) {
                     yield List.of(new Effect.PullToFloor(joined.crawler(), 1));
                 }
                 yield said("apocalypse-start", joined.crawler());
             }
             case Event.ApocalypseCommanded ignored -> apocalypse();
+            case Event.CrawlerDied died -> died(died.crawler());
+            case Event.FreshCrawlChosen chosen -> freshCrawl(chosen.crawler());
+            case Event.LeaveChosen chosen -> canChoose(chosen.crawler())
+                    ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
         };
+    }
+
+    public boolean isEliminated(UUID crawler) {
+        return eliminated.contains(crawler);
+    }
+
+    private boolean canChoose(UUID crawler) {
+        return elimination.singlePlayer() && eliminated.contains(crawler);
+    }
+
+    private List<Effect> died(UUID crawler) {
+        if (!apocalypseHappened || !crawlers.contains(crawler) || eliminated.contains(crawler)) {
+            return List.of();
+        }
+        if (elimination.mode() == EliminationConfig.Mode.RESPAWN) {
+            return List.of(new Effect.PullToFloor(crawler, 1));
+        }
+        eliminated.add(crawler);
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.Spectate(crawler));
+        if (elimination.singlePlayer()) {
+            effects.addAll(said("game-over", crawler));
+            effects.add(new Effect.OfferGameOverChoice(crawler));
+        } else {
+            effects.addAll(said("elimination", crawler));
+        }
+        return effects;
+    }
+
+    /** A fresh Crawl: back to the untouched vanilla world, the Apocalypse cycle starting over. */
+    private List<Effect> freshCrawl(UUID crawler) {
+        if (!canChoose(crawler)) {
+            return List.of();
+        }
+        eliminated.clear();
+        apocalypseHappened = false;
+        finalWarningGiven = false;
+        startedAt = clock.nowTicks();
+        return List.of(new Effect.RestoreWorld(crawler));
     }
 
     public boolean apocalypseHappened() {

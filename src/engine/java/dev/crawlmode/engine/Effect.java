@@ -8,4 +8,16 @@ public sealed interface Effect {
 
     /** The Host speaks to one Crawler: banner, sound cue and chat. */
     record HostSays(UUID crawler, HostLine line) implements Effect {}
+
+    /** The Crawler is eliminated: put them in spectator mode. */
+    record Spectate(UUID crawler) implements Effect {}
+
+    /** Single-player game-over: offer a fresh Crawl or leaving. */
+    record OfferGameOverChoice(UUID crawler) implements Effect {}
+
+    /** Return the Crawler to the pre-Apocalypse vanilla world for a fresh Crawl. */
+    record RestoreWorld(UUID crawler) implements Effect {}
+
+    /** The Crawler chose to leave the game. */
+    record Leave(UUID crawler) implements Effect {}
 }

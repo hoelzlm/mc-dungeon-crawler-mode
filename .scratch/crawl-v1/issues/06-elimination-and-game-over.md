@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Elimination behaviour is configurable
+- [x] Elimination behaviour is configurable (engine EliminationConfig; adapter -Dcrawlmode.elimination=permanent|respawn)
 - [ ] Game-over message and both choices appear
 - [ ] Fresh Crawl restores the world to its pre-Apocalypse state
-- [ ] Engine scenarios cover elimination
+- [x] Engine scenarios cover elimination
