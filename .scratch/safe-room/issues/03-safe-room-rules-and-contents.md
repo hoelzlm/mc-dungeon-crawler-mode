@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] No damage, no hostile mobs and no PvP inside the Safe Room
 - [x] Light regeneration applies while inside and stops when leaving

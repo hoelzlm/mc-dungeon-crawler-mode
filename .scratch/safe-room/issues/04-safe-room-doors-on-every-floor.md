@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** done
+**Status:** in-review
 
 - [x] The floor generation planner places at least four doors per Floor, for all three Floors
 - [x] Doors keep a minimum spacing and are spread rather than clustered

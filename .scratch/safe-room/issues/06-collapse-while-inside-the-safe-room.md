@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] A Crawler inside at collapse is Eliminated like anyone left on the Floor
 - [x] Time spent inside does not pause or reset the Floor Timer

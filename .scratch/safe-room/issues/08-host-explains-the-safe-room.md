@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 02, 05
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Apocalypse arrival lines state the Loot Box rule
 - [x] The first-box line fires once per Crawler on their first Loot Box

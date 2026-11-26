@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Inside the Safe Room one right-click opens one box as in ticket 01
 - [x] Outside, one right-click consumes one box with no contents and no animation

@@ -4,7 +4,7 @@
 
 **Blocked by:** 02, 03
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] A late joiner's first entry creates an empty room
 - [x] Elimination deletes that Crawler's room and its contents

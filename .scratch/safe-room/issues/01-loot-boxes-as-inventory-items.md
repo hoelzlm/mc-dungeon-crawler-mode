@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Four distinct tier items exist and stack by tier
 - [x] Every existing grant path yields an unopened box item

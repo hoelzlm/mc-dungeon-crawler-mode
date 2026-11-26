@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] First entry creates a dedicated dimension for that Crawler; later entries reuse it
 - [x] Entry and exit are instant, with no channel time and no cooldown
