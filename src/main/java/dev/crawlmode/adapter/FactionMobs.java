@@ -74,11 +74,12 @@ final class FactionMobs {
         }
     }
 
-    private static void spawn(ServerLevel level, PlannedSpawn spawn) {
+    /** Spawns one mob; returns it, or null if there was no room or the entity id is unknown. */
+    static Mob spawn(ServerLevel level, PlannedSpawn spawn) {
         MobDef def = spawn.mob();
         var type = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(def.entity()));
         if (type.isEmpty()) {
-            return;
+            return null;
         }
         BlockPos pos = new BlockPos(spawn.x(), spawn.y(), spawn.z());
         // Pillars and furniture may stand where the planner picked: nudge up to two blocks, else skip.
@@ -86,11 +87,11 @@ final class FactionMobs {
             pos = pos.above();
         }
         if (!level.getBlockState(pos).isAir() || !level.getBlockState(pos.above()).isAir()) {
-            return;
+            return null;
         }
         Object created = type.get().value().create(level, EntitySpawnReason.EVENT);
         if (!(created instanceof Mob mob)) {
-            return;
+            return null;
         }
         mob.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, level.getRandom().nextFloat() * 360f, 0f);
         mob.setCustomName(Component.literal(def.name()));
@@ -105,6 +106,7 @@ final class FactionMobs {
         mob.addTag(AchievementAdapter.TAG_RANK + def.rank().key());
         def.abilities().forEach(a -> mob.addTag(TAG_ABILITY + a.key()));
         level.addFreshEntity(mob);
+        return mob;
     }
 
     private static void stat(Mob mob, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute, double value) {

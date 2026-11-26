@@ -4,10 +4,10 @@
 
 **Blocked by:** 09
 
-**Status:** ready-for-agent
+**Status:** done (engine logic unit-tested; in-game adapter compiles but was not run in a live game)
 
-- [ ] Boss appears at a random spot in its Faction's area
-- [ ] Kill opens the gate to the next area
-- [ ] Some Bosses reveal a Stairwell, most do not
-- [ ] Bosses are optional: a Stairwell is reachable without killing one
-- [ ] Boss placement is random per generation
+- [x] Boss appears at a random spot in its Faction's area
+- [x] Kill opens the gate to the next area
+- [x] Some Bosses reveal a Stairwell, most do not
+- [x] Bosses are optional: a Stairwell is reachable without killing one
+- [x] Boss placement is random per generation

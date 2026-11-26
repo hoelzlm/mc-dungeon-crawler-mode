@@ -73,6 +73,11 @@ public final class CrawlAdapter {
                 apply(engine.handle(ev));
             }
         });
+        BossAdapter.register(e -> {
+            if (engine != null) {
+                apply(engine.handle(e));
+            }
+        });
         FloorOneAdapter.register(crawler -> {
             if (engine != null) {
                 apply(engine.handle(new Event.StairwellUsed(crawler)));

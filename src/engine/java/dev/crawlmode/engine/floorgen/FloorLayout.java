@@ -26,13 +26,17 @@ public final class FloorLayout {
 
     public static final int DEFAULT_AREAS = 5;
     private static final int LATTICE = 7;
+    /** Which corridor cell, counted from the parent area, holds a Boss gate. */
+    private static final int GATE_STEP = 3;
 
     private final int areaCount;
     private final Map<CellPos, Cell> cells;
     private final List<Stairwell> stairwells;
     private final Set<Stairwell> stairwellSet;
+    private final List<Gate> gates;
 
-    private FloorLayout(int areaCount, Map<CellPos, Cell> cells, List<Stairwell> stairwells) {
+    private FloorLayout(int areaCount, Map<CellPos, Cell> cells, List<Stairwell> stairwells, List<Gate> gates) {
+        this.gates = gates;
         this.areaCount = areaCount;
         this.cells = cells;
         this.stairwells = stairwells;
@@ -71,9 +75,14 @@ public final class FloorLayout {
             }
             connectRooms(c, open, rnd);
         }
-        for (int[] link : links) {
+        List<Gate> gates = new ArrayList<>();
+        for (int li = 0; li < links.size(); li++) {
+            int[] link = links.get(li);
             Side side = Side.values()[link[1]];
             CellPos p = centres.get(link[0]);
+            if (link[0] > 0) {
+                gates.add(new Gate(li + 1, link[0], step(p, side, GATE_STEP), side));
+            }
             CellPos prev = step(p, side, 1);
             for (int i = 2; i <= LATTICE - 1; i++) {
                 CellPos next = step(p, side, i);
@@ -123,7 +132,7 @@ public final class FloorLayout {
             cells.put(pos, new Cell(pos, e.getValue(), Collections.unmodifiableSet(EnumSet.copyOf(
                     sides.isEmpty() ? EnumSet.noneOf(Side.class) : sides)), t));
         }
-        return new FloorLayout(centres.size(), Collections.unmodifiableMap(cells), List.copyOf(wells));
+        return new FloorLayout(centres.size(), Collections.unmodifiableMap(cells), List.copyOf(wells), List.copyOf(gates));
     }
 
     private static CellPos step(CellPos p, Side side, int n) {
@@ -184,6 +193,11 @@ public final class FloorLayout {
 
     public Optional<Cell> cell(CellPos pos) {
         return Optional.ofNullable(cells.get(pos));
+    }
+
+    /** Gates on the corridors into areas that do not touch the start area. Ordered by area. */
+    public List<Gate> gates() {
+        return gates;
     }
 
     public List<Stairwell> stairwells() {
