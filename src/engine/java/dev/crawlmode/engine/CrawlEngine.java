@@ -29,6 +29,7 @@ public final class CrawlEngine {
     private final Map<UUID, Integer> floorOf = new HashMap<>();
     private final Map<UUID, DoorPos> safeRoomOrigin = new HashMap<>();
     private final Set<UUID> safeRoomsCreated = new LinkedHashSet<>();
+    private final Set<UUID> toldBoxRule = new LinkedHashSet<>();
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -169,10 +170,14 @@ public final class CrawlEngine {
             return List.of();
         }
         safeRoomOrigin.put(crawler, door);
+        boolean first = safeRoomsCreated.add(crawler);
         List<Effect> effects = new ArrayList<>();
-        effects.add(new Effect.EnterSafeRoom(crawler, safeRoomsCreated.add(crawler)));
+        effects.add(new Effect.EnterSafeRoom(crawler, first));
         if (safeRoomRules != null) {
             effects.add(new Effect.StartSafeRoomRegeneration(crawler, safeRoomRules.regenerationAmplifier()));
+        }
+        if (first) {
+            effects.addAll(said("saferoom.welcome", crawler));
         }
         return effects;
     }
@@ -228,6 +233,7 @@ public final class CrawlEngine {
         floorOf.clear();
         safeRoomOrigin.clear();
         safeRoomsCreated.clear();
+        toldBoxRule.clear();
         buffetServedAt.clear();
         windowAnnounced = false;
         startedAt = clock.nowTicks();
@@ -239,6 +245,9 @@ public final class CrawlEngine {
         effects.add(new Effect.GiveLootBox(granted.crawler(), granted.tier()));
         host.lineFor("lootbox.granted")
                 .ifPresent(line -> effects.add(new Effect.HostSays(granted.crawler(), line)));
+        if (toldBoxRule.add(granted.crawler())) {
+            effects.addAll(said("lootbox.first", granted.crawler()));
+        }
         return effects;
     }
 

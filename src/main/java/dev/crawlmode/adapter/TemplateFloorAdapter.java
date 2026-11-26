@@ -9,6 +9,7 @@ import dev.crawlmode.engine.floorgen.FloorSpec;
 import dev.crawlmode.engine.floorgen.FloorTemplate;
 import dev.crawlmode.engine.floorgen.GenerationPlanner;
 import dev.crawlmode.engine.floorgen.PlayerBlock;
+import dev.crawlmode.engine.floorgen.SafeRoomDoorPlanner;
 import dev.crawlmode.engine.floorgen.SpawnPoint;
 import dev.crawlmode.engine.floorgen.TemplateLibrary;
 import java.io.IOException;
@@ -95,6 +96,7 @@ final class TemplateFloorAdapter {
                 FactionAreas areas = FactionAreas.assign(FactionMobs.factions().forFloor(spec.floor()), layout.areaCount());
                 FLOORS.put(spec.floor(), new FloorState(spec, layout, areas, seed));
                 BossAdapter.init(spec.floor(), layout, areas, seed);
+                SafeRoomAdapter.plan(spec.floor(), SafeRoomDoorPlanner.plan(spec.floor(), layout, BossAdapter.bossCells(spec.floor())));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -158,6 +160,7 @@ final class TemplateFloorAdapter {
         }
         FactionMobs.spawnAll(level, SpawnPlanner.forCell(cell, floor.areas(), floor.seed()));
         BossAdapter.onCellBuilt(level, floor.spec().floor(), cell);
+        SafeRoomAdapter.onCellBuilt(level, floor.spec().floor(), pos);
     }
 
     private static BlockState state(String id) {
