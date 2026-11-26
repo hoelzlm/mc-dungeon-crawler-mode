@@ -59,14 +59,14 @@ final class FloorOneAdapter {
 
     static void register(Consumer<UUID> stairwellUsed) {
         NeoForge.EVENT_BUS.addListener((BreakBlockEvent event) -> {
-            if (layout != null && isFloor1(event.getPlayer().level()) && layout.isProtected(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ())) {
+            if (layout != null && isFloor1(event.getPlayer().level()) && (layout.isProtected(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ()) || BossAdapter.isClosedGateBlock(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ()))) {
                 event.setCanceled(true);
                 event.setNotifyClient(true);
             }
         });
         NeoForge.EVENT_BUS.addListener((ExplosionEvent.Detonate event) -> {
             if (isFloor1(event.getLevel()) && layout != null) {
-                event.getAffectedBlocks().removeIf(p -> layout.isProtected(p.getX(), p.getY(), p.getZ()));
+                event.getAffectedBlocks().removeIf(p -> layout.isProtected(p.getX(), p.getY(), p.getZ()) || BossAdapter.isClosedGateBlock(p.getX(), p.getY(), p.getZ()));
             }
         });
         NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickBlock event) -> {
@@ -93,6 +93,7 @@ final class FloorOneAdapter {
             seed = server.overworld().getSeed();
             layout = FloorLayout.generate(seed, library);
             factionAreas = FactionAreas.assign(FactionMobs.factions().forFloor(1), layout.areaCount());
+            BossAdapter.init(layout, factionAreas, seed);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -101,6 +102,7 @@ final class FloorOneAdapter {
     static void clear() {
         layout = null;
         factionAreas = null;
+        BossAdapter.clear();
         FactionMobs.clear();
         STATES.clear();
     }
@@ -163,6 +165,7 @@ final class FloorOneAdapter {
             }
         }
         FactionMobs.spawnAll(level, SpawnPlanner.forCell(cell, factionAreas, seed));
+        BossAdapter.onCellBuilt(level, cell);
     }
 
     private static BlockState state(String id) {

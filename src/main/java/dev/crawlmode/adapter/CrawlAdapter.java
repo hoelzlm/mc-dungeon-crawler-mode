@@ -68,6 +68,11 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerTick);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onTravel);
+        BossAdapter.register(e -> {
+            if (engine != null) {
+                apply(engine.handle(e));
+            }
+        });
         FloorOneAdapter.register(crawler -> {
             if (engine != null) {
                 apply(engine.handle(new Event.StairwellUsed(crawler)));
