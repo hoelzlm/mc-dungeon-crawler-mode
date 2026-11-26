@@ -4,7 +4,7 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [ ] Timer is visible and accurate on screen
 - [x] Timer pauses with nobody online

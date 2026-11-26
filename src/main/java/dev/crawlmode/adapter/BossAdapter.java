@@ -20,7 +20,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -56,7 +55,7 @@ final class BossAdapter {
                     || !(mob.level() instanceof ServerLevel level)) {
                 return;
             }
-            FloorBosses floor = Floors.numberOf(level).stream().mapToObj(FLOORS::get).filter(Objects::nonNull).findFirst().orElse(null);
+            FloorBosses floor = Floors.lookup(level, FLOORS).orElse(null);
             if (floor == null) {
                 return;
             }
@@ -105,9 +104,8 @@ final class BossAdapter {
                 }
             }
         }
-        for (BossPlacement p : f.plan().placements()) {
-            boolean here = Math.floorDiv(p.x(), 16) == cell.pos().x() && Math.floorDiv(p.z(), 16) == cell.pos().z();
-            if (here && !f.encounter().isDead(p.def().factionId())) {
+        for (BossPlacement p : f.plan().placementsIn(cell.pos())) {
+            if (!f.encounter().isDead(p.def().factionId())) {
                 spawnBoss(level, p);
             }
         }
@@ -134,10 +132,10 @@ final class BossAdapter {
             }
         }
         if (!kill.openedGates().isEmpty()) {
-            level.players().forEach(p -> p.sendSystemMessage(Component.literal("[The Host] A gate has opened.")));
+            level.players().forEach(p -> p.sendSystemMessage(HostChat.say("A gate has opened.")));
         }
         kill.revealedStairwell().ifPresent(w -> level.players().forEach(p -> p.sendSystemMessage(
-                Component.literal("[The Host] A Stairwell is revealed at " + w.x() + " " + w.y() + " " + w.z() + "."))));
+                HostChat.say("A Stairwell is revealed at " + w.x() + " " + w.y() + " " + w.z() + "."))));
         lootGranted.accept(kill.loot());
         lootGranted.accept(new Event.Triggered(killer.getUUID(), "kill.boss"));
     }

@@ -4,7 +4,9 @@
 
 **Blocked by:** 09
 
-**Status:** done (engine logic unit-tested; in-game adapter compiles but was not run in a live game)
+**Status:** done
+
+**Note:** Engine logic is unit-tested; the in-game adapter compiles but was not run in a live game.
 
 - [x] Boss appears at a random spot in its Faction's area
 - [x] Kill opens the gate to the next area

@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Delay is configurable and defaults to day 3 (engine config verified by test; adapter reads -Dcrawlmode.apocalypseDelayDays, untested in game)
 - [x] Host warns at the start and shortly before (engine-level; lines in lines.txt)

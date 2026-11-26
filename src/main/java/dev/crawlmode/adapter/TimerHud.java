@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 
-/** The floor countdown as a boss bar: the vanilla widget that sits at the top centre of the screen. */
+/** The floor countdown as a boss bar (every Floor runs the same configured timer, so one length scales the bar): the vanilla widget that sits at the top centre of the screen. */
 final class TimerHud {
     private final Map<UUID, ServerBossEvent> bars = new HashMap<>();
     private final long totalTicks;

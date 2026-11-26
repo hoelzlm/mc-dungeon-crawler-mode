@@ -3,6 +3,7 @@ package dev.crawlmode.engine.boss;
 import dev.crawlmode.engine.faction.Faction;
 import dev.crawlmode.engine.faction.FactionAreas;
 import dev.crawlmode.engine.floorgen.Cell;
+import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
 import dev.crawlmode.engine.floorgen.FloorTemplate;
 import dev.crawlmode.engine.floorgen.Stairwell;
@@ -108,6 +109,13 @@ public final class BossPlan {
 
     public List<BossPlacement> placements() {
         return placements;
+    }
+
+    /** The Bosses standing in the given cell (a cell is 16 by 16 blocks). */
+    public List<BossPlacement> placementsIn(CellPos cell) {
+        return placements.stream()
+                .filter(p -> Math.floorDiv(p.x(), 16) == cell.x() && Math.floorDiv(p.z(), 16) == cell.z())
+                .toList();
     }
 
     public Optional<BossPlacement> of(String factionId) {

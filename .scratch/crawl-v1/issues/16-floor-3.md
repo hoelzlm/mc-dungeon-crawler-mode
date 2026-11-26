@@ -4,7 +4,7 @@
 
 **Blocked by:** 08, 09, 10
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Villages have no hostile spawns
 - [x] Shops are decorative only

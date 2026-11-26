@@ -27,7 +27,6 @@ class FloorSpecTest {
         assertEquals(5, one.areas());
         assertEquals(5, one.minStairwells());
         assertEquals(6, one.maxStairwells());
-        assertEquals(100, one.timerPercent());
     }
 
     @Test
@@ -45,9 +44,11 @@ class FloorSpecTest {
     }
 
     @Test
-    void floorTwoHasItsOwnTimerLength() {
-        assertEquals(80, FloorSpec.forFloor(2).orElseThrow().timerPercent());
-        assertEquals(100, FloorSpec.timerPercent(7), "floors without a spec run the full timer");
+    void floorSeedsAreOffsetFromTheWorldSeedAndFloorOneUsesItDirectly() {
+        long world = 123_456_789L;
+        assertEquals(world, FloorSpec.forFloor(1).orElseThrow().seedFor(world));
+        assertEquals(world + FloorSpec.SEED_STRIDE, FloorSpec.forFloor(2).orElseThrow().seedFor(world));
+        assertEquals(world + 2 * FloorSpec.SEED_STRIDE, FloorSpec.forFloor(3).orElseThrow().seedFor(world));
     }
 
     @Test

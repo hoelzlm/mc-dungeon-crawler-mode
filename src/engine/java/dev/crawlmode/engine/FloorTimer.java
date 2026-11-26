@@ -26,6 +26,8 @@ final class FloorTimer {
     void reset() {
         running = false;
         elapsed = 0;
+        lastSeen = 0;
+        lastShownSecond = 0;
         warningsGiven = 0;
     }
 

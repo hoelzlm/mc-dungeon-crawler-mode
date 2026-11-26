@@ -55,7 +55,6 @@ _Avoid_: Captain, mage
 **Boss**:
 The top rank of a **Faction**, optional and not guarding a **Stairwell**. Defeating it opens a larger area of the **Floor** and may reveal a **Stairwell**.
 _Avoid_: Guardian, miniboss
-_Avoid_: Guardian, miniboss
 
 **Stairwell Aid**:
 An item that helps find a hidden **Stairwell** without giving its exact position: Seeker's Draught, Echo Chime, Revealing Lantern or Fragment Map.
@@ -63,6 +62,7 @@ _Avoid_: Compass, hint item
 
 **System**:
 The announcing voice of the **Crawl**, speaking pre-written lines that narrate events, award **Achievements** and hand out **Loot Boxes**.
+_In-fiction name_: **The Host** (code and data files say Host).
 _Avoid_: AI, narrator, announcer
 
 **Achievement**:

@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Stairwell rejects use before the window
 - [ ] Hint and Host announcement appear

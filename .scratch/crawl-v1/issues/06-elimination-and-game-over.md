@@ -4,7 +4,7 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Elimination behaviour is configurable (engine EliminationConfig; adapter -Dcrawlmode.elimination=permanent|respawn)
 - [ ] Game-over message and both choices appear

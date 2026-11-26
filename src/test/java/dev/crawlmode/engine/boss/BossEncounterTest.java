@@ -78,6 +78,24 @@ class BossEncounterTest {
     }
 
     @Test
+    void placementsInACellAreExactlyTheBossesStandingThere() {
+        Setup s = setup(7);
+        int found = 0;
+        for (Cell cell : s.layout().cells()) {
+            for (BossPlacement p : s.plan().placementsIn(cell.pos())) {
+                assertEquals(cell.pos().x(), Math.floorDiv(p.x(), 16));
+                assertEquals(cell.pos().z(), Math.floorDiv(p.z(), 16));
+                found++;
+            }
+        }
+        assertEquals(s.plan().placements().size(), found, "every Boss is in exactly one cell");
+        BossPlacement first = s.plan().placements().get(0);
+        assertTrue(s.plan().placementsIn(new dev.crawlmode.engine.floorgen.CellPos(
+                Math.floorDiv(first.x(), 16), Math.floorDiv(first.z(), 16))).contains(first));
+        assertTrue(s.plan().placementsIn(new dev.crawlmode.engine.floorgen.CellPos(1000, 1000)).isEmpty());
+    }
+
+    @Test
     void placementIsRandomPerGeneration() {
         Set<List<Integer>> spots = new HashSet<>();
         for (long seed = 0; seed < 30; seed++) {

@@ -9,26 +9,26 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Per-Floor generation and timer settings: which template file builds the Floor, how many areas it has, how many
- * Stairwells it hides (inclusive range) and how long its Floor Timer runs relative to the configured timer.
+ * Per-Floor generation settings: which template file builds the Floor, how many areas it has and how many
+ * Stairwells it hides (inclusive range). Every Floor runs the same configured Floor Timer.
  * To add a Floor, add its entry to {@link #ALL}.
- *
- * @param timerPercent the Floor Timer length as a percentage of {@code CrawlConfig.floorTimerTicks()}
  */
-public record FloorSpec(int floor, String templatesResource, int areas, int minStairwells, int maxStairwells,
-        int timerPercent) {
+public record FloorSpec(int floor, String templatesResource, int areas, int minStairwells, int maxStairwells) {
+    /** Offset between consecutive Floors' seeds (the 64-bit golden-ratio constant), so Floors do not repeat a layout. */
+    public static final long SEED_STRIDE = 0x9E3779B97F4A7C15L;
+
     public static final List<FloorSpec> ALL = List.of(
-            new FloorSpec(1, "/data/crawlmode/floor/floor1_templates.txt", 5, 5, 6, 100),
-            new FloorSpec(2, "/data/crawlmode/floor/floor2_templates.txt", 4, 3, 4, 80),
-            new FloorSpec(3, "/data/crawlmode/floor/floor3_templates.txt", 4, 3, 3, 100));
+            new FloorSpec(1, "/data/crawlmode/floor/floor1_templates.txt", 5, 5, 6),
+            new FloorSpec(2, "/data/crawlmode/floor/floor2_templates.txt", 4, 3, 4),
+            new FloorSpec(3, "/data/crawlmode/floor/floor3_templates.txt", 4, 3, 3));
 
     public static Optional<FloorSpec> forFloor(int floor) {
         return ALL.stream().filter(s -> s.floor == floor).findFirst();
     }
 
-    /** The Floor Timer percentage for a Floor; floors with no spec run the full configured timer. */
-    public static int timerPercent(int floor) {
-        return forFloor(floor).map(FloorSpec::timerPercent).orElse(100);
+    /** This Floor's generation seed: Floor 1 uses the world seed itself, later Floors are offset by {@link #SEED_STRIDE}. */
+    public long seedFor(long worldSeed) {
+        return worldSeed + (floor - 1) * SEED_STRIDE;
     }
 
     /**

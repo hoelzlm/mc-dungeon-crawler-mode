@@ -18,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -38,11 +37,11 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
 /**
- * Builds each template Floor (see {@link FloorSpec}: Floors 1 and 2) from the pure {@link FloorLayout} a few cells at a time near Crawlers, keeps the structure
+ * Builds each template Floor (every Floor in {@link FloorSpec#ALL}) from the pure {@link FloorLayout} a few cells at a time near Crawlers, keeps the structure
  * unbreakable and turns right-clicks on a Stairwell marker into engine events. Layout and placement rules live in
  * the engine source set; this class only writes blocks and forwards events.
  */
-final class FloorOneAdapter {
+final class TemplateFloorAdapter {
     /** How far from a Crawler cells are built, in cells (3 = 48 blocks). */
     static final int RADIUS_CELLS = 3;
     /** Cells built per server tick; each is about two thousand block writes. */
@@ -58,11 +57,11 @@ final class FloorOneAdapter {
     private static final Map<Integer, FloorState> FLOORS = new HashMap<>();
     private static final Map<String, BlockState> STATES = new HashMap<>();
 
-    private FloorOneAdapter() {}
+    private TemplateFloorAdapter() {}
 
     /** The generated Floor {@code level} belongs to, if it is one of the Crawl's template Floors. */
     private static Optional<FloorState> stateOf(Level level) {
-        return Floors.numberOf(level).stream().mapToObj(FLOORS::get).filter(Objects::nonNull).findFirst();
+        return Floors.lookup(level, FLOORS);
     }
 
     /** True if this adapter generates the given Floor. */
@@ -97,14 +96,13 @@ final class FloorOneAdapter {
 
     static void init(MinecraftServer server) {
         for (FloorSpec spec : FloorSpec.ALL) {
-            try (InputStream in = FloorOneAdapter.class.getResourceAsStream(spec.templatesResource())) {
+            try (InputStream in = TemplateFloorAdapter.class.getResourceAsStream(spec.templatesResource())) {
                 if (in == null) {
                     throw new IllegalStateException("Missing " + spec.templatesResource());
                 }
                 TemplateLibrary library = TemplateLibrary.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-                // The same world seed always gives the same Floors, so they survive restarts. Floor 1 uses the
-                // world seed itself; later Floors are offset so they do not repeat Floor 1's layout.
-                long seed = server.overworld().getSeed() + (spec.floor() - 1) * 0x9E3779B97F4A7C15L;
+                // The same world seed always gives the same Floors, so they survive restarts.
+                long seed = spec.seedFor(server.overworld().getSeed());
                 FloorLayout layout = FloorLayout.generate(seed, library, spec);
                 FactionAreas areas = FactionAreas.assign(FactionMobs.factions().forFloor(spec.floor()), layout.areaCount());
                 FLOORS.put(spec.floor(), new FloorState(spec, layout, areas, seed));

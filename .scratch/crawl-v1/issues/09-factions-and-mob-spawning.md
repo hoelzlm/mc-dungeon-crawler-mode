@@ -4,7 +4,7 @@
 
 **Blocked by:** 08
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Faction and rank definitions load from data and are validated
 - [x] Spawn rarity is Grunt > Elite > Shaman

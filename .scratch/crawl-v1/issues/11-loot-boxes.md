@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Four tiers load from data and are validated
 - [ ] Opening plays a Host line and a short animation

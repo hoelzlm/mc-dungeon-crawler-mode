@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import dev.crawlmode.CrawlMode;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -35,8 +36,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * answer as chat text, sound and particles. Every aid is spent on use and only works on a generated Floor.
  */
 final class AidAdapter {
-    private static final String MOD_ID = "crawlmode";
-    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(CrawlMode.MOD_ID);
     private static final Map<String, DeferredItem<Item>> BY_ID = new HashMap<>();
     /** Short-lived particle marks (Lantern blocks, Map outline), shown every few ticks until they expire. */
     private static final List<Marks> ACTIVE = new ArrayList<>();
@@ -90,7 +90,7 @@ final class AidAdapter {
             if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer crawler)) {
                 return InteractionResult.SUCCESS;
             }
-            Optional<FloorLayout> layout = FloorOneAdapter.layoutFor(level);
+            Optional<FloorLayout> layout = TemplateFloorAdapter.layoutFor(level);
             if (layout.isEmpty() || !activate(id, server, crawler, layout.get())) {
                 crawler.sendSystemMessage(Component.literal("The aid fizzles. Nothing answers."), true);
                 return InteractionResult.FAIL;

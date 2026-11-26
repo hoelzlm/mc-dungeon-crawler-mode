@@ -1,5 +1,6 @@
 package dev.crawlmode.adapter;
 
+import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.Clock;
 import dev.crawlmode.engine.CrawlConfig;
 import dev.crawlmode.engine.CrawlEngine;
@@ -19,12 +20,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -50,7 +46,6 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 public final class CrawlAdapter {
     private static final String HOST_LINES_RESOURCE = "/data/crawlmode/host/lines.txt";
-    private static final String MOD_ID = "crawlmode";
 
     private static CrawlEngine engine;
     private static MinecraftServer server;
@@ -78,7 +73,7 @@ public final class CrawlAdapter {
                 apply(engine.handle(e));
             }
         });
-        FloorOneAdapter.register(crawler -> {
+        TemplateFloorAdapter.register(crawler -> {
             if (engine != null) {
                 apply(engine.handle(new Event.StairwellUsed(crawler)));
             }
@@ -92,10 +87,6 @@ public final class CrawlAdapter {
                 elimination.onDeath(e);
             }
         });
-    }
-
-    private static ResourceKey<Level> floorKey(int floor) {
-        return Floors.key(floor);
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -120,36 +111,29 @@ public final class CrawlAdapter {
     /** Once the Apocalypse has happened, nobody may travel to a dimension outside the Crawl. */
     private static void onTravel(EntityTravelToDimensionEvent event) {
         if (engine != null && engine.apocalypseHappened()
-                && !event.getDimension().identifier().getNamespace().equals(MOD_ID)) {
+                && !event.getDimension().identifier().getNamespace().equals(CrawlMode.MOD_ID)) {
             event.setCanceled(true);
         }
     }
 
     private static void pullToFloor(ServerPlayer player, int floor) {
-        ServerLevel level = server.getLevel(floorKey(floor));
+        ServerLevel level = server.getLevel(Floors.key(floor));
         if (level == null) {
             player.sendSystemMessage(Component.literal("Floor " + floor + " dimension is missing"));
             return;
         }
-        BlockPos spawn = FloorOneAdapter.generates(floor) ? FloorOneAdapter.prepareSpawn(level) : stonePlatform(level);
+        if (!TemplateFloorAdapter.generates(floor)) {
+            player.sendSystemMessage(Component.literal("Floor " + floor + " has no generator"));
+            return;
+        }
+        BlockPos spawn = TemplateFloorAdapter.prepareSpawn(level);
         // Inventory travels with the player; only the position and dimension change.
         player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
     }
 
-    /** Placeholder arrival platform for floors that have no generator yet. */
-    private static BlockPos stonePlatform(ServerLevel level) {
-        BlockPos spawn = new BlockPos(0, 64, 0);
-        for (int x = -2; x <= 2; x++) {
-            for (int z = -2; z <= 2; z++) {
-                level.setBlockAndUpdate(spawn.offset(x, -1, z), Blocks.STONE.defaultBlockState());
-            }
-        }
-        return spawn;
-    }
-
     private static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
-        FloorOneAdapter.init(server);
+        TemplateFloorAdapter.init(server);
         Clock clock = () -> server.getTickCount();
         CrawlConfig config = configFromSystemProperties();
         engine = new CrawlEngine(clock, config, loadHostLines(),
@@ -179,7 +163,7 @@ public final class CrawlAdapter {
             timerHud.clear();
         }
         timerHud = null;
-        FloorOneAdapter.clear();
+        TemplateFloorAdapter.clear();
         engine = null;
         server = null;
     }
@@ -200,7 +184,7 @@ public final class CrawlAdapter {
     private static void onServerTick(ServerTickEvent.Post event) {
         if (engine != null) {
             apply(engine.tick());
-            FloorOneAdapter.tick(server);
+            TemplateFloorAdapter.tick(server);
         }
     }
 
@@ -223,7 +207,7 @@ public final class CrawlAdapter {
         player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("The Host")));
         player.connection.send(new ClientboundSetSubtitleTextPacket(text));
         player.connection.send(new ClientboundSoundPacket(SoundEvents.NOTE_BLOCK_BELL, SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, player.getRandom().nextLong()));
-        player.sendSystemMessage(Component.literal("[The Host] ").append(text));
+        player.sendSystemMessage(HostChat.say(text));
     }
 
     private static void apply(List<Effect> effects) {

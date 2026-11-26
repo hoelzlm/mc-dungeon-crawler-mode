@@ -4,7 +4,7 @@
 
 **Blocked by:** 05, 06
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [x] Win screen is shown (engine effect verified; adapter title packets not run in-game)
 - [ ] Crawler returns to the restored vanilla world with loot

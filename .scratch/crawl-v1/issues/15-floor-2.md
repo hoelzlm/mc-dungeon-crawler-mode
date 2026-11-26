@@ -4,7 +4,7 @@
 
 **Blocked by:** 08, 09, 10
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [ ] Floor 2 generates with an industrial-maze look
 - [x] Three Factions with all ranks and Bosses

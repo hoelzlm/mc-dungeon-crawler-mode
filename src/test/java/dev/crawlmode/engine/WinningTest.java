@@ -14,8 +14,8 @@ class WinningTest {
     private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
-    /** Floor 2 runs 80 percent of the timer, so Floor 3's timer starts that much after Floor 2's. */
-    private static final long FLOOR_3_START = TIMER + 24 * MIN;
+    /** Every Floor runs the full timer, so Floor 3's timer starts one timer after Floor 2's. */
+    private static final long FLOOR_3_START = 2 * TIMER;
 
     private final FakeClock clock = new FakeClock();
     private CrawlEngine engine;

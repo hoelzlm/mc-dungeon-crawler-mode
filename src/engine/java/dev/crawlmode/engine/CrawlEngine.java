@@ -69,8 +69,8 @@ public final class CrawlEngine {
         return switch (event) {
             case Event.CrawlerLeft left -> {
                 floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
+                // floorOf is kept: a Crawler who descended must come back to the Floor they descended to.
                 crawlers.remove(left.crawler());
-                floorOf.remove(left.crawler());
                 yield List.of();
             }
             case Event.CrawlerJoined joined -> {
@@ -83,8 +83,10 @@ public final class CrawlEngine {
                     yield List.of(new Effect.Spectate(joined.crawler()));
                 }
                 if (apocalypseHappened) {
-                    floorOf.put(joined.crawler(), timerFloor);
-                    yield List.of(new Effect.PullToFloor(joined.crawler(), timerFloor));
+                    // Back to their own Floor unless it collapsed while they were away: then the live Floor.
+                    int floor = Math.max(timerFloor, floorOf.getOrDefault(joined.crawler(), timerFloor));
+                    floorOf.put(joined.crawler(), floor);
+                    yield List.of(new Effect.PullToFloor(joined.crawler(), floor));
                 }
                 yield said("apocalypse-start", joined.crawler());
             }
@@ -142,9 +144,16 @@ public final class CrawlEngine {
             return List.of();
         }
         if (elimination.mode() == EliminationConfig.Mode.RESPAWN) {
-            return List.of(new Effect.PullToFloor(crawler, 1));
+            // Respawn on the Floor they are on (never a collapsed one; collapse victims are eliminated instead).
+            return List.of(new Effect.PullToFloor(crawler, floorOf.getOrDefault(crawler, timerFloor)));
         }
+        return eliminate(crawler);
+    }
+
+    /** Permanent Elimination: spectate, and the Host's elimination or single-player game-over lines. */
+    private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
+        floorOf.remove(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.Spectate(crawler));
         if (elimination.singlePlayer()) {
@@ -166,6 +175,9 @@ public final class CrawlEngine {
         apocalypseHappened = false;
         finalWarningGiven = false;
         floorTimer.reset();
+        timerFloor = 1;
+        floorOf.clear();
+        windowAnnounced = false;
         startedAt = clock.nowTicks();
         return List.of(new Effect.RestoreWorld(crawler));
     }
@@ -223,12 +235,13 @@ public final class CrawlEngine {
     private List<Effect> collapse(List<UUID> left) {
         List<Effect> effects = new ArrayList<>();
         for (UUID crawler : left) {
+            // A collapse is final in every Elimination mode, so Respawn never pulls a victim back to a dead Floor.
             effects.add(new Effect.Collapse(crawler, timerFloor));
-            floorOf.remove(crawler);
+            effects.addAll(eliminate(crawler));
         }
         timerFloor++;
         long collapsedAt = clock.nowTicks() - floorTimer.overshoot();
-        floorTimer = new FloorTimer(config.floorTimerTicksFor(timerFloor));
+        floorTimer = new FloorTimer(config.floorTimerTicks());
         floorTimer.start(collapsedAt);
         floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
         windowAnnounced = false;
