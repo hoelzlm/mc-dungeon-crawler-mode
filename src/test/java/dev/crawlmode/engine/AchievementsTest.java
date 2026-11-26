@@ -81,6 +81,13 @@ class AchievementsTest {
     }
 
     @Test
+    void killingABossUnlocksItViaTheKillBossTrigger() {
+        var engine = engine("first-boss | kill.boss | gold | A BOSS! Down!");
+
+        assertTrue(unlocked(engine.handle(new Event.Triggered(CARL, "kill.boss")), "first-boss"));
+    }
+
+    @Test
     void reachingAStairwellUnlocksIt() {
         var engine = engine("stairs | reach.stairwell | copper | Found the stairs!");
         engine.handle(new Event.ApocalypseCommanded());

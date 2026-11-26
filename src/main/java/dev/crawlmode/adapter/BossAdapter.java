@@ -51,7 +51,7 @@ final class BossAdapter {
 
     private BossAdapter() {}
 
-    /** @param lootGranted receives the Loot Box grant of a Boss kill, to hand to the engine. */
+    /** @param lootGranted receives the engine events of a Boss kill (Loot Box grant, "kill.boss" trigger). */
     static void register(Consumer<Event> lootGranted) {
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent event) -> {
             if (encounter == null || !(event.getEntity() instanceof Mob mob)
@@ -147,5 +147,6 @@ final class BossAdapter {
         kill.revealedStairwell().ifPresent(w -> level.players().forEach(p -> p.sendSystemMessage(
                 Component.literal("[The Host] A Stairwell is revealed at " + w.x() + " " + w.y() + " " + w.z() + "."))));
         lootGranted.accept(kill.loot());
+        lootGranted.accept(new Event.Triggered(killer.getUUID(), "kill.boss"));
     }
 }
