@@ -1,0 +1,36 @@
+# Loot Box tables. See LootTables for the format. Rolls grow with the tier.
+# Custom enchants use the crawlmode: namespace.
+
+copper rolls 2
+copper gear minecraft:stone_sword weight=3
+copper gear minecraft:leather_chestplate weight=3 enchant=minecraft:protection:1
+copper gear minecraft:iron_pickaxe weight=2 enchant=minecraft:efficiency:1
+copper food minecraft:bread weight=5 count=4
+copper food minecraft:cooked_beef weight=3 count=3
+copper aid fragment_map weight=2
+copper aid echo_chime weight=1
+
+silver rolls 3
+silver gear minecraft:iron_sword weight=3 enchant=minecraft:sharpness:2
+silver gear minecraft:iron_chestplate weight=3 enchant=minecraft:protection:2
+silver gear minecraft:bow weight=2 enchant=crawlmode:seeking:1
+silver food minecraft:golden_carrot weight=4 count=6
+silver aid echo_chime weight=2
+silver aid revealing_lantern weight=1
+silver aid fragment_map weight=2
+
+gold rolls 4
+gold gear minecraft:diamond_sword weight=3 enchant=minecraft:sharpness:3
+gold gear minecraft:diamond_chestplate weight=3 enchant=minecraft:protection:3
+gold gear minecraft:diamond_axe weight=2 enchant=crawlmode:blazing:1
+gold food minecraft:golden_apple weight=3 count=2
+gold aid seekers_draught weight=2
+gold aid revealing_lantern weight=2
+
+radiant rolls 5
+radiant gear minecraft:netherite_sword weight=3 enchant=minecraft:sharpness:5 enchant=crawlmode:blazing:2
+radiant gear minecraft:netherite_chestplate weight=3 enchant=minecraft:protection:4
+radiant gear minecraft:trident weight=2 enchant=crawlmode:seeking:2
+radiant food minecraft:enchanted_golden_apple weight=2
+radiant aid seekers_draught weight=3
+radiant aid revealing_lantern weight=3

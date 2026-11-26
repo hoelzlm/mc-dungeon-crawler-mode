@@ -112,7 +112,8 @@ public final class CrawlAdapter {
         server = event.getServer();
         Clock clock = () -> server.getTickCount();
         CrawlConfig config = configFromSystemProperties();
-        engine = new CrawlEngine(clock, config, loadHostLines());
+        engine = new CrawlEngine(clock, config, loadHostLines(),
+                LootBoxAdapter.loadTables(), new Random()::nextInt);
         timerHud = new TimerHud(config.floorTimerTicks());
     }
 
@@ -196,6 +197,8 @@ public final class CrawlAdapter {
                         timerHud.show(player, timer.remainingTicks());
                     }
                 }
+                case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
+                case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
                     if (player != null) {
