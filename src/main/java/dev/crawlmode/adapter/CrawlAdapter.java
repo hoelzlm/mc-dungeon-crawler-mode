@@ -1,12 +1,14 @@
 package dev.crawlmode.adapter;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.logging.LogUtils;
 import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.Clock;
 import dev.crawlmode.engine.CrawlConfig;
 import dev.crawlmode.engine.CrawlEngine;
+import dev.crawlmode.engine.DataFileHostLineSource;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
-import dev.crawlmode.engine.DataFileHostLineSource;
 import dev.crawlmode.engine.HostLine;
 import dev.crawlmode.engine.HostLineSource;
 import java.io.IOException;
@@ -16,31 +18,31 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.portal.TeleportTransition;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.slf4j.Logger;
 
 public final class CrawlAdapter {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -53,7 +55,7 @@ public final class CrawlAdapter {
 
     private CrawlAdapter() {}
 
-    public static void register(net.neoforged.bus.api.IEventBus modBus) {
+    public static void register(IEventBus modBus) {
         AidAdapter.register(modBus);
         LootBoxAdapter.register(modBus, e -> {
             if (engine != null) {
@@ -88,7 +90,7 @@ public final class CrawlAdapter {
             }
         });
         SafeRoomAdapter.registerRules(crawler -> engine != null && engine.isInSafeRoom(crawler));
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
+        NeoForge.EVENT_BUS.addListener((LivingDeathEvent e) -> {
             if (engine != null) {
                 AchievementAdapter.eventFor(e).ifPresent(ev -> apply(engine.handle(ev)));
                 AchievementAdapter.sillyEventsFor(e).forEach(ev -> apply(engine.handle(ev)));
@@ -146,9 +148,9 @@ public final class CrawlAdapter {
         Clock clock = () -> server.getTickCount();
         CrawlConfig config = configFromSystemProperties();
         engine = new CrawlEngine(clock, config, loadHostLines(),
-                LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server))
-                .withAchievements(AchievementAdapter.load())
-                .withSafeRoomRules(SafeRoomAdapter.loadRules());
+                LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server),
+                SafeRoomAdapter.loadRules())
+                .withAchievements(AchievementAdapter.load());
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
         LOGGER.info("Crawl engine ready");
@@ -195,6 +197,7 @@ public final class CrawlAdapter {
         if (engine != null) {
             apply(engine.tick());
             TemplateFloorAdapter.tick(server);
+            SafeRoomAdapter.tick(server);
         }
     }
 
@@ -241,6 +244,7 @@ public final class CrawlAdapter {
                 case Effect.Collapse collapse -> StairwellAdapter.collapse(server, collapse);
                 case Effect.ShowWinScreen win -> WinAdapter.showWinScreen(server, win);
                 case Effect.GiveLootBox box -> LootBoxAdapter.give(server, box);
+                case Effect.ConsumeLootBox consume -> LootBoxAdapter.consume(server, consume);
                 case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
                 case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.EnterSafeRoom enter -> SafeRoomAdapter.enter(server, enter);

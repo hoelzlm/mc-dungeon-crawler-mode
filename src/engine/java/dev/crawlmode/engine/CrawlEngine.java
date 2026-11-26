@@ -1,8 +1,8 @@
 package dev.crawlmode.engine;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +30,8 @@ public final class CrawlEngine {
     private final Map<UUID, DoorPos> safeRoomOrigin = new HashMap<>();
     private final Set<UUID> safeRoomsCreated = new LinkedHashSet<>();
     private final Set<UUID> toldBoxRule = new LinkedHashSet<>();
+    private final Map<UUID, Long> buffetServedAt = new HashMap<>();
+    private final SafeRoomRules safeRoomRules;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -48,9 +50,20 @@ public final class CrawlEngine {
         this(clock, config, host, loot, lootPick, EliminationConfig.DEFAULT);
     }
 
+    public CrawlEngine(Clock clock, CrawlConfig config, HostLineSource host, SafeRoomRules safeRoomRules) {
+        this(clock, config, host, null, bound -> 0, EliminationConfig.DEFAULT, safeRoomRules);
+    }
+
     public CrawlEngine(
             Clock clock, CrawlConfig config, HostLineSource host, LootTables loot, IntUnaryOperator lootPick,
             EliminationConfig elimination) {
+        this(clock, config, host, loot, lootPick, elimination, SafeRoomRules.NONE);
+    }
+
+    public CrawlEngine(
+            Clock clock, CrawlConfig config, HostLineSource host, LootTables loot, IntUnaryOperator lootPick,
+            EliminationConfig elimination, SafeRoomRules safeRoomRules) {
+        this.safeRoomRules = safeRoomRules;
         this.loot = loot;
         this.lootPick = lootPick;
         this.elimination = elimination;
@@ -90,7 +103,7 @@ public final class CrawlEngine {
             case Event.LeaveChosen chosen -> canChoose(chosen.crawler())
                     ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
             case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
-            case Event.SafeRoomExited exited -> exitSafeRoom(exited.crawler());
+            case Event.SafeRoomExited exited -> leaveSafeRoom(exited.crawler());
             case Event.BuffetUsed used -> useBuffet(used.crawler());
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
@@ -148,8 +161,7 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
-        safeRoomOrigin.remove(crawler);
-        List<Effect> effects = new ArrayList<>();
+        List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
         effects.add(new Effect.Spectate(crawler));
         if (safeRoomsCreated.remove(crawler)) {
             effects.add(new Effect.DeleteSafeRoom(crawler));
@@ -173,7 +185,7 @@ public final class CrawlEngine {
         boolean first = safeRoomsCreated.add(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.EnterSafeRoom(crawler, first));
-        if (safeRoomRules != null) {
+        if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StartSafeRoomRegeneration(crawler, safeRoomRules.regenerationAmplifier()));
         }
         if (first) {
@@ -182,25 +194,17 @@ public final class CrawlEngine {
         return effects;
     }
 
-    private List<Effect> exitSafeRoom(UUID crawler) {
+    private List<Effect> leaveSafeRoom(UUID crawler) {
         DoorPos door = safeRoomOrigin.remove(crawler);
         if (door == null) {
             return List.of();
         }
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.ExitSafeRoom(crawler, door));
-        if (safeRoomRules != null) {
+        if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StopSafeRoomRegeneration(crawler));
         }
         return effects;
-    }
-
-    private SafeRoomRules safeRoomRules;
-    private final Map<UUID, Long> buffetServedAt = new HashMap<>();
-
-    public CrawlEngine withSafeRoomRules(SafeRoomRules rules) {
-        this.safeRoomRules = rules;
-        return this;
     }
 
     public boolean isInSafeRoom(UUID crawler) {
@@ -208,13 +212,13 @@ public final class CrawlEngine {
     }
 
     private List<Effect> useBuffet(UUID crawler) {
-        if (safeRoomRules == null || !isInSafeRoom(crawler)) {
+        if (safeRoomRules.food().isEmpty() || !isInSafeRoom(crawler)) {
             return List.of();
         }
         Long last = buffetServedAt.get(crawler);
         long now = clock.nowTicks();
         if (last != null && now - last < safeRoomRules.buffetCooldownTicks()) {
-            return List.of();
+            return said("saferoom.buffet-cooldown", crawler);
         }
         buffetServedAt.put(crawler, now);
         return List.of(new Effect.ServeBuffet(crawler, safeRoomRules.food()));
@@ -223,6 +227,13 @@ public final class CrawlEngine {
     private List<Effect> freshCrawl(UUID crawler) {
         if (!canChoose(crawler)) {
             return List.of();
+        }
+        List<Effect> effects = new ArrayList<>();
+        for (UUID inside : List.copyOf(safeRoomOrigin.keySet())) {
+            effects.addAll(leaveSafeRoom(inside));
+        }
+        for (UUID room : safeRoomsCreated) {
+            effects.add(new Effect.DeleteSafeRoom(room));
         }
         eliminated.clear();
         winners.clear();
@@ -237,34 +248,38 @@ public final class CrawlEngine {
         buffetServedAt.clear();
         windowAnnounced = false;
         startedAt = clock.nowTicks();
-        return List.of(new Effect.RestoreWorld(crawler));
+        effects.add(new Effect.RestoreWorld(crawler));
+        return effects;
     }
 
     private List<Effect> giveLootBox(Event.LootBoxGranted granted) {
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.GiveLootBox(granted.crawler(), granted.tier()));
-        host.lineFor("lootbox.granted")
-                .ifPresent(line -> effects.add(new Effect.HostSays(granted.crawler(), line)));
         if (toldBoxRule.add(granted.crawler())) {
             effects.addAll(said("lootbox.first", granted.crawler()));
+        } else {
+            effects.addAll(said("lootbox.granted", granted.crawler()));
         }
         return effects;
     }
 
-    private List<Effect> poofLootBox(UUID crawler) {
-        List<Effect> effects = new ArrayList<>(said("lootbox.poof", crawler));
+    private List<Effect> poofLootBox(UUID crawler, LootTier tier) {
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.ConsumeLootBox(crawler, tier));
+        effects.addAll(said("lootbox.poof", crawler));
         effects.addAll(unlock(crawler, "lootbox.poof"));
         return effects;
     }
 
     private List<Effect> openLootBox(Event.LootBoxOpened opened) {
         if (!safeRoomOrigin.containsKey(opened.crawler())) {
-            return poofLootBox(opened.crawler());
+            return poofLootBox(opened.crawler(), opened.tier());
         }
         if (loot == null) {
             return List.of();
         }
         List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.ConsumeLootBox(opened.crawler(), opened.tier()));
         effects.add(new Effect.LootBoxOpening(opened.crawler(), opened.tier()));
         host.lineFor("lootbox." + opened.tier().key())
                 .ifPresent(line -> effects.add(new Effect.HostSays(opened.crawler(), line)));
@@ -340,7 +355,8 @@ public final class CrawlEngine {
         if (floor == FINAL_FLOOR) {
             winners.add(crawler);
             floorOf.remove(crawler);
-            List<Effect> effects = new ArrayList<>(said("win", crawler));
+            List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
+            effects.addAll(said("win", crawler));
             if (safeRoomsCreated.remove(crawler)) {
                 effects.add(new Effect.HandOverSafeRoomContents(crawler));
                 effects.add(new Effect.DeleteSafeRoom(crawler));

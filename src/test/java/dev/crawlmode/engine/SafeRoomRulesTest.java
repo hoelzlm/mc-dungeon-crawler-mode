@@ -26,8 +26,8 @@ class SafeRoomRulesTest {
     private final FakeClock clock = new FakeClock();
 
     private CrawlEngine crawl(UUID... crawlers) {
-        CrawlEngine engine = new CrawlEngine(clock, new CrawlConfig(72_000))
-                .withSafeRoomRules(SafeRoomRules.load(new StringReader(RULES)));
+        CrawlEngine engine = new CrawlEngine(clock, new CrawlConfig(72_000), HostLineSource.SILENT,
+                SafeRoomRules.load(new StringReader(RULES)));
         for (UUID c : crawlers) {
             engine.handle(new Event.CrawlerJoined(c));
         }
@@ -143,5 +143,58 @@ class SafeRoomRulesTest {
         clock.advance(CrawlConfig.DEFAULT_FLOOR_TIMER_TICKS);
 
         assertTrue(engine.tick().contains(new Effect.Collapse(CARL, 1)));
+    }
+
+    private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
+
+    @Test
+    void clickingTheBuffetWhileItRefillsTellsTheCrawlerToWait() {
+        CrawlEngine engine = new CrawlEngine(clock, new CrawlConfig(72_000), TOPIC_ECHO,
+                SafeRoomRules.load(new StringReader(RULES)));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+        engine.handle(new Event.BuffetUsed(CARL));
+
+        assertEquals(List.of(new Effect.HostSays(CARL, new HostLine("saferoom.buffet-cooldown", "saferoom.buffet-cooldown"))),
+                engine.handle(new Event.BuffetUsed(CARL)));
+    }
+
+    @Test
+    void anEliminationInsideStopsRegenerationAndReturnsTheSpectatorToTheirDoorBeforeDeletingTheRoom() {
+        CrawlEngine engine = crawl(CARL, DONUT);
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+
+        List<Effect> effects = engine.handle(new Event.CrawlerDied(CARL));
+
+        assertTrue(effects.indexOf(new Effect.StopSafeRoomRegeneration(CARL)) >= 0);
+        assertTrue(effects.indexOf(new Effect.ExitSafeRoom(CARL, DOOR)) < effects.indexOf(new Effect.DeleteSafeRoom(CARL)));
+        assertFalse(engine.isInSafeRoom(CARL));
+    }
+
+    @Test
+    void winningFromInsideStopsRegenerationAndLeavesTheRoomBeforeItIsDeleted() {
+        long minute = 20 * 60;
+        CrawlEngine engine = new CrawlEngine(clock, new CrawlConfig(72_000, 0, 30 * minute), HostLineSource.SILENT,
+                SafeRoomRules.load(new StringReader(RULES)));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+        for (int floor = 0; floor < 2; floor++) {
+            clock.advance(22 * minute);
+            engine.tick();
+            engine.handle(new Event.StairwellUsed(CARL));
+            clock.advance(8 * minute);
+            engine.tick();
+        }
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+        clock.advance(22 * minute);
+        engine.tick();
+
+        List<Effect> effects = engine.handle(new Event.StairwellUsed(CARL));
+
+        int stop = effects.indexOf(new Effect.StopSafeRoomRegeneration(CARL));
+        int exit = effects.indexOf(new Effect.ExitSafeRoom(CARL, DOOR));
+        int delete = effects.indexOf(new Effect.DeleteSafeRoom(CARL));
+        assertTrue(stop >= 0 && exit >= 0 && exit < delete);
     }
 }

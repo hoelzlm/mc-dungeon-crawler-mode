@@ -12,15 +12,20 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -29,8 +34,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -54,13 +59,22 @@ final class LootBoxAdapter {
     static void give(MinecraftServer server, Effect.GiveLootBox box) {
         ServerPlayer player = server.getPlayerList().getPlayer(box.crawler());
         if (player != null) {
-            hand(player, new ItemStack(BOXES.get(box.tier()).get()));
+            Inventories.giveOrDrop(player, new ItemStack(BOXES.get(box.tier()).get()));
         }
     }
 
-    private static void hand(ServerPlayer player, ItemStack stack) {
-        if (!player.getInventory().add(stack) && player.level() instanceof net.minecraft.server.level.ServerLevel level) {
-            player.spawnAtLocation(level, stack);
+    static void consume(MinecraftServer server, Effect.ConsumeLootBox consume) {
+        ServerPlayer player = server.getPlayerList().getPlayer(consume.crawler());
+        if (player == null || player.getAbilities().instabuild) {
+            return;
+        }
+        Item box = BOXES.get(consume.tier()).get();
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            ItemStack stack = player.getInventory().getItem(slot);
+            if (stack.is(box)) {
+                stack.shrink(1);
+                return;
+            }
         }
     }
 
@@ -78,9 +92,6 @@ final class LootBoxAdapter {
         public InteractionResult use(Level level, Player player, InteractionHand hand) {
             if (level.isClientSide() || !(player instanceof ServerPlayer crawler)) {
                 return InteractionResult.SUCCESS;
-            }
-            if (!crawler.getAbilities().instabuild) {
-                player.getItemInHand(hand).shrink(1);
             }
             events.accept(new Event.LootBoxOpened(crawler.getUUID(), tier));
             return InteractionResult.SUCCESS;
@@ -107,8 +118,8 @@ final class LootBoxAdapter {
         player.connection.send(new ClientboundSoundPacket(
                 Holder.direct(SoundEvents.CHEST_OPEN), SoundSource.PLAYERS,
                 player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, player.getRandom().nextLong()));
-        if (player.level() instanceof net.minecraft.server.level.ServerLevel level) level.sendParticles(
-                net.minecraft.core.particles.ParticleTypes.FIREWORK, player.getX(), player.getY() + 1, player.getZ(),
+        if (player.level() instanceof ServerLevel level) level.sendParticles(
+                ParticleTypes.FIREWORK, player.getX(), player.getY() + 1, player.getZ(),
                 30, 0.5, 0.8, 0.5, 0.05);
     }
 
@@ -116,7 +127,7 @@ final class LootBoxAdapter {
         handItems(server, grant.crawler(), grant.items());
     }
 
-    static void handItems(MinecraftServer server, java.util.UUID crawler, java.util.List<LootItem> items) {
+    static void handItems(MinecraftServer server, UUID crawler, List<LootItem> items) {
         ServerPlayer player = server.getPlayerList().getPlayer(crawler);
         if (player == null) {
             return;
@@ -124,7 +135,7 @@ final class LootBoxAdapter {
         for (LootItem item : items) {
             ItemStack stack = stackFor(server, item);
             if (!stack.isEmpty()) {
-                hand(player, stack);
+                Inventories.giveOrDrop(player, stack);
             }
         }
     }
@@ -141,7 +152,7 @@ final class LootBoxAdapter {
         ItemStack stack = new ItemStack(holder.get(), item.count());
         var enchantments = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         item.enchants().forEach((enchantId, level) ->
-                enchantments.get(net.minecraft.resources.ResourceKey.create(
+                enchantments.get(ResourceKey.create(
                                 Registries.ENCHANTMENT, Identifier.parse(enchantId)))
                         .ifPresent((Holder.Reference<Enchantment> e) -> stack.enchant(e, level)));
         return stack;

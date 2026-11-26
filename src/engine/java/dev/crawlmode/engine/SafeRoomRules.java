@@ -9,11 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks, List<LootItem> food) {
+    public static final int NO_REGENERATION = -1;
+    public static final SafeRoomRules NONE = new SafeRoomRules(NO_REGENERATION, 0, List.of());
+
     public SafeRoomRules {
-        if (regenerationAmplifier < 0 || buffetCooldownTicks < 0 || food.isEmpty()) {
+        if (regenerationAmplifier < NO_REGENERATION || buffetCooldownTicks < 0) {
             throw new SafeRoomRulesFormatException("invalid Safe Room rules");
         }
         food = List.copyOf(food);
+    }
+
+    public boolean regenerates() {
+        return regenerationAmplifier != NO_REGENERATION;
     }
 
     public static SafeRoomRules load(Reader reader) {

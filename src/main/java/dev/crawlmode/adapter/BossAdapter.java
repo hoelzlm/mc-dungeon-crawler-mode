@@ -78,7 +78,7 @@ final class BossAdapter {
     static Set<CellPos> bossCells(int floor) {
         FloorBosses f = FLOORS.get(floor);
         return f == null ? Set.of() : f.plan().placements().stream()
-                .map(p -> new CellPos(Math.floorDiv(p.x(), 16), Math.floorDiv(p.z(), 16))).collect(Collectors.toSet());
+                .map(p -> CellPos.containing(p.x(), p.z())).collect(Collectors.toSet());
     }
 
     static void clear() {

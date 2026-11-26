@@ -57,6 +57,7 @@ class LootBoxTest {
     void grantingABoxGivesTheUnopenedItemAndTheHostSaysItIsInTheInventory() {
         var engine = hostEngine(tables(VALID), 0);
 
+        engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.BOSS_KILL));
         List<Effect> effects = engine.handle(new Event.LootBoxGranted(CARL, LootTier.GOLD, LootSource.BOSS_KILL));
 
         assertEquals(
@@ -84,6 +85,7 @@ class LootBoxTest {
 
         assertEquals(
                 List.of(
+                        new Effect.ConsumeLootBox(CARL, LootTier.COPPER),
                         new Effect.LootBoxOpening(CARL, LootTier.COPPER),
                         new Effect.HostSays(CARL, new HostLine("lootbox.copper", "A shiny copper thing!")),
                         new Effect.GrantLoot(
@@ -113,7 +115,8 @@ class LootBoxTest {
 
         List<Effect> effects = engine.handle(new Event.LootBoxOpened(CARL, LootTier.GOLD));
 
-        assertEquals(List.of(new Effect.HostSays(CARL, new HostLine("lootbox.poof", "Nothing happens. Poof."))), effects);
+        assertEquals(List.of(new Effect.ConsumeLootBox(CARL, LootTier.GOLD),
+                new Effect.HostSays(CARL, new HostLine("lootbox.poof", "Nothing happens. Poof."))), effects);
     }
 
     @Test
@@ -135,6 +138,38 @@ class LootBoxTest {
         List<Effect> effects = engine.handle(new Event.LootBoxOpened(CARL, LootTier.COPPER));
 
         assertTrue(effects.stream().noneMatch(e -> e instanceof Effect.GrantLoot || e instanceof Effect.LootBoxOpening));
+    }
+
+    @Test
+    void aBoxIsNotConsumedWhenThereAreNoLootTablesToOpenIt() {
+        CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
+
+        assertEquals(List.of(), engine.handle(new Event.LootBoxOpened(CARL, LootTier.COPPER)));
+    }
+
+    @Test
+    void theFirstBoxGetsOneCombinedLineThatNamesTheSafeRoom() {
+        HostLineSource host = DataFileHostLineSource.load(new StringReader(
+                "lootbox.granted: In your inventory! Find a Safe Room!\nlootbox.first: Only opens in a Safe Room!"),
+                bound -> 0);
+        CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host);
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+
+        List<Effect> first = engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.BOSS_KILL));
+
+        assertEquals(List.of(new Effect.GiveLootBox(CARL, LootTier.COPPER),
+                new Effect.HostSays(CARL, new HostLine("lootbox.first", "Only opens in a Safe Room!"))), first);
+    }
+
+    @Test
+    void theShippedGrantedLineTellsTheCrawlerToFindASafeRoom() throws java.io.IOException {
+        String text = new String(LootBoxTest.class.getResourceAsStream("/data/crawlmode/host/lines.txt")
+                .readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(text.lines().anyMatch(l -> l.startsWith("lootbox.granted:") && l.contains("Safe Room")));
     }
 
     @Test

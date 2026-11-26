@@ -260,4 +260,23 @@ class SafeRoomTest {
             assertEquals(new Effect.EnterSafeRoom(CARL, true), e);
         }
     }
+
+    @Test
+    void aFreshCrawlDeletesEveryRoomStillStanding() {
+        CrawlEngine engine = new CrawlEngine(clock, new CrawlConfig(72_000), HostLineSource.SILENT,
+                new EliminationConfig(EliminationConfig.Mode.PERMANENT, true));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.CrawlerJoined(DONUT));
+        engine.handle(new Event.ApocalypseCommanded());
+        engine.handle(new Event.SafeRoomDoorUsed(DONUT, FLOOR_ONE_DOOR));
+        engine.handle(new Event.CrawlerDied(CARL));
+
+        List<Effect> effects = engine.handle(new Event.FreshCrawlChosen(CARL));
+
+        assertTrue(effects.contains(new Effect.DeleteSafeRoom(DONUT)));
+        assertTrue(effects.contains(new Effect.ExitSafeRoom(DONUT, FLOOR_ONE_DOOR)));
+        engine.handle(new Event.ApocalypseCommanded());
+        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true)),
+                engine.handle(new Event.SafeRoomDoorUsed(DONUT, FLOOR_ONE_DOOR)));
+    }
 }

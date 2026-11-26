@@ -23,28 +23,39 @@ public final class SafeRoomDoorPlanner {
                 spot(floor, layout, cell).ifPresent(candidates::add);
             }
         }
+        for (int spacing = MIN_SPACING_CELLS; spacing >= 1; spacing--) {
+            List<DoorPos> chosen = choose(candidates, spacing);
+            if (chosen.size() >= DOORS_PER_FLOOR) {
+                return List.copyOf(chosen);
+            }
+        }
+        throw new IllegalStateException("Floor " + floor + " has no room for " + DOORS_PER_FLOOR + " Safe Room Doors");
+    }
+
+    private static List<DoorPos> choose(List<DoorPos> candidates, int spacing) {
+        List<DoorPos> remaining = new ArrayList<>(candidates);
         List<DoorPos> chosen = new ArrayList<>();
         while (chosen.size() < DOORS_PER_FLOOR) {
-            Optional<DoorPos> next = farthestFromChosen(candidates, chosen);
+            Optional<DoorPos> next = farthestFromChosen(remaining, chosen, spacing);
             if (next.isEmpty()) {
                 break;
             }
             chosen.add(next.get());
-            candidates.remove(next.get());
+            remaining.remove(next.get());
         }
-        return List.copyOf(chosen);
+        return chosen;
     }
 
-    private static Optional<DoorPos> farthestFromChosen(List<DoorPos> candidates, List<DoorPos> chosen) {
+    private static Optional<DoorPos> farthestFromChosen(List<DoorPos> candidates, List<DoorPos> chosen, int spacing) {
         if (chosen.isEmpty()) {
             return candidates.stream().findFirst();
         }
         DoorPos best = null;
-        int bestGap = MIN_SPACING_CELLS - 1;
+        int bestGap = spacing - 1;
         for (DoorPos c : candidates) {
             int gap = Integer.MAX_VALUE;
             for (DoorPos d : chosen) {
-                gap = Math.min(gap, distance(cellOf(c), cellOf(d)));
+                gap = Math.min(gap, distance(c.cell(), d.cell()));
             }
             if (gap > bestGap) {
                 best = c;
@@ -56,10 +67,6 @@ public final class SafeRoomDoorPlanner {
 
     private static boolean nearBoss(CellPos pos, Set<CellPos> bossCells) {
         return bossCells.stream().anyMatch(b -> distance(pos, b) <= BOSS_CLEARANCE_CELLS);
-    }
-
-    private static CellPos cellOf(DoorPos d) {
-        return new CellPos(Math.floorDiv(d.x(), 16), Math.floorDiv(d.z(), 16));
     }
 
     private static int distance(CellPos a, CellPos b) {
@@ -76,8 +83,8 @@ public final class SafeRoomDoorPlanner {
         Collections.shuffle(offsets, new Random(cell.pos().x() * 31L + cell.pos().z()));
         int y = FloorLayout.FLOOR_Y + 1;
         for (int[] o : offsets) {
-            int x = cell.pos().x() * 16 + o[0];
-            int z = cell.pos().z() * 16 + o[1];
+            int x = cell.pos().originX() + o[0];
+            int z = cell.pos().originZ() + o[1];
             boolean solidUnder = layout.blockAt(x, y - 1, z).isPresent();
             boolean headroom = layout.blockAt(x, y, z).isEmpty() && layout.blockAt(x, y + 1, z).isEmpty();
             if (solidUnder && headroom && !layout.isStairwell(x, y, z)) {

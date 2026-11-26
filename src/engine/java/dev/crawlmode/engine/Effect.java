@@ -1,5 +1,6 @@
 package dev.crawlmode.engine;
 
+import java.util.List;
 import java.util.UUID;
 
 public sealed interface Effect {
@@ -19,9 +20,11 @@ public sealed interface Effect {
 
     record GiveLootBox(UUID crawler, LootTier tier) implements Effect {}
 
+    record ConsumeLootBox(UUID crawler, LootTier tier) implements Effect {}
+
     record LootBoxOpening(UUID crawler, LootTier tier) implements Effect {}
 
-    record GrantLoot(UUID crawler, LootTier tier, java.util.List<LootItem> items) implements Effect {}
+    record GrantLoot(UUID crawler, LootTier tier, List<LootItem> items) implements Effect {}
 
     record StairwellSealed(UUID crawler, long opensInTicks) implements Effect {}
 
@@ -41,5 +44,5 @@ public sealed interface Effect {
 
     record DeleteSafeRoom(UUID crawler) implements Effect {}
 
-    record ServeBuffet(UUID crawler, java.util.List<LootItem> items) implements Effect {}
+    record ServeBuffet(UUID crawler, List<LootItem> items) implements Effect {}
 }

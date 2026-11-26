@@ -6,39 +6,48 @@ import dev.crawlmode.engine.DoorPos;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.SafeRoomRules;
+import dev.crawlmode.engine.floorgen.CellPos;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import dev.crawlmode.engine.floorgen.CellPos;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.DerivedLevelData;
+import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.slf4j.Logger;
 
@@ -59,6 +68,7 @@ final class SafeRoomAdapter {
 
     private static final Map<UUID, ServerLevel> ROOMS = new HashMap<>();
     private static final Map<Integer, List<DoorPos>> DOORS = new HashMap<>();
+    private static final List<UUID> PENDING_ENTRIES = new ArrayList<>();
 
     private SafeRoomAdapter() {}
 
@@ -134,6 +144,21 @@ final class SafeRoomAdapter {
     static void clear() {
         ROOMS.clear();
         DOORS.clear();
+        PENDING_ENTRIES.clear();
+    }
+
+    static void tick(MinecraftServer server) {
+        if (PENDING_ENTRIES.isEmpty()) {
+            return;
+        }
+        for (UUID crawler : List.copyOf(PENDING_ENTRIES)) {
+            PENDING_ENTRIES.remove(crawler);
+            ServerPlayer player = server.getPlayerList().getPlayer(crawler);
+            ServerLevel room = player == null ? null : create(server, crawler);
+            if (room != null) {
+                teleport(player, room, ROOM_SPAWN);
+            }
+        }
     }
 
     static void plan(int floor, List<DoorPos> doors) {
@@ -142,8 +167,9 @@ final class SafeRoomAdapter {
 
     static void onCellBuilt(ServerLevel level, int floor, CellPos cell) {
         for (DoorPos door : DOORS.getOrDefault(floor, List.of())) {
-            if (Math.floorDiv(door.x(), 16) == cell.x() && Math.floorDiv(door.z(), 16) == cell.z()) {
-                level.setBlockAndUpdate(new BlockPos(door.x(), door.y(), door.z()), Blocks.CRYING_OBSIDIAN.defaultBlockState());
+            if (door.cell().equals(cell)) {
+                level.setBlockAndUpdate(new BlockPos(door.x(), door.y(), door.z()),
+                        Blocks.CRYING_OBSIDIAN.defaultBlockState());
             }
         }
     }
@@ -153,11 +179,14 @@ final class SafeRoomAdapter {
         if (player == null) {
             return;
         }
-        ServerLevel room = enter.firstEntry() ? create(server, enter.crawler()) : ROOMS.get(enter.crawler());
-        if (room == null) {
+        if (enter.firstEntry()) {
+            PENDING_ENTRIES.add(enter.crawler());
             return;
         }
-        teleport(player, room, ROOM_SPAWN);
+        ServerLevel room = ROOMS.get(enter.crawler());
+        if (room != null) {
+            teleport(player, room, ROOM_SPAWN);
+        }
     }
 
     static void exit(MinecraftServer server, Effect.ExitSafeRoom exit) {
@@ -177,11 +206,11 @@ final class SafeRoomAdapter {
             return;
         }
         for (BlockPos at : ROOM_CHESTS) {
-            if (room.getBlockEntity(at) instanceof net.minecraft.world.Container chest) {
+            if (room.getBlockEntity(at) instanceof Container chest) {
                 for (int slot = 0; slot < chest.getContainerSize(); slot++) {
-                    var stack = chest.removeItemNoUpdate(slot);
-                    if (!stack.isEmpty() && !player.getInventory().add(stack)) {
-                        player.spawnAtLocation(player.level(), stack);
+                    ItemStack stack = chest.removeItemNoUpdate(slot);
+                    if (!stack.isEmpty()) {
+                        Inventories.giveOrDrop(player, stack);
                     }
                 }
             }
@@ -189,6 +218,7 @@ final class SafeRoomAdapter {
     }
 
     static void delete(MinecraftServer server, Effect.DeleteSafeRoom delete) {
+        PENDING_ENTRIES.remove(delete.crawler());
         ServerLevel room = ROOMS.remove(delete.crawler());
         if (room == null) {
             return;
@@ -202,8 +232,20 @@ final class SafeRoomAdapter {
         try {
             levelsOf(server).remove(room.dimension());
             room.close();
-        } catch (ReflectiveOperationException | java.io.IOException | RuntimeException e) {
+            deleteRecursively(storageOf(server).getDimensionPath(room.dimension()));
+        } catch (ReflectiveOperationException | IOException | RuntimeException e) {
             LOGGER.error("Could not delete Safe Room of {}", delete.crawler(), e);
+        }
+    }
+
+    private static void deleteRecursively(Path root) throws IOException {
+        if (!Files.exists(root)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(root)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                Files.delete(path);
+            }
         }
     }
 
@@ -258,13 +300,13 @@ final class SafeRoomAdapter {
         return field.get(server);
     }
 
-    private static java.util.concurrent.Executor executorOf(MinecraftServer server) throws ReflectiveOperationException {
-        return (java.util.concurrent.Executor) field(server, "executor");
+    private static Executor executorOf(MinecraftServer server) throws ReflectiveOperationException {
+        return (Executor) field(server, "executor");
     }
 
-    private static net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess storageOf(
+    private static LevelStorageAccess storageOf(
             MinecraftServer server) throws ReflectiveOperationException {
-        return (net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess) field(server, "storageSource");
+        return (LevelStorageAccess) field(server, "storageSource");
     }
 
     @SuppressWarnings("unchecked")
