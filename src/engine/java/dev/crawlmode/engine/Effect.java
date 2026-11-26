@@ -37,5 +37,9 @@ public sealed interface Effect {
 
     record StopSafeRoomRegeneration(UUID crawler) implements Effect {}
 
+    record HandOverSafeRoomContents(UUID crawler) implements Effect {}
+
+    record DeleteSafeRoom(UUID crawler) implements Effect {}
+
     record ServeBuffet(UUID crawler, java.util.List<LootItem> items) implements Effect {}
 }

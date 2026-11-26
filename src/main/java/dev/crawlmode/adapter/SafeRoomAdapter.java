@@ -165,6 +165,43 @@ final class SafeRoomAdapter {
         teleport(player, level, door.above());
     }
 
+    static void handOver(MinecraftServer server, Effect.HandOverSafeRoomContents handOver) {
+        ServerPlayer player = server.getPlayerList().getPlayer(handOver.crawler());
+        ServerLevel room = ROOMS.get(handOver.crawler());
+        if (player == null || room == null) {
+            return;
+        }
+        for (BlockPos at : ROOM_CHESTS) {
+            if (room.getBlockEntity(at) instanceof net.minecraft.world.Container chest) {
+                for (int slot = 0; slot < chest.getContainerSize(); slot++) {
+                    var stack = chest.removeItemNoUpdate(slot);
+                    if (!stack.isEmpty() && !player.getInventory().add(stack)) {
+                        player.spawnAtLocation(player.level(), stack);
+                    }
+                }
+            }
+        }
+    }
+
+    static void delete(MinecraftServer server, Effect.DeleteSafeRoom delete) {
+        ServerLevel room = ROOMS.remove(delete.crawler());
+        if (room == null) {
+            return;
+        }
+        ServerLevel overworld = server.overworld();
+        for (ServerPlayer inside : List.copyOf(room.players())) {
+            var spawn = overworld.getRespawnData().pos();
+            inside.teleport(new TeleportTransition(overworld, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f,
+                    TeleportTransition.DO_NOTHING));
+        }
+        try {
+            levelsOf(server).remove(room.dimension());
+            room.close();
+        } catch (ReflectiveOperationException | java.io.IOException | RuntimeException e) {
+            LOGGER.error("Could not delete Safe Room of {}", delete.crawler(), e);
+        }
+    }
+
     private static boolean isRoomOf(Level level, UUID crawler) {
         return ROOMS.get(crawler) == level;
     }

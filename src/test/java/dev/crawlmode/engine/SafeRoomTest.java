@@ -158,4 +158,92 @@ class SafeRoomTest {
 
         assertEquals(List.of(), engine.handle(new Event.SafeRoomExited(CARL)));
     }
+
+    @Test
+    void aLateJoinerGetsAFreshRoomOnFirstEntry() {
+        CrawlEngine engine = crawl(CARL);
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR));
+        engine.handle(new Event.CrawlerJoined(DONUT));
+
+        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true)),
+                engine.handle(new Event.SafeRoomDoorUsed(DONUT, OTHER_FLOOR_ONE_DOOR)));
+    }
+
+    @Test
+    void eliminationDeletesTheCrawlersRoom() {
+        CrawlEngine engine = crawl(CARL, DONUT);
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR));
+        engine.handle(new Event.SafeRoomExited(CARL));
+
+        List<Effect> effects = engine.handle(new Event.CrawlerDied(CARL));
+
+        assertTrue(effects.contains(new Effect.DeleteSafeRoom(CARL)));
+        assertFalse(effects.contains(new Effect.HandOverSafeRoomContents(CARL)));
+    }
+
+    @Test
+    void eliminationWhileInsideTheRoomDeletesItToo() {
+        CrawlEngine engine = timedCrawl(CARL);
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR));
+
+        assertTrue(tickTo(engine, TIMER).contains(new Effect.DeleteSafeRoom(CARL)));
+    }
+
+    @Test
+    void eliminationWithoutEverEnteringDeletesNothing() {
+        CrawlEngine engine = crawl(CARL, DONUT);
+
+        assertFalse(engine.handle(new Event.CrawlerDied(CARL)).contains(new Effect.DeleteSafeRoom(CARL)));
+    }
+
+    @Test
+    void eliminatingOneCrawlerLeavesAnotherCrawlersRoomAlone() {
+        CrawlEngine engine = crawl(CARL, DONUT);
+        engine.handle(new Event.SafeRoomDoorUsed(DONUT, FLOOR_ONE_DOOR));
+        engine.handle(new Event.SafeRoomExited(DONUT));
+
+        assertFalse(engine.handle(new Event.CrawlerDied(CARL)).contains(new Effect.DeleteSafeRoom(DONUT)));
+    }
+
+    @Test
+    void winningHandsOverTheContentsThenDeletesTheRoomBeforeRestoringTheWorld() {
+        CrawlEngine engine = timedCrawl(CARL);
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR));
+        engine.handle(new Event.SafeRoomExited(CARL));
+        for (long floorStart : new long[] {0, TIMER}) {
+            tickTo(engine, floorStart + 22 * MIN);
+            engine.handle(new Event.StairwellUsed(CARL));
+        }
+        tickTo(engine, 2 * TIMER + 25 * MIN);
+
+        List<Effect> effects = engine.handle(new Event.StairwellUsed(CARL));
+
+        int handOver = effects.indexOf(new Effect.HandOverSafeRoomContents(CARL));
+        int delete = effects.indexOf(new Effect.DeleteSafeRoom(CARL));
+        int restore = effects.indexOf(new Effect.RestoreWorld(CARL));
+        assertTrue(handOver >= 0 && handOver < delete && delete < restore);
+    }
+
+    @Test
+    void winningWithoutEverEnteringTheRoomHandsOverNothing() {
+        CrawlEngine engine = timedCrawl(CARL);
+        for (long floorStart : new long[] {0, TIMER}) {
+            tickTo(engine, floorStart + 22 * MIN);
+            engine.handle(new Event.StairwellUsed(CARL));
+        }
+        tickTo(engine, 2 * TIMER + 25 * MIN);
+
+        List<Effect> effects = engine.handle(new Event.StairwellUsed(CARL));
+
+        assertFalse(effects.contains(new Effect.DeleteSafeRoom(CARL)));
+    }
+
+    @Test
+    void aCrawlerCanOnlyEverBeSentIntoTheirOwnRoom() {
+        CrawlEngine engine = crawl(CARL, DONUT);
+
+        for (Effect e : engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR))) {
+            assertEquals(new Effect.EnterSafeRoom(CARL, true), e);
+        }
+    }
 }

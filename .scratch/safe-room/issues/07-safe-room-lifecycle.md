@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] A late joiner's first entry creates an empty room
-- [ ] Elimination deletes that Crawler's room and its contents
-- [ ] Winning hands every stored item to the Crawler, then deletes the room
-- [ ] No Crawler can reach another Crawler's room at any point
-- [ ] Engine tests cover late join, Elimination and winning
+- [x] A late joiner's first entry creates an empty room
+- [x] Elimination deletes that Crawler's room and its contents
+- [x] Winning hands every stored item to the Crawler, then deletes the room
+- [x] No Crawler can reach another Crawler's room at any point
+- [x] Engine tests cover late join, Elimination and winning

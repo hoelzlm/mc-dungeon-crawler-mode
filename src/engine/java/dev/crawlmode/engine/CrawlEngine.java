@@ -150,6 +150,10 @@ public final class CrawlEngine {
         safeRoomOrigin.remove(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.Spectate(crawler));
+        if (safeRoomsCreated.remove(crawler)) {
+            effects.add(new Effect.DeleteSafeRoom(crawler));
+        }
+        buffetServedAt.remove(crawler);
         if (elimination.singlePlayer()) {
             effects.addAll(said("game-over", crawler));
             effects.add(new Effect.OfferGameOverChoice(crawler));
@@ -328,6 +332,10 @@ public final class CrawlEngine {
             winners.add(crawler);
             floorOf.remove(crawler);
             List<Effect> effects = new ArrayList<>(said("win", crawler));
+            if (safeRoomsCreated.remove(crawler)) {
+                effects.add(new Effect.HandOverSafeRoomContents(crawler));
+                effects.add(new Effect.DeleteSafeRoom(crawler));
+            }
             effects.add(new Effect.ShowWinScreen(crawler));
             effects.add(new Effect.RestoreWorld(crawler));
             return effects;

@@ -245,6 +245,8 @@ public final class CrawlAdapter {
                 case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
                 case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.EnterSafeRoom enter -> SafeRoomAdapter.enter(server, enter);
+                case Effect.HandOverSafeRoomContents handOver -> SafeRoomAdapter.handOver(server, handOver);
+                case Effect.DeleteSafeRoom delete -> SafeRoomAdapter.delete(server, delete);
                 case Effect.ExitSafeRoom exit -> SafeRoomAdapter.exit(server, exit);
                 case Effect.StartSafeRoomRegeneration start -> SafeRoomAdapter.startRegeneration(server, start);
                 case Effect.StopSafeRoomRegeneration stop -> SafeRoomAdapter.stopRegeneration(server, stop);
