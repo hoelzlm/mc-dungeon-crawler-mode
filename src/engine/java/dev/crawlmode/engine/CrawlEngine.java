@@ -146,6 +146,7 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
+        safeRoomOrigin.remove(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.Spectate(crawler));
         if (elimination.singlePlayer()) {
