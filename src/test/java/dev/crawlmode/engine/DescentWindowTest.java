@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class DescentWindowTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DONUT = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
+    private static final HostLineSource TOPIC_ECHO = topic -> Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
     private static final long FLOOR_2_TIMER = TIMER;

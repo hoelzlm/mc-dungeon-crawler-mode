@@ -1,14 +1,18 @@
 # The Host's lines. Format: topic: text. Several lines per topic are picked at random.
 # Tone: giddy sarcasm, a game-show host who is thrilled about your suffering.
 
-apocalypse: Congratulations, contestant! The world is closed, the dungeon is open, and you were not consulted!
-apocalypse: Surprise! Everything you knew is gone. Please keep your arms and legs inside the dungeon at all times!
-apocalypse: Welcome to the Crawl! Do try to die entertainingly. The audience adores a good flop!
+apocalypse: Congratulations, contestant! The world is closed, the dungeon is open, and you were not consulted! Loot Boxes only open inside a Safe Room, so find a door first!
+apocalypse: Surprise! Everything you knew is gone. A Loot Box opened outside a Safe Room simply poofs, so do be tidy about it!
+apocalypse: Welcome to the Crawl! Do try to die entertainingly. And remember, a Loot Box will only open in a Safe Room!
+
+lootbox.first: Your very first Loot Box, contestant, safely in your inventory! Find a Safe Room before you open it, because out here it pops like a sad balloon!
+saferoom.welcome: Welcome to your Safe Room! Chests for your clutter, a bottomless snack bar, and the only place a Loot Box will open. Nothing can hurt you in here, but the Floor Timer keeps ticking!
 
 lootbox.copper: A copper box! Truly, the participation trophy of the dungeon!
 lootbox.silver: Silver! Someone is being almost competent. Open wide!
 lootbox.gold: Gold! The audience is on its feet! Do not trip over the loot!
 lootbox.radiant: A RADIANT box! Savor it, contestant. It may be the last nice thing that happens to you!
+lootbox.granted: A new Loot Box is in your inventory! Find a Safe Room to open it, or watch it pop!
 apocalypse-start: Welcome, contestant! The world ends on day three. Do enjoy the brief remainder of your freedom!
 apocalypse-start: Ooh, a fresh face! Pack a snack. In a few days you will not be leaving this planet, or what remains of it!
 apocalypse-soon: Five minutes, contestants! Say goodbye to the sun. It never really liked you anyway!
@@ -29,3 +33,5 @@ game-over: Game over, contestant! A dazzling failure. Shall we begin again, or w
 
 win: Congratulations, survivor! You passed the last stairwell. The audience weeps. So do I, a little. Take your loot and go.
 win: Incredible! Against all odds and several of my best traps, you have won the Crawl. Off you go, with your spoils!
+lootbox.poof: You opened a Loot Box in the open? Nothing happens. The box simply... pops. Safe Rooms exist for a reason, contestant!
+saferoom.buffet-cooldown: The snack bar is still refilling, contestant! Patience is a virtue, and also the only thing on the menu right now!

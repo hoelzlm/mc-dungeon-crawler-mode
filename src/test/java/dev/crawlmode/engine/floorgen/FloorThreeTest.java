@@ -5,18 +5,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.crawlmode.engine.boss.BossEncounter;
-import dev.crawlmode.engine.boss.BossPlan;
 import dev.crawlmode.engine.boss.BossPlacement;
+import dev.crawlmode.engine.boss.BossPlan;
 import dev.crawlmode.engine.boss.Bosses;
 import dev.crawlmode.engine.faction.FactionAreas;
 import dev.crawlmode.engine.faction.Factions;
 import dev.crawlmode.engine.faction.PlannedSpawn;
 import dev.crawlmode.engine.faction.SpawnPlanner;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class FloorThreeTest {
@@ -25,11 +27,11 @@ class FloorThreeTest {
     private static final TemplateLibrary LIBRARY = library();
 
     private static Factions factions() {
-        return Factions.load(new java.io.StringReader(FloorSpec.readFactionData("factions")));
+        return Factions.load(new StringReader(FloorSpec.readFactionData("factions")));
     }
 
     private static Bosses bosses() {
-        return Bosses.load(new java.io.StringReader(FloorSpec.readFactionData("bosses")), FACTIONS);
+        return Bosses.load(new StringReader(FloorSpec.readFactionData("bosses")), FACTIONS);
     }
 
     private static TemplateLibrary library() {
@@ -62,7 +64,7 @@ class FloorThreeTest {
     @Test
     void floorThreeHasThreeFactionsWithABossEach() {
         assertEquals(Set.of("ghost_bandits", "wild_beasts", "ash_cult"),
-                FACTIONS.forFloor(3).stream().map(f -> f.id()).collect(java.util.stream.Collectors.toSet()));
+                FACTIONS.forFloor(3).stream().map(f -> f.id()).collect(Collectors.toSet()));
         FACTIONS.forFloor(3).forEach(f -> assertTrue(BOSSES.of(f.id()) != null));
     }
 

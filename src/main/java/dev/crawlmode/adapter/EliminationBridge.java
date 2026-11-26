@@ -1,14 +1,15 @@
 package dev.crawlmode.adapter;
 
+import com.mojang.brigadier.CommandDispatcher;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.EliminationConfig;
 import dev.crawlmode.engine.Event;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
@@ -100,6 +101,6 @@ final class EliminationBridge {
         player.setGameMode(GameType.SURVIVAL);
         player.teleportTo(overworld, overworld.getRespawnData().pos().getX() + 0.5,
                 overworld.getRespawnData().pos().getY(), overworld.getRespawnData().pos().getZ() + 0.5,
-                java.util.Set.of(), 0f, 0f, true);
+                Set.of(), 0f, 0f, true);
     }
 }

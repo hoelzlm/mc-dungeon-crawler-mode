@@ -1,0 +1,3 @@
+# Own Floor Map, not a third-party minimap mod
+
+The **Floor Map** is written inside this mod as part of the game's interface, not provided by Xaero's Minimap, JourneyMap or VoxelMap. We chose this because its rules (nothing shown until explored, **Safe Room Doors** and a **Boss** defeat revealing areas, **Stairwells** shown only through **Stairwell Aids**) have no hook in any of them, and the big ones are closed source with unconfirmed redistribution terms, so a modpack could only switch their features off and not force them on. The cost is maintaining our own renderer across Minecraft 26.x changes. A modpack remains fine as a way to install the mod with others.

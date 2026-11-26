@@ -1,5 +1,6 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.faction.Rank;
 import java.util.UUID;
 
 public sealed interface Event {
@@ -17,9 +18,17 @@ public sealed interface Event {
 
     record LootBoxGranted(UUID crawler, LootTier tier, LootSource source) implements Event {}
 
+    record LootBoxOpened(UUID crawler, LootTier tier) implements Event {}
+
     record StairwellUsed(UUID crawler) implements Event {}
 
-    record MobKilled(UUID crawler, dev.crawlmode.engine.faction.Rank rank) implements Event {}
+    record MobKilled(UUID crawler, Rank rank) implements Event {}
 
     record Triggered(UUID crawler, String trigger) implements Event {}
+
+    record SafeRoomDoorUsed(UUID crawler, DoorPos door) implements Event {}
+
+    record SafeRoomExited(UUID crawler) implements Event {}
+
+    record BuffetUsed(UUID crawler) implements Event {}
 }

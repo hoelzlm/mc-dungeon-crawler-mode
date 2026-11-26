@@ -10,6 +10,7 @@ import dev.crawlmode.engine.LootSource;
 import dev.crawlmode.engine.faction.FactionAreas;
 import dev.crawlmode.engine.faction.Factions;
 import dev.crawlmode.engine.floorgen.Cell;
+import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
 import dev.crawlmode.engine.floorgen.FloorTemplate;
 import dev.crawlmode.engine.floorgen.Gate;
@@ -69,7 +70,7 @@ class BossEncounterTest {
             assertEquals(FACTIONS.forFloor(1).size(), s.plan().placements().size());
             for (BossPlacement p : s.plan().placements()) {
                 assertEquals(p.def().factionId(), s.areas().factionOf(p.area()).orElseThrow().id());
-                Cell cell = s.layout().cell(new dev.crawlmode.engine.floorgen.CellPos(
+                Cell cell = s.layout().cell(new CellPos(
                         Math.floorDiv(p.x(), 16), Math.floorDiv(p.z(), 16))).orElseThrow();
                 assertEquals(p.area(), cell.area());
                 assertEquals(FloorTemplate.Role.ROOM, cell.template().role(), "boss stands in an ordinary room");
@@ -90,9 +91,9 @@ class BossEncounterTest {
         }
         assertEquals(s.plan().placements().size(), found, "every Boss is in exactly one cell");
         BossPlacement first = s.plan().placements().get(0);
-        assertTrue(s.plan().placementsIn(new dev.crawlmode.engine.floorgen.CellPos(
+        assertTrue(s.plan().placementsIn(new CellPos(
                 Math.floorDiv(first.x(), 16), Math.floorDiv(first.z(), 16))).contains(first));
-        assertTrue(s.plan().placementsIn(new dev.crawlmode.engine.floorgen.CellPos(1000, 1000)).isEmpty());
+        assertTrue(s.plan().placementsIn(new CellPos(1000, 1000)).isEmpty());
     }
 
     @Test

@@ -9,6 +9,7 @@ import dev.crawlmode.engine.floorgen.FloorSpec;
 import java.io.StringReader;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.item.ItemStack;
@@ -89,7 +91,7 @@ final class FactionMobs {
         return mob;
     }
 
-    private static void stat(Mob mob, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute, double value) {
+    private static void stat(Mob mob, Holder<Attribute> attribute, double value) {
         var instance = mob.getAttribute(attribute);
         if (instance != null) {
             instance.setBaseValue(value);

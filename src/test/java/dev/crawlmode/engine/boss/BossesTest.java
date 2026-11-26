@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.crawlmode.engine.LootTier;
 import dev.crawlmode.engine.faction.Factions;
+import dev.crawlmode.engine.faction.Rank;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +37,7 @@ class BossesTest {
         Bosses bosses = bundled();
         for (var f : factions().forFloor(1)) {
             BossDef def = bosses.of(f.id());
-            assertTrue(def.health() > f.mob(dev.crawlmode.engine.faction.Rank.ELITE).health(), "bosses outclass elites");
+            assertTrue(def.health() > f.mob(Rank.ELITE).health(), "bosses outclass elites");
             assertTrue(def.tier() == LootTier.GOLD || def.tier() == LootTier.RADIANT, "high tier reward");
         }
     }

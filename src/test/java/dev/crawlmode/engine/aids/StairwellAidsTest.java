@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.crawlmode.engine.LootItem;
-import dev.crawlmode.engine.LootTier;
 import dev.crawlmode.engine.LootTables;
+import dev.crawlmode.engine.LootTier;
 import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
 import dev.crawlmode.engine.floorgen.Stairwell;

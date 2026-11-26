@@ -38,3 +38,7 @@ puffer-gulper | eat.pufferfish | silver | You ate a pufferfish. Bold! Foolish! S
 bunny-hopper | jump.100 | copper | A hundred jumps! Your knees must be exhausted, and also, apparently, free! Box!
 pogo-legend | jump.1000 | gold | ONE THOUSAND JUMPS! Why? WHY?! Nobody knows! Gold for the pogo champion!
 bacon-bits | kill.pig | copper | You slew a PIG! Bacon! Delicious! Tragic! A box for the breakfast table!
+
+# --- Loot Box opened outside a Safe Room ---
+
+wasted-box | lootbox.poof | copper | You right-clicked a Loot Box in the open! It went poof, and so did your reward. A sympathy box, because I am generous!
