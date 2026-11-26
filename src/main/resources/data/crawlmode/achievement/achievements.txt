@@ -1,6 +1,7 @@
 # Achievements. Format: id | trigger | tier | Host line   (tier: copper, silver, gold, radiant)
 # Add an entry here to add an Achievement; no code needed for existing triggers.
 # Triggers: kill.grunt, kill.elite, kill.shaman, kill.boss, reach.stairwell,
+#           Silly triggers (death.*, kill.*, eat.*, jump.N, kill.any.N) come from SillyTriggers.
 #           reach.descent-window, death.fall. The adapter may report any other trigger string.
 
 first-grunt | kill.grunt | copper | Your first Grunt! It had a family. Probably. Here is a box!
@@ -10,3 +11,30 @@ first-boss | kill.boss | gold | A BOSS! Down! The crowd goes wild, and the Boss 
 first-stairwell | reach.stairwell | copper | You found a Stairwell! Look at you, reading signs. Here is a little something!
 first-descent-window | reach.descent-window | silver | The Descent Window is open, contestant! Hurry, hurry, hurry, and also: a box!
 fell-to-death | death.fall | copper | You died to a fall! Gravity sends its regards, and so do I. A consolation box!
+
+# --- Silly and pointless ones (detected by SillyTriggers) ---
+
+lava-swim | death.lava | copper | You swam in LAVA! Bold! Hot! Dead! The audience says: toasty!
+drowned | death.drown | copper | You drowned in a dungeon! Impressive! It is mostly water, and you still lost!
+hugged-cactus | death.cactus | copper | You died to a CACTUS. It was a hug that went very, very wrong. Here is a box!
+crispy | death.fire | copper | You are on fire! Stop, drop and roll! ...Too late! Crispy contestant, take your box!
+boom | death.explosion | silver | BOOM! Splendid! Confetti made entirely of you! A box for the pieces!
+hungry-ghost | death.starve | copper | You starved! With a whole Crawl of snacks around you! Shame, shame, delicious box!
+into-the-void | death.void | silver | You fell out of the WORLD! The world did not even notice. I did! Box!
+smitten | death.lightning | gold | Struck by LIGHTNING! The sky itself picked you! Golden applause, contestant!
+anvil-fan | death.anvil | silver | An ANVIL! From above! Classic! I did not even have to arrange it! Box!
+popsicle | death.freeze | copper | You froze to death. Chill out, contestant. Chilly box!
+berry-sad | death.berry-bush | copper | Killed by a berry bush! A BERRY BUSH! Berry, berry embarrassing! Here is a box!
+wall-kisser | death.wall | copper | You kissed a wall and the wall won. Smooch! Here is a consolation box!
+chicken-chaser | kill.chicken | copper | You murdered a chicken! Cluck you too! The crowd is divided, but the box is real!
+sheep-sheerer | kill.sheep | copper | A sheep! Gone! Wool you accept this box? Wool you?
+cat-person | kill.cat | silver | You killed a CAT. The audience has turned against you. Here is a box anyway, monster!
+bat-brain | kill.bat | copper | You slew a bat! It was just trying to be spooky! Here is a spooky box!
+grunt-masher | kill.grunt.10 | silver | TEN Grunts! You are a one-contestant grunt-mashing machine! Mash this box open!
+mass-murderer | kill.any.50 | gold | FIFTY kills! You are very busy and very unhinged, and I adore you! Gold box!
+rotten-taste | eat.rotten-flesh | copper | You ate rotten flesh! On purpose! Gross, glorious, gutsy! A box to wash it down!
+cake-break | eat.cake | copper | You ate CAKE in a dungeon! The cake is not a lie, but the box is a gift!
+puffer-gulper | eat.pufferfish | silver | You ate a pufferfish. Bold! Foolish! Slightly green! Silver box!
+bunny-hopper | jump.100 | copper | A hundred jumps! Your knees must be exhausted, and also, apparently, free! Box!
+pogo-legend | jump.1000 | gold | ONE THOUSAND JUMPS! Why? WHY?! Nobody knows! Gold for the pogo champion!
+bacon-bits | kill.pig | copper | You slew a PIG! Bacon! Delicious! Tragic! A box for the breakfast table!

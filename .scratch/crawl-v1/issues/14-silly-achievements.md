@@ -4,9 +4,9 @@
 
 **Blocked by:** 13
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] About 30 Achievements in total
-- [ ] Silly ones have dumb, funny Host lines
-- [ ] All reward Loot Boxes
-- [ ] All defined in data
+- [x] About 30 Achievements in total
+- [x] Silly ones have dumb, funny Host lines
+- [x] All reward Loot Boxes
+- [x] All defined in data

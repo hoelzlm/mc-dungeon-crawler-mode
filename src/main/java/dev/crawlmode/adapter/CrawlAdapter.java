@@ -68,6 +68,11 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerTick);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onTravel);
+        AchievementAdapter.registerSilly(ev -> {
+            if (engine != null) {
+                apply(engine.handle(ev));
+            }
+        });
         FloorOneAdapter.register(crawler -> {
             if (engine != null) {
                 apply(engine.handle(new Event.StairwellUsed(crawler)));
@@ -76,6 +81,7 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (engine != null) {
                 AchievementAdapter.eventFor(e).ifPresent(ev -> apply(engine.handle(ev)));
+                AchievementAdapter.sillyEventsFor(e).forEach(ev -> apply(engine.handle(ev)));
             }
             if (elimination != null) {
                 elimination.onDeath(e);
