@@ -26,3 +26,6 @@ elimination: Splat! Thank you for your service as a cautionary tale. Spectator s
 
 game-over: Oh dear, you died alone, with nobody to laugh at you except me and several million viewers! Another Crawl, or do you flee?
 game-over: Game over, contestant! A dazzling failure. Shall we begin again, or will you slink away?
+
+win: Congratulations, survivor! You passed the last stairwell. The audience weeps. So do I, a little. Take your loot and go.
+win: Incredible! Against all odds and several of my best traps, you have won the Crawl. Off you go, with your spoils!
