@@ -1,9 +1,13 @@
 # The Host's lines. Format: topic: text. Several lines per topic are picked at random.
 # Tone: giddy sarcasm, a game-show host who is thrilled about your suffering.
 
-apocalypse: Congratulations, contestant! The world is closed, the dungeon is open, and you were not consulted!
-apocalypse: Surprise! Everything you knew is gone. Please keep your arms and legs inside the dungeon at all times!
-apocalypse: Welcome to the Crawl! Do try to die entertainingly. The audience adores a good flop!
+
+apocalypse: Congratulations, contestant! The world is closed, the dungeon is open, and you were not consulted! Loot Boxes only open inside a Safe Room, so find a door first!
+apocalypse: Surprise! Everything you knew is gone. A Loot Box opened outside a Safe Room simply poofs, so do be tidy about it!
+apocalypse: Welcome to the Crawl! Do try to die entertainingly. And remember, a Loot Box will only open in a Safe Room!
+
+lootbox.first: Your very first Loot Box! A reminder, contestant: it only opens inside a Safe Room. Open it out here and it pops like a sad balloon!
+saferoom.welcome: Welcome to your Safe Room! Chests for your clutter, a bottomless snack bar, and the only place a Loot Box will open. Nothing can hurt you in here, but the Floor Timer keeps ticking!
 
 lootbox.copper: A copper box! Truly, the participation trophy of the dungeon!
 lootbox.silver: Silver! Someone is being almost competent. Open wide!
