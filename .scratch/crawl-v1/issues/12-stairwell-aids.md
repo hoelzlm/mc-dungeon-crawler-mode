@@ -8,5 +8,5 @@
 
 - [ ] All four items exist and work
 - [ ] Each is one-use or short-lived
-- [ ] None gives the exact Stairwell position
-- [ ] They appear in Loot Box tables
+- [x] None gives the exact Stairwell position
+- [x] They appear in Loot Box tables

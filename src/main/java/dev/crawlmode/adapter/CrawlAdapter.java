@@ -59,7 +59,8 @@ public final class CrawlAdapter {
 
     private CrawlAdapter() {}
 
-    public static void register() {
+    public static void register(net.neoforged.bus.api.IEventBus modBus) {
+        AidAdapter.register(modBus);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStarting);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStopped);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onPlayerLoggedIn);

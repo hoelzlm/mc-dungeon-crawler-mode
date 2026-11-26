@@ -97,6 +97,11 @@ final class FloorOneAdapter {
         STATES.clear();
     }
 
+    /** The Floor 1 plan if {@code level} is Floor 1 and the plan exists. */
+    static java.util.Optional<FloorLayout> layoutFor(Level level) {
+        return layout != null && isFloor1(level) ? java.util.Optional.of(layout) : java.util.Optional.empty();
+    }
+
     private static boolean isFloor1(Level level) {
         return level.dimension().identifier().equals(Identifier.fromNamespaceAndPath("crawlmode", "floor_1"));
     }

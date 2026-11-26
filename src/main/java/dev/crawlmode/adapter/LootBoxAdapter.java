@@ -66,9 +66,8 @@ final class LootBoxAdapter {
     }
 
     private static ItemStack stackFor(MinecraftServer server, LootItem item) {
-        // Stairwell Aids are custom items from a later ticket; until then they are not materialised.
         if (item.kind() == LootItem.Kind.AID) {
-            return ItemStack.EMPTY;
+            return AidAdapter.stack(item.id(), item.count());
         }
         Identifier id = Identifier.parse(item.id());
         var holder = BuiltInRegistries.ITEM.get(id);
