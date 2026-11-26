@@ -1,5 +1,6 @@
 package dev.crawlmode.adapter;
 
+import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.aids.Area;
 import dev.crawlmode.engine.aids.StairwellAids;
 import dev.crawlmode.engine.floorgen.FloorLayout;
@@ -23,7 +24,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import dev.crawlmode.CrawlMode;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;

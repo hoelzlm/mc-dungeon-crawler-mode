@@ -1,5 +1,6 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.faction.Rank;
 import java.util.UUID;
 
 public sealed interface Event {
@@ -21,7 +22,7 @@ public sealed interface Event {
 
     record StairwellUsed(UUID crawler) implements Event {}
 
-    record MobKilled(UUID crawler, dev.crawlmode.engine.faction.Rank rank) implements Event {}
+    record MobKilled(UUID crawler, Rank rank) implements Event {}
 
     record Triggered(UUID crawler, String trigger) implements Event {}
 

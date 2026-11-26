@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -50,9 +53,9 @@ class SafeRoomRulesTest {
     }
 
     @Test
-    void theShippedRulesFileLoads() throws java.io.IOException {
+    void theShippedRulesFileLoads() throws IOException {
         try (var in = getClass().getResourceAsStream("/data/crawlmode/saferoom/rules.txt")) {
-            assertTrue(SafeRoomRules.load(new java.io.InputStreamReader(in)).food().size() > 0);
+            assertTrue(SafeRoomRules.load(new InputStreamReader(in)).food().size() > 0);
         }
     }
 
@@ -145,7 +148,7 @@ class SafeRoomRulesTest {
         assertTrue(engine.tick().contains(new Effect.Collapse(CARL, 1)));
     }
 
-    private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
+    private static final HostLineSource TOPIC_ECHO = topic -> Optional.of(new HostLine(topic, topic));
 
     @Test
     void clickingTheBuffetWhileItRefillsTellsTheCrawlerToWait() {

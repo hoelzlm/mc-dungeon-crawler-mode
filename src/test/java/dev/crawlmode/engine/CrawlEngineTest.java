@@ -3,6 +3,7 @@ package dev.crawlmode.engine;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,7 @@ class CrawlEngineTest {
         assertEquals(List.of(), engine.tick(), "Apocalypse happens only once");
     }
 
-    private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
+    private static final HostLineSource TOPIC_ECHO = topic -> Optional.of(new HostLine(topic, topic));
 
     @Test
     void delayDefaultsToInGameDayThree() {

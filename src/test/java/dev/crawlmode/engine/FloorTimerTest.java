@@ -4,12 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class FloorTimerTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
+    private static final HostLineSource TOPIC_ECHO = topic -> Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
 
     private final FakeClock clock = new FakeClock();

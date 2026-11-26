@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -166,9 +168,9 @@ class LootBoxTest {
     }
 
     @Test
-    void theShippedGrantedLineTellsTheCrawlerToFindASafeRoom() throws java.io.IOException {
+    void theShippedGrantedLineTellsTheCrawlerToFindASafeRoom() throws IOException {
         String text = new String(LootBoxTest.class.getResourceAsStream("/data/crawlmode/host/lines.txt")
-                .readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                .readAllBytes(), StandardCharsets.UTF_8);
         assertTrue(text.lines().anyMatch(l -> l.startsWith("lootbox.granted:") && l.contains("Safe Room")));
     }
 
