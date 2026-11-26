@@ -4,9 +4,9 @@
 
 **Blocked by:** 02, 09, 11
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Achievements are defined in data
-- [ ] Each has a Host line and a Loot Box reward
-- [ ] Unlocking is checked by the engine and covered by tests
-- [ ] Each unlocks only once per Crawler
+- [x] Achievements are defined in data
+- [x] Each has a Host line and a Loot Box reward
+- [x] Unlocking is checked by the engine and covered by tests
+- [x] Each unlocks only once per Crawler

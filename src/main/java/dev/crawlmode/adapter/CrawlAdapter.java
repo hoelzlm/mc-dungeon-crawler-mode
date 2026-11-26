@@ -79,6 +79,9 @@ public final class CrawlAdapter {
             }
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
+            if (engine != null) {
+                AchievementAdapter.eventFor(e).ifPresent(ev -> apply(engine.handle(ev)));
+            }
             if (elimination != null) {
                 elimination.onDeath(e);
             }
@@ -144,7 +147,8 @@ public final class CrawlAdapter {
         Clock clock = () -> server.getTickCount();
         CrawlConfig config = configFromSystemProperties();
         engine = new CrawlEngine(clock, config, loadHostLines(),
-                LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server));
+                LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server))
+                .withAchievements(AchievementAdapter.load());
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
     }

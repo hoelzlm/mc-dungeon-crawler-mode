@@ -94,8 +94,38 @@ public final class CrawlEngine {
             case Event.LeaveChosen chosen -> canChoose(chosen.crawler())
                     ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
             case Event.LootBoxGranted granted -> openLootBox(granted);
-            case Event.StairwellUsed used -> useStairwell(used.crawler());
+            case Event.StairwellUsed used -> {
+                boolean onTimerFloor = Integer.valueOf(timerFloor).equals(floorOf.get(used.crawler()));
+                List<Effect> effects = new ArrayList<>(useStairwell(used.crawler()));
+                if (onTimerFloor) {
+                    effects.addAll(unlock(used.crawler(), "reach.stairwell"));
+                }
+                yield effects;
+            }
+            case Event.MobKilled killed -> unlock(killed.crawler(), "kill." + killed.rank().key());
+            case Event.Triggered triggered -> unlock(triggered.crawler(), triggered.trigger());
         };
+    }
+
+    private Achievements achievements;
+
+    /** Enables Achievements (data-driven; see {@link Achievements}). */
+    public CrawlEngine withAchievements(Achievements achievements) {
+        this.achievements = achievements;
+        return this;
+    }
+
+    /** Unlocks what {@code trigger} earns this Crawler: the Host's line, then a Loot Box. */
+    private List<Effect> unlock(UUID crawler, String trigger) {
+        if (achievements == null || !crawlers.contains(crawler)) {
+            return List.of();
+        }
+        List<Effect> effects = new ArrayList<>();
+        for (Achievement a : achievements.unlock(crawler, trigger)) {
+            effects.add(new Effect.HostSays(crawler, a.line()));
+            effects.addAll(openLootBox(new Event.LootBoxGranted(crawler, a.reward(), LootSource.ACHIEVEMENT)));
+        }
+        return effects;
     }
 
     public boolean isEliminated(UUID crawler) {
@@ -175,6 +205,7 @@ public final class CrawlEngine {
             windowAnnounced = true;
             for (UUID crawler : onTimerFloor) {
                 effects.addAll(said("descent-window", crawler));
+                effects.addAll(unlock(crawler, "reach.descent-window"));
             }
         }
         if (floorTimer.displayChanged()) {

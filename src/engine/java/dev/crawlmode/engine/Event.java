@@ -21,4 +21,10 @@ public sealed interface Event {
 
     /** A Crawler tried to use a Stairwell. */
     record StairwellUsed(UUID crawler) implements Event {}
+
+    /** A Crawler killed a mob of this Rank. */
+    record MobKilled(UUID crawler, dev.crawlmode.engine.faction.Rank rank) implements Event {}
+
+    /** Something Achievements can key on happened to a Crawler, e.g. {@code kill.boss} or {@code death.fall}. */
+    record Triggered(UUID crawler, String trigger) implements Event {}
 }

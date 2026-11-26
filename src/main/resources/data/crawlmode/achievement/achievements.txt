@@ -1,0 +1,12 @@
+# Achievements. Format: id | trigger | tier | Host line   (tier: copper, silver, gold, radiant)
+# Add an entry here to add an Achievement; no code needed for existing triggers.
+# Triggers: kill.grunt, kill.elite, kill.shaman, kill.boss, reach.stairwell,
+#           reach.descent-window, death.fall. The adapter may report any other trigger string.
+
+first-grunt | kill.grunt | copper | Your first Grunt! It had a family. Probably. Here is a box!
+first-elite | kill.elite | silver | An Elite, felled! The audience is mildly impressed. Silver for you!
+first-shaman | kill.shaman | silver | You slew a Shaman! Rude, but very entertaining. Take your box!
+first-boss | kill.boss | gold | A BOSS! Down! The crowd goes wild, and the Boss goes home in pieces!
+first-stairwell | reach.stairwell | copper | You found a Stairwell! Look at you, reading signs. Here is a little something!
+first-descent-window | reach.descent-window | silver | The Descent Window is open, contestant! Hurry, hurry, hurry, and also: a box!
+fell-to-death | death.fall | copper | You died to a fall! Gravity sends its regards, and so do I. A consolation box!
