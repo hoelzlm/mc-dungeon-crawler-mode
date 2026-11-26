@@ -4,9 +4,9 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** in-review
 
-- [ ] Host lines load from data files and are validated
+- [x] Host lines load from data files and are validated
 - [ ] A line shows as a banner with a sound cue and in chat history
-- [ ] The line source is an interface with a data-file implementation
-- [ ] A tone of giddy sarcasm is set in the sample lines
+- [x] The line source is an interface with a data-file implementation
+- [x] A tone of giddy sarcasm is set in the sample lines

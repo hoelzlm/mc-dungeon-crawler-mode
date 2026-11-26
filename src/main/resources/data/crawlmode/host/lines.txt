@@ -1,0 +1,6 @@
+# The Host's lines. Format: topic: text. Several lines per topic are picked at random.
+# Tone: giddy sarcasm, a game-show host who is thrilled about your suffering.
+
+apocalypse: Congratulations, contestant! The world is closed, the dungeon is open, and you were not consulted!
+apocalypse: Surprise! Everything you knew is gone. Please keep your arms and legs inside the dungeon at all times!
+apocalypse: Welcome to the Crawl! Do try to die entertainingly. The audience adores a good flop!

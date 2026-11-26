@@ -13,13 +13,19 @@ import java.util.UUID;
 public final class CrawlEngine {
     private final Clock clock;
     private final CrawlConfig config;
+    private final HostLineSource host;
     private final long startedAt;
     private final Set<UUID> crawlers = new LinkedHashSet<>();
     private boolean apocalypseHappened;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
+        this(clock, config, HostLineSource.SILENT);
+    }
+
+    public CrawlEngine(Clock clock, CrawlConfig config, HostLineSource host) {
         this.clock = clock;
         this.config = config;
+        this.host = host;
         this.startedAt = clock.nowTicks();
     }
 
@@ -48,6 +54,7 @@ public final class CrawlEngine {
         List<Effect> effects = new ArrayList<>();
         for (UUID crawler : crawlers) {
             effects.add(new Effect.PullToFloor(crawler, 1));
+            host.lineFor("apocalypse").ifPresent(line -> effects.add(new Effect.HostSays(crawler, line)));
         }
         return effects;
     }
