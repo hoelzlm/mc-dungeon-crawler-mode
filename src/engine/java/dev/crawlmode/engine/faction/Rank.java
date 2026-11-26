@@ -1,6 +1,5 @@
 package dev.crawlmode.engine.faction;
 
-/** Ranks of a Faction that spawn in the open. The Boss is placed separately. */
 public enum Rank {
     GRUNT("grunt"),
     ELITE("elite"),

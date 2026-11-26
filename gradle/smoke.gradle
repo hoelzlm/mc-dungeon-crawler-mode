@@ -1,0 +1,126 @@
+import java.time.Duration
+import java.util.concurrent.LinkedBlockingQueue
+
+class ConsoleInput extends InputStream {
+    private final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>()
+
+    void send(String text) {
+        (text + '\n').getBytes('UTF-8').each { queue.put(it & 0xff) }
+    }
+
+    @Override
+    int read() {
+        return queue.take()
+    }
+
+    @Override
+    int read(byte[] buffer, int offset, int length) {
+        buffer[offset] = (byte) queue.take()
+        int count = 1
+        Integer next
+        while (count < length && (next = queue.poll()) != null) {
+            buffer[offset + count++] = (byte) next.intValue()
+        }
+        return count
+    }
+}
+
+class SmokeOutput extends OutputStream {
+    private final OutputStream log
+    private final ConsoleInput console
+    private final ByteArrayOutputStream line = new ByteArrayOutputStream()
+    private boolean doneSeen
+    private boolean readySeen
+    private boolean commandSent
+    private boolean stopSent
+
+    SmokeOutput(OutputStream log, ConsoleInput console) {
+        this.log = log
+        this.console = console
+    }
+
+    @Override
+    synchronized void write(int b) {
+        log.write(b)
+        System.out.write(b)
+        if (b == 10) {
+            react(line.toString('UTF-8'))
+            line.reset()
+        } else {
+            line.write(b)
+        }
+    }
+
+    @Override
+    synchronized void flush() {
+        log.flush()
+        System.out.flush()
+    }
+
+    private void react(String text) {
+        doneSeen = doneSeen || (text.contains('Done (') && text.contains('For help, type'))
+        readySeen = readySeen || text.contains('Crawl engine ready')
+        if (!commandSent && doneSeen && readySeen) {
+            commandSent = true
+            console.send('crawl apocalypse')
+        } else if (commandSent && !stopSent && text.contains('Apocalypse triggered')) {
+            stopSent = true
+            console.send('stop')
+        }
+    }
+}
+
+var smokeLog = layout.buildDirectory.file('smoke/server.log').get().asFile
+var eulaFile = file('run/eula.txt')
+
+var smokeEulaCheck = tasks.register('smokeEulaCheck') {
+    doLast {
+        var accepted = eulaFile.exists() && eulaFile.readLines().any { it.trim() == 'eula=true' }
+        if (!accepted) {
+            throw new GradleException(
+                    'smokeTest needs the Minecraft server EULA accepted. Read https://aka.ms/MinecraftEULA and, if you agree, ' +
+                    'put the line eula=true into ' + eulaFile + '. Accepting is the user\'s decision; agents must not do it.')
+        }
+    }
+}
+
+tasks.register('smokeTest') {
+    group = 'verification'
+    description = 'Boots the dedicated server, runs "crawl apocalypse", asserts the log, stops. Log: build/smoke/server.log'
+    dependsOn smokeEulaCheck, 'runServer'
+    doLast {
+        var text = smokeLog.text
+        var failures = []
+        if (!text.contains('Crawl engine ready')) {
+            failures << 'mod did not start: no "Crawl engine ready" line'
+        }
+        if (!text.contains('Apocalypse triggered')) {
+            failures << 'no "Apocalypse triggered" line after "crawl apocalypse"'
+        }
+        text.readLines().eachWithIndex { l, i ->
+            if (l.contains('/ERROR]') || l.contains('Exception')) {
+                failures << "server.log:${i + 1}: ${l}"
+            }
+        }
+        if (failures) {
+            throw new GradleException('smokeTest failed, see ' + smokeLog + '\n' + failures.join('\n'))
+        }
+        println 'smokeTest passed, log at ' + smokeLog
+    }
+}
+
+tasks.named('runServer') {
+    mustRunAfter smokeEulaCheck
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(':smokeTest')) {
+        smokeLog.parentFile.mkdirs()
+        var console = new ConsoleInput()
+        tasks.named('runServer').configure {
+            timeout = Duration.ofMinutes(providers.gradleProperty('smokeTimeoutMinutes').map { it as long }.getOrElse(6L))
+            standardInput = console
+            standardOutput = new SmokeOutput(new FileOutputStream(smokeLog), console)
+        }
+    }
+}

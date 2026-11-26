@@ -1,6 +1,5 @@
 package dev.crawlmode.engine.floorgen;
 
-/** Side of a cell. North is negative z, east is positive x. */
 public enum Side {
     NORTH(0, -1),
     EAST(1, 0),

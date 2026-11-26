@@ -8,10 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * Which areas a Crawler can walk to. A gate into an area is open once the Boss of the Faction holding the area
- * behind it (its parent area) is dead. Areas join to an earlier area, so one pass in order is enough.
- */
 final class Reachability {
     private Reachability() {}
 
@@ -29,7 +25,6 @@ final class Reachability {
         for (int a = 1; a < layout.areaCount(); a++) {
             Gate g = gateInto.get(a);
             if (g == null) {
-                // Joined straight to the start area.
                 reachable.add(a);
             } else if (reachable.contains(g.parentArea()) && isOpen(g, areas, deadBosses)) {
                 reachable.add(a);

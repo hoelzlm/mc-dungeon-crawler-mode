@@ -8,10 +8,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Pure detection for the silly Achievements: maps game ids (damage types, entity types, items) and
- * running counts to trigger strings for {@link Event.Triggered}. No Minecraft types, so it is testable.
- */
 public final class SillyTriggers {
     private static final Map<String, String> DEATHS = Map.ofEntries(
             Map.entry("minecraft:lava", "death.lava"),
@@ -42,7 +38,6 @@ public final class SillyTriggers {
             "minecraft:cake", "eat.cake",
             "minecraft:pufferfish", "eat.pufferfish");
 
-    /** Counter kind to milestone counts; reaching one fires {@code kind.<count>}. */
     private static final Map<String, List<Integer>> MILESTONES = Map.of(
             "jump", List.of(100, 1000),
             "kill.grunt", List.of(10),
@@ -62,7 +57,6 @@ public final class SillyTriggers {
         return Optional.ofNullable(EATS.get(itemId));
     }
 
-    /** Every trigger these detectors can report; each should have an Achievement in data. */
     public static Set<String> allTriggers() {
         Set<String> all = new LinkedHashSet<>();
         all.addAll(DEATHS.values());
@@ -72,11 +66,9 @@ public final class SillyTriggers {
         return all;
     }
 
-    /** Running per-Crawler counts that report a trigger when a milestone is reached. */
     public static final class Tally {
         private final Map<UUID, Map<String, Integer>> counts = new HashMap<>();
 
-        /** Adds one to {@code kind} for this Crawler; returns the triggers newly reached. */
         public List<String> count(UUID crawler, String kind) {
             int n = counts.computeIfAbsent(crawler, c -> new HashMap<>()).merge(kind, 1, Integer::sum);
             return MILESTONES.getOrDefault(kind, List.of()).contains(n) ? List.of(kind + "." + n) : List.of();

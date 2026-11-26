@@ -69,7 +69,7 @@ class LootBoxTest {
 
     @Test
     void entriesAreChosenByWeightAndRolledOncePerRoll() {
-        var engine = engine(tables(VALID), 3); // total weight 4; index 3 lands on the bread
+        var engine = engine(tables(VALID), 3);
 
         var grant = (Effect.GrantLoot) engine.handle(
                 new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.ACHIEVEMENT)).getLast();

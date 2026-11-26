@@ -15,15 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Data-driven Boss definitions, one per Faction. Lines (blank and {@code #} lines ignored; values may be
- * double-quoted):
- * <pre>
- * boss marble_goblins entity=minecraft:ravager name="Goblin Warlord" health=120 damage=9 tier=gold reveals=true head=minecraft:iron_helmet
- * </pre>
- * Validated on load: the Faction exists and has exactly one Boss, the reward tier is gold or radiant, and on every
- * Floor at least one Boss reveals a Stairwell while fewer than half do.
- */
 public final class Bosses {
     private final Map<String, BossDef> byFaction;
 
@@ -146,7 +137,6 @@ public final class Bosses {
                 return n;
             }
         } catch (NumberFormatException ignored) {
-            // fall through
         }
         throw new BossFormatException(key + " must be a whole number of at least 1");
     }

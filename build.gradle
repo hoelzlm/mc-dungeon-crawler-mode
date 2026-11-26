@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'checkstyle'
     id 'net.neoforged.moddev' version '2.0.148'
 }
 
@@ -18,8 +19,6 @@ repositories {
     mavenCentral()
 }
 
-// The Crawl engine lives in its own source set with no Minecraft on its classpath,
-// so the compiler enforces ADR 0002 (Minecraft-free engine).
 sourceSets {
     engine
 }
@@ -56,7 +55,37 @@ dependencies {
     testImplementation sourceSets.engine.output
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.5.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+checkstyle {
+    toolVersion = '14.4.0'
+    configFile = file('config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+}
+
+tasks.register('checkGradleComments') {
+    var gradleFiles = fileTree(dir: projectDir, include: '**/*.gradle', exclude: ['build/**', '.gradle/**', 'run/**', '.claude/**'])
+    inputs.files gradleFiles
+    doLast {
+        var offences = []
+        gradleFiles.each { f ->
+            f.readLines().eachWithIndex { line, i ->
+                var t = line.trim()
+                if (t.startsWith('//') || t.startsWith('/*') || t.startsWith('*')) {
+                    offences << "${projectDir.relativePath(f)}:${i + 1}: comment (see docs/adr/0003-no-code-comments.md)"
+                }
+            }
+        }
+        if (offences) {
+            throw new GradleException(offences.join('\n'))
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'checkGradleComments'
 }
 
 jar {
@@ -65,7 +94,13 @@ jar {
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
+    systemProperty 'crawl.engine.classes', sourceSets.engine.output.classesDirs.asPath
+    systemProperty 'crawl.main.classes', sourceSets.main.output.classesDirs.asPath
+    systemProperty 'crawl.source.dirs', ['src/engine/java', 'src/main/java', 'src/test/java'].collect { file(it).path }.join(File.pathSeparator)
+    dependsOn 'classes', 'engineClasses'
 }
+
+apply from: 'gradle/smoke.gradle'
 
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [

@@ -1,0 +1,6 @@
+#!/bin/sh
+if ! command -v java >/dev/null 2>&1 && [ -z "$JAVA_HOME" ] && [ -x "$HOME/.sdkman/candidates/java/current/bin/java" ]; then
+    JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+    export JAVA_HOME
+fi
+exec ./gradlew check -q

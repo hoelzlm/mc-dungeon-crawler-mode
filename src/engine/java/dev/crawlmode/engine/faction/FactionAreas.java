@@ -3,10 +3,6 @@ package dev.crawlmode.engine.faction;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Which Faction holds which area of a Floor. Area 0 is the start area and stays safe; every other area belongs to
- * exactly one Faction, handed out in turn so each Faction holds at least one.
- */
 public final class FactionAreas {
     private final List<Faction> factions;
     private final int areaCount;

@@ -49,7 +49,6 @@ class GenerationPlannerTest {
 
         assertEquals(9, next.size());
         assertTrue(next.stream().allMatch(p -> Math.abs(p.x()) <= 1 && Math.abs(p.z()) <= 1));
-        // far from the start area there is nothing within radius 1 of the player except the void
         assertEquals(List.of(), plan(List.of(new PlayerBlock(16 * 200, 16 * 200)), 1, Set.of(), 100));
     }
 
@@ -73,7 +72,6 @@ class GenerationPlannerTest {
 
     @Test
     void nearestPlayerWinsWhenSeveralAreOnTheFloor() {
-        // second player stands in the north-east corner room of the start area; cell (1, -1)
         List<CellPos> next = plan(List.of(new PlayerBlock(8, 8), new PlayerBlock(24, -8)), 1, Set.of(), 2);
 
         assertEquals(Set.of(new CellPos(0, 0), new CellPos(1, -1)), Set.copyOf(next));

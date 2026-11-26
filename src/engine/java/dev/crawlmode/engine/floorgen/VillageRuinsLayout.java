@@ -10,15 +10,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/**
- * The plan of a village-and-ruins Floor (Floor 3): a start village of nine open cells, and three ruin areas that
- * are each a ring of eight ruined rooms around a small hamlet. Ruin areas are joined to an earlier area by a path
- * of four cells, so the structure of the Floor is the same lattice as the room-and-corridor Floors and everything
- * built on {@link FloorLayout} (Faction areas, Boss gates, Stairwell reveals) works unchanged. Villages are
- * {@link FloorTemplate.Role#VILLAGE} cells and never get mobs; the ruins hold the Factions.
- *
- * Three Stairwells: one in the start village (never where Crawlers arrive) and two in the ruins. Minecraft-free.
- */
 public final class VillageRuinsLayout {
     public static final int RUIN_AREAS = 3;
     public static final int STAIRWELLS = 3;
@@ -32,7 +23,7 @@ public final class VillageRuinsLayout {
         int areas = 1 + RUIN_AREAS;
 
         List<CellPos> centres = new ArrayList<>(List.of(new CellPos(0, 0)));
-        List<int[]> links = new ArrayList<>(); // {parent index, side ordinal}
+        List<int[]> links = new ArrayList<>();
         while (centres.size() < areas) {
             int parent = rnd.nextInt(centres.size());
             Side side = Side.values()[rnd.nextInt(4)];
@@ -104,7 +95,6 @@ public final class VillageRuinsLayout {
         return FloorLayout.assemble(areas, cells, wells, gates);
     }
 
-    /** One Stairwell in the start village (not the arrival cell) and the rest in ruin rings, never in a hamlet. */
     private static Set<CellPos> pickStairwellCells(Map<CellPos, Integer> areaOf, List<CellPos> centres, Random rnd) {
         List<CellPos> start = new ArrayList<>();
         List<CellPos> ruins = new ArrayList<>();
@@ -138,7 +128,6 @@ public final class VillageRuinsLayout {
         open.computeIfAbsent(to, k -> EnumSet.noneOf(Side.class)).add(side.opposite());
     }
 
-    /** A village has no inner walls: every neighbouring pair of its nine cells is open. */
     private static void openVillage(CellPos centre, Map<CellPos, Set<Side>> open) {
         for (int dz = -1; dz <= 1; dz++) {
             for (int dx = -1; dx <= 1; dx++) {
@@ -153,10 +142,6 @@ public final class VillageRuinsLayout {
         }
     }
 
-    /**
-     * A ruin: the hamlet in the middle opens to its four nearest ruin cells, each corner cell opens to one of its two
-     * neighbours on the ring, and a few more gaps are knocked through the ruined walls.
-     */
     private static void openRuin(CellPos centre, Map<CellPos, Set<Side>> open, Random rnd) {
         for (Side s : Side.values()) {
             join(open, centre, s);
@@ -167,7 +152,6 @@ public final class VillageRuinsLayout {
                 join(open, corner, rnd.nextBoolean() ? (dx < 0 ? Side.EAST : Side.WEST) : (dz < 0 ? Side.SOUTH : Side.NORTH));
             }
         }
-        // Ring edges not yet open: knock through a few at random.
         List<CellPos> ring = new ArrayList<>();
         for (int dz = -1; dz <= 1; dz++) {
             for (int dx = -1; dx <= 1; dx++) {

@@ -14,10 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * The live Boss state of one Floor: which Bosses are dead, which gates stand open and which Stairwells have been
- * revealed. Minecraft-free; the adapter reports kills and applies the result in the world.
- */
 public final class BossEncounter {
     private final FloorLayout layout;
     private final FactionAreas areas;
@@ -31,7 +27,6 @@ public final class BossEncounter {
         this.plan = plan;
     }
 
-    /** The Boss of this Faction died. Empty if it has no Boss here or was already killed. */
     public Optional<BossKill> onBossKilled(String factionId, UUID killer) {
         Optional<BossPlacement> placement = plan.of(factionId);
         if (placement.isEmpty() || !dead.add(factionId)) {
@@ -60,7 +55,6 @@ public final class BossEncounter {
         return dead.contains(factionId);
     }
 
-    /** Areas a Crawler can walk to right now. */
     public Set<Integer> reachableAreas() {
         return Reachability.areas(layout, areas, dead);
     }

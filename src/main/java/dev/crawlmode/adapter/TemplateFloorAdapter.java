@@ -36,22 +36,13 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
-/**
- * Builds each template Floor (every Floor in {@link FloorSpec#ALL}) from the pure {@link FloorLayout} a few cells at a time near Crawlers, keeps the structure
- * unbreakable and turns right-clicks on a Stairwell marker into engine events. Layout and placement rules live in
- * the engine source set; this class only writes blocks and forwards events.
- */
 final class TemplateFloorAdapter {
-    /** How far from a Crawler cells are built, in cells (3 = 48 blocks). */
     static final int RADIUS_CELLS = 3;
-    /** Cells built per server tick; each is about two thousand block writes. */
     static final int CELLS_PER_TICK = 2;
-    /** Cells built around the spawn before a Crawler is teleported in. */
     private static final int SPAWN_RADIUS_CELLS = 1;
 
     private static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
-    /** One built Floor's plan: its generation settings, layout, Faction territories and seed. */
     private record FloorState(FloorSpec spec, FloorLayout layout, FactionAreas areas, long seed) {}
 
     private static final Map<Integer, FloorState> FLOORS = new HashMap<>();
@@ -59,12 +50,10 @@ final class TemplateFloorAdapter {
 
     private TemplateFloorAdapter() {}
 
-    /** The generated Floor {@code level} belongs to, if it is one of the Crawl's template Floors. */
     private static Optional<FloorState> stateOf(Level level) {
         return Floors.lookup(level, FLOORS);
     }
 
-    /** True if this adapter generates the given Floor. */
     static boolean generates(int floor) {
         return FLOORS.containsKey(floor);
     }
@@ -101,7 +90,6 @@ final class TemplateFloorAdapter {
                     throw new IllegalStateException("Missing " + spec.templatesResource());
                 }
                 TemplateLibrary library = TemplateLibrary.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-                // The same world seed always gives the same Floors, so they survive restarts.
                 long seed = spec.seedFor(server.overworld().getSeed());
                 FloorLayout layout = FloorLayout.generate(seed, library, spec);
                 FactionAreas areas = FactionAreas.assign(FactionMobs.factions().forFloor(spec.floor()), layout.areaCount());
@@ -120,12 +108,10 @@ final class TemplateFloorAdapter {
         STATES.clear();
     }
 
-    /** The plan of the Floor {@code level} is, if it is one of the generated Floors. */
     static Optional<FloorLayout> layoutFor(Level level) {
         return stateOf(level).map(FloorState::layout);
     }
 
-    /** Build the start area's surroundings and return where to put an arriving Crawler. */
     static BlockPos prepareSpawn(ServerLevel level) {
         FloorState floor = stateOf(level).orElseThrow();
         SpawnPoint spawn = floor.layout().spawn();
@@ -136,7 +122,6 @@ final class TemplateFloorAdapter {
         return new BlockPos(spawn.x(), spawn.y(), spawn.z());
     }
 
-    /** Called every server tick: build a few cells near Crawlers on each generated Floor. */
     static void tick(MinecraftServer server) {
         for (FloorState floor : FLOORS.values()) {
             ServerLevel level = server.getLevel(Floors.key(floor.spec().floor()));
@@ -152,7 +137,6 @@ final class TemplateFloorAdapter {
         }
     }
 
-    /** Every template's lowest corner is a solid floor block, so air there means the cell was never built. */
     private static boolean built(ServerLevel level, CellPos pos) {
         return !level.getBlockState(new BlockPos(pos.x() * 16, FloorLayout.FLOOR_Y, pos.z() * 16)).isAir();
     }

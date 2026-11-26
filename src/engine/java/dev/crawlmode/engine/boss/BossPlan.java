@@ -14,11 +14,6 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
-/**
- * Where each Faction's Boss stands on a Floor, chosen at random from the seed. Every Boss stands in an ordinary
- * room of its own Faction's territory, and the plan is always solvable: killing Bosses in some order eventually
- * opens every gate, so no Boss is walled off behind a gate only it can open.
- */
 public final class BossPlan {
     private static final int ATTEMPTS = 100;
 
@@ -60,7 +55,6 @@ public final class BossPlan {
             solved = solvable(layout, areas, factions, chosenArea);
         }
         if (!solved) {
-            // The shallowest area of each Faction is always solvable: its gates depend only on shallower Factions.
             for (int i = 0; i < factions.size(); i++) {
                 chosenArea[i] = areasPerFaction.get(i).get(0);
             }
@@ -111,7 +105,6 @@ public final class BossPlan {
         return placements;
     }
 
-    /** The Bosses standing in the given cell (a cell is 16 by 16 blocks). */
     public List<BossPlacement> placementsIn(CellPos cell) {
         return placements.stream()
                 .filter(p -> Math.floorDiv(p.x(), 16) == cell.x() && Math.floorDiv(p.z(), 16) == cell.z())

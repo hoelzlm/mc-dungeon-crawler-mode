@@ -5,7 +5,6 @@ import dev.crawlmode.engine.floorgen.Gate;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Which blocks a closed gate fills: the air of one flat plane across the corridor cell, never structure blocks. */
 public final class GateGeometry {
     public record Pos(int x, int y, int z) {}
 

@@ -11,11 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntUnaryOperator;
 
-/**
- * Host lines read from a data file. One line per entry, {@code topic: text}; blank lines and lines
- * starting with {@code #} are ignored. Several entries may share a topic, then one is picked at
- * random. Malformed entries fail loading, reporting the line number.
- */
 public final class DataFileHostLineSource implements HostLineSource {
     private final Map<String, List<HostLine>> byTopic;
     private final IntUnaryOperator pick;
@@ -25,7 +20,6 @@ public final class DataFileHostLineSource implements HostLineSource {
         this.pick = pick;
     }
 
-    /** @param pick returns a number in {@code [0, bound)}; injected so choices can be faked. */
     public static DataFileHostLineSource load(Reader reader, IntUnaryOperator pick) {
         Map<String, List<HostLine>> byTopic = new HashMap<>();
         try (BufferedReader in = new BufferedReader(reader)) {

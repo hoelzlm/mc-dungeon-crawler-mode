@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/** Decides which mobs a freshly built cell gets, deterministically from the seed and the cell position. */
 public final class SpawnPlanner {
-    /** Mobs per room cell. */
     public static final int MOBS_PER_ROOM = 4;
 
     private SpawnPlanner() {}

@@ -30,15 +30,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/**
- * The four Stairwell Aid items and their effects. All direction, distance, area and reveal maths lives in
- * {@link StairwellAids}; this class registers the items, feeds the maths the Floor's Stairwells, and shows the
- * answer as chat text, sound and particles. Every aid is spent on use and only works on a generated Floor.
- */
 final class AidAdapter {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(CrawlMode.MOD_ID);
     private static final Map<String, DeferredItem<Item>> BY_ID = new HashMap<>();
-    /** Short-lived particle marks (Lantern blocks, Map outline), shown every few ticks until they expire. */
     private static final List<Marks> ACTIVE = new ArrayList<>();
     private static final int PULSE_TICKS = 10;
 
@@ -54,7 +48,6 @@ final class AidAdapter {
         NeoForge.EVENT_BUS.addListener(AidAdapter::onTick);
     }
 
-    /** A stack of the aid with this bare id, or empty if the id is not an aid. */
     static ItemStack stack(String id, int count) {
         DeferredItem<Item> item = BY_ID.get(id);
         return item == null ? ItemStack.EMPTY : new ItemStack(item.get(), count);

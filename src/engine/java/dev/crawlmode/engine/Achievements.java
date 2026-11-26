@@ -14,12 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * The Achievement set, read from data, plus who has unlocked what. One entry per line:
- * {@code id | trigger | tier | host line}; blank lines and {@code #} comments are ignored. Adding
- * an Achievement is a data change only. Triggers are free-form strings such as {@code kill.grunt};
- * the engine or adapter reports them (see {@link Event.Triggered}, {@link Event.MobKilled}).
- */
 public final class Achievements {
     private final Map<String, Achievement> byId;
     private final Map<UUID, Set<String>> unlocked = new HashMap<>();
@@ -69,7 +63,6 @@ public final class Achievements {
         return List.copyOf(byId.values());
     }
 
-    /** Marks and returns the Achievements this Crawler newly unlocks by {@code trigger}. */
     List<Achievement> unlock(UUID crawler, String trigger) {
         List<Achievement> fresh = new ArrayList<>();
         Set<String> have = unlocked.computeIfAbsent(crawler, c -> new HashSet<>());

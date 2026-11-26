@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -40,11 +42,8 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-/**
- * Thin bridge between the game and the Minecraft-free {@link CrawlEngine}: translates game
- * callbacks into engine events and applies the effects the engine returns. No rules live here.
- */
 public final class CrawlAdapter {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final String HOST_LINES_RESOURCE = "/data/crawlmode/host/lines.txt";
 
     private static CrawlEngine engine;
@@ -96,6 +95,7 @@ public final class CrawlAdapter {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("apocalypse").executes(ctx -> {
                     if (engine != null) {
+                        LOGGER.info("Apocalypse triggered by command");
                         apply(engine.handle(new Event.ApocalypseCommanded()));
                     }
                     return 1;
@@ -108,7 +108,6 @@ public final class CrawlAdapter {
         }));
     }
 
-    /** Once the Apocalypse has happened, nobody may travel to a dimension outside the Crawl. */
     private static void onTravel(EntityTravelToDimensionEvent event) {
         if (engine != null && engine.apocalypseHappened()
                 && !event.getDimension().identifier().getNamespace().equals(CrawlMode.MOD_ID)) {
@@ -127,7 +126,6 @@ public final class CrawlAdapter {
             return;
         }
         BlockPos spawn = TemplateFloorAdapter.prepareSpawn(level);
-        // Inventory travels with the player; only the position and dimension change.
         player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
     }
 
@@ -141,16 +139,15 @@ public final class CrawlAdapter {
                 .withAchievements(AchievementAdapter.load());
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
+        LOGGER.info("Crawl engine ready");
     }
 
-    /** Delay in in-game days via -Dcrawlmode.apocalypseDelayDays=N; defaults to day 3. */
     private static CrawlConfig configFromSystemProperties() {
         String days = System.getProperty("crawlmode.apocalypseDelayDays");
         CrawlConfig base = CrawlConfig.DEFAULT;
         if (days != null) {
             base = new CrawlConfig((long) (Double.parseDouble(days) * CrawlConfig.TICKS_PER_DAY), base.warningLeadTicks(), base.floorTimerTicks());
         }
-        // Floor timer length in minutes via -Dcrawlmode.floorTimerMinutes=N; defaults to 90.
         String minutes = System.getProperty("crawlmode.floorTimerMinutes");
         if (minutes != null) {
             base = new CrawlConfig(base.apocalypseDelayTicks(), base.warningLeadTicks(), (long) (Double.parseDouble(minutes) * 60 * 20));
@@ -202,7 +199,6 @@ public final class CrawlAdapter {
 
     private static void speak(ServerPlayer player, HostLine line) {
         Component text = Component.literal(line.text());
-        // Banner on screen, a sound cue, and the same line in chat history.
         player.connection.send(new ClientboundSetTitlesAnimationPacket(10, 100, 20));
         player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("The Host")));
         player.connection.send(new ClientboundSetSubtitleTextPacket(text));
@@ -239,7 +235,7 @@ public final class CrawlAdapter {
                         pullToFloor(player, pull.floor());
                     }
                 }
-                default -> {} // elimination effects are handled by EliminationBridge above
+                default -> {}
             }
         }
     }

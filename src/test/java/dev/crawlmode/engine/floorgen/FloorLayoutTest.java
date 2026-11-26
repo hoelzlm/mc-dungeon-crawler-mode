@@ -110,7 +110,6 @@ class FloorLayoutTest {
         }
     }
 
-    /** Can someone standing in the middle of the Stairwell's room walk next to the marker? */
     private static boolean reaches(FloorLayout layout, Stairwell w, boolean secretIsAir) {
         int x0 = w.cell().x() * 16;
         int z0 = w.cell().z() * 16;

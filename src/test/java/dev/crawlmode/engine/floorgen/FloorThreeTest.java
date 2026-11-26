@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** Floor 3 as shipped: the bundled templates, Factions and Bosses, played through the pure engine. */
 class FloorThreeTest {
     private static final Factions FACTIONS = factions();
     private static final Bosses BOSSES = bosses();
@@ -97,7 +96,6 @@ class FloorThreeTest {
                 assertTrue(cell.area() > 0);
             }
             BossEncounter encounter = new BossEncounter(layout, areas, plan);
-            // Kill in reachability order until done: every Boss must become reachable.
             Set<String> killed = new HashSet<>();
             boolean progress = true;
             while (progress) {
@@ -116,7 +114,6 @@ class FloorThreeTest {
         }
     }
 
-    /** Shops are scenery: no block a Crawler could open, trade at or loot from, and no spawner or command block. */
     @Test
     void villageShopsAreDecorativeOnly() {
         Set<String> interactive = Set.of("minecraft:chest", "minecraft:trapped_chest", "minecraft:barrel",
@@ -140,7 +137,6 @@ class FloorThreeTest {
 
     @Test
     void everyVillageTemplateHasShopStructures() {
-        // Every village template has above-floor structure, the shops.
         for (FloorTemplate t : LIBRARY.villages()) {
             boolean built = false;
             for (int z = 0; z < 16 && !built; z++) {
@@ -152,7 +148,6 @@ class FloorThreeTest {
         }
     }
 
-    /** The Boss and mobs may be placed anywhere in x and z 2..13 and are nudged up two blocks; never wall them in. */
     @Test
     void ruinRoomsLeaveSpawnSpotsClearWithinTwoBlocks() {
         for (FloorTemplate t : LIBRARY.rooms()) {

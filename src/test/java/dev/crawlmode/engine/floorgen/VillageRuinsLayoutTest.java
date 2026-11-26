@@ -11,7 +11,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class VillageRuinsLayoutTest {
-    /** A flat 16 by 16 template with one air layer; stairwell rooms get a marker. */
     static String template(String name, String role) {
         StringBuilder sb = new StringBuilder("name " + name + "\nrole " + role + "\nheight 4\n");
         sb.append("palette # minecraft:stone\npalette F minecraft:grass_block\npalette X minecraft:end_portal_frame\n");
@@ -74,7 +73,6 @@ class VillageRuinsLayoutTest {
         }
     }
 
-    /** The heart of an area is the cell whose eight neighbours are all in the same area. */
     private static boolean isHeart(FloorLayout layout, Cell c) {
         for (int dz = -1; dz <= 1; dz++) {
             for (int dx = -1; dx <= 1; dx++) {

@@ -16,7 +16,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -26,16 +25,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Turns {@link PlannedSpawn}s from the engine into vanilla mobs with custom names, stats and gear, and runs Shaman
- * abilities. What spawns where, and every number, is decided by the engine and the faction data file. A mob carries
- * its Faction and abilities as entity tags, so nothing has to be remembered across restarts.
- */
 final class FactionMobs {
     private static final String TAG_MOB = "crawlmode_mob";
     private static final String TAG_FACTION = "crawlmode_faction:";
     private static final String TAG_ABILITY = "crawlmode_ability:";
-    /** Shamans act this often (ticks); each is staggered by its entity id. */
     private static final int HEAL_EVERY = 80;
     private static final int RALLY_EVERY = 240;
     private static final int FIREBALL_EVERY = 70;
@@ -63,7 +56,6 @@ final class FactionMobs {
         }
     }
 
-    /** Spawns one mob; returns it, or null if there was no room or the entity id is unknown. */
     static Mob spawn(ServerLevel level, PlannedSpawn spawn) {
         MobDef def = spawn.mob();
         var type = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(def.entity()));
@@ -71,7 +63,6 @@ final class FactionMobs {
             return null;
         }
         BlockPos pos = new BlockPos(spawn.x(), spawn.y(), spawn.z());
-        // Pillars and furniture may stand where the planner picked: nudge up to two blocks, else skip.
         for (int i = 0; i < 3 && !(level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir()); i++) {
             pos = pos.above();
         }
@@ -122,7 +113,6 @@ final class FactionMobs {
         mob.setDropChance(target, 0.05f);
     }
 
-    /** Runs Shaman abilities for Shamans near a Crawler. Call every server tick; cheap when nobody is near. */
     static void tick(ServerLevel level) {
         long time = level.getGameTime();
         for (var player : level.players()) {

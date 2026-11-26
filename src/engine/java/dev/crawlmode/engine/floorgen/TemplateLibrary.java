@@ -3,7 +3,6 @@ package dev.crawlmode.engine.floorgen;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The hand-made templates of a Floor, parsed from one text file whose templates are separated by lines of "---". */
 public final class TemplateLibrary {
     private final List<FloorTemplate> rooms = new ArrayList<>();
     private final List<FloorTemplate> corridors = new ArrayList<>();

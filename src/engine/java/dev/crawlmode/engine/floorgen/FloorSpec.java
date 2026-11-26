@@ -8,13 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Per-Floor generation settings: which template file builds the Floor, how many areas it has and how many
- * Stairwells it hides (inclusive range). Every Floor runs the same configured Floor Timer.
- * To add a Floor, add its entry to {@link #ALL}.
- */
 public record FloorSpec(int floor, String templatesResource, int areas, int minStairwells, int maxStairwells) {
-    /** Offset between consecutive Floors' seeds (the 64-bit golden-ratio constant), so Floors do not repeat a layout. */
     public static final long SEED_STRIDE = 0x9E3779B97F4A7C15L;
 
     public static final List<FloorSpec> ALL = List.of(
@@ -26,16 +20,10 @@ public record FloorSpec(int floor, String templatesResource, int areas, int minS
         return ALL.stream().filter(s -> s.floor == floor).findFirst();
     }
 
-    /** This Floor's generation seed: Floor 1 uses the world seed itself, later Floors are offset by {@link #SEED_STRIDE}. */
     public long seedFor(long worldSeed) {
         return worldSeed + (floor - 1) * SEED_STRIDE;
     }
 
-    /**
-     * The text of a Faction data file for every Floor: {@code /data/crawlmode/faction/<kind>.txt} followed by each
-     * later Floor's optional {@code floor<N>_<kind>.txt}, where {@code kind} is "factions" or "bosses". Missing
-     * files are skipped, so a Floor may add its lines to the base file or to its own file.
-     */
     public static String readFactionData(String kind) {
         List<String> paths = new ArrayList<>();
         paths.add("/data/crawlmode/faction/" + kind + ".txt");

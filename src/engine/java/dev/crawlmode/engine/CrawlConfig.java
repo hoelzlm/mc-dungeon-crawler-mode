@@ -1,9 +1,5 @@
 package dev.crawlmode.engine;
 
-/**
- * Engine settings, in ticks. {@code apocalypseDelayTicks} is measured from engine creation;
- * {@code warningLeadTicks} is how long before the Apocalypse the Host gives its last warning.
- */
 public record CrawlConfig(long apocalypseDelayTicks, long warningLeadTicks, long floorTimerTicks) {
     public static final long DEFAULT_FLOOR_TIMER_TICKS = 90 * 60 * 20L;
     public static final long TICKS_PER_DAY = 24_000L;

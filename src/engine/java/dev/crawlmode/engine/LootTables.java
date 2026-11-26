@@ -12,17 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.IntUnaryOperator;
 
-/**
- * Data-driven loot tables, one per {@link LootTier}. Lines (blank and {@code #} lines ignored):
- * <pre>
- * copper rolls 2
- * copper gear minecraft:iron_sword weight=3 enchant=crawlmode:blazing:1
- * copper food minecraft:bread weight=5 count=4
- * copper aid echo_chime weight=2
- * </pre>
- * Validated on load: every tier needs rolls (at least 1) and entries, weights are positive, aids
- * are real Stairwell Aids, and rolls never decrease from one tier to the next (tier scaling).
- */
 public final class LootTables {
     public static final Set<String> STAIRWELL_AIDS =
             Set.of("seekers_draught", "echo_chime", "revealing_lantern", "fragment_map");
@@ -143,7 +132,6 @@ public final class LootTables {
                 return n;
             }
         } catch (NumberFormatException ignored) {
-            // fall through
         }
         throw new LootTableFormatException(what + " must be a whole number of at least 1");
     }
@@ -156,7 +144,6 @@ public final class LootTables {
         return tables.get(tier).entries.stream().map(Entry::item).toList();
     }
 
-    /** Rolls the tier's table; {@code pick} returns a number in {@code [0, bound)} per roll. */
     public List<LootItem> open(LootTier tier, IntUnaryOperator pick) {
         Table table = tables.get(tier);
         int total = table.entries.stream().mapToInt(Entry::weight).sum();

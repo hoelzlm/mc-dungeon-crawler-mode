@@ -5,22 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * A hand-made 16 by 16 block template for one cell of a Floor, parsed from text.
- *
- * <pre>
- * name hall_pillars
- * role room | corridor | village | stairwell_room
- * height 8
- * palette # minecraft:polished_diorite
- * layer 0          (or "layer 1-3": one grid shared by several layers)
- * 16 rows of 16 characters (row = z, column = x)
- * </pre>
- *
- * Characters: {@code .} air; {@code n e s w} a gate, air when the cell is connected on that side and wall ({@code #})
- * otherwise; {@code k} a secret wall block that looks like {@code #} but is not protected; {@code X} the Stairwell
- * marker; anything else must be in the palette. Layers not listed are air.
- */
 public final class FloorTemplate {
     public static final int SIZE = 16;
 
@@ -39,7 +23,7 @@ public final class FloorTemplate {
     private final Role role;
     private final int height;
     private final Map<Character, String> palette;
-    private final char[][][] grid; // [y][z][x], 0 = unspecified (air)
+    private final char[][][] grid;
     private final Marker marker;
 
     private FloorTemplate(String name, Role role, int height, Map<Character, String> palette, char[][][] grid, Marker marker) {
@@ -67,7 +51,6 @@ public final class FloorTemplate {
         return Optional.ofNullable(marker);
     }
 
-    /** The block at a local position, or empty for air or outside the template. {@code open} are the connected sides. */
     public Optional<TemplateBlock> blockAt(int x, int y, int z, Set<Side> open) {
         if (x < 0 || x >= SIZE || z < 0 || z >= SIZE || y < 0 || y >= height) {
             return Optional.empty();

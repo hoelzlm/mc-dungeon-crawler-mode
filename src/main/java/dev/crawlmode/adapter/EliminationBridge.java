@@ -21,10 +21,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
-/**
- * Elimination and game-over, kept apart from {@link CrawlAdapter} so the two stay easy to merge.
- * Translates deaths and the game-over choices into engine events and applies the matching effects.
- */
 final class EliminationBridge {
     private final Supplier<MinecraftServer> server;
     private final Function<Event, List<Effect>> engine;
@@ -36,7 +32,6 @@ final class EliminationBridge {
         this.apply = apply;
     }
 
-    /** Elimination mode via -Dcrawlmode.elimination=permanent|respawn; single-player is detected. */
     static EliminationConfig configFor(MinecraftServer server) {
         String mode = System.getProperty("crawlmode.elimination", "permanent");
         EliminationConfig.Mode parsed = mode.equalsIgnoreCase("respawn")
@@ -44,7 +39,6 @@ final class EliminationBridge {
         return new EliminationConfig(parsed, server.isSingleplayer());
     }
 
-    /** A Crawler's fatal blow becomes an engine event; if the engine acts, the vanilla death is replaced. */
     void onDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
@@ -72,7 +66,6 @@ final class EliminationBridge {
         return 1;
     }
 
-    /** @return true if the effect was one of ours. */
     boolean applyEffect(Effect effect) {
         switch (effect) {
             case Effect.Spectate e -> withPlayer(e.crawler(), p -> p.setGameMode(GameType.SPECTATOR));
@@ -102,7 +95,6 @@ final class EliminationBridge {
         player.sendSystemMessage(Component.literal("Choose: ").append(fresh).append(Component.literal("  ")).append(leave));
     }
 
-    /** Back to the untouched vanilla world: the Apocalypse sealed it but never changed it. */
     private void returnToVanilla(ServerPlayer player) {
         ServerLevel overworld = server.get().getLevel(Level.OVERWORLD);
         player.setGameMode(GameType.SURVIVAL);

@@ -1,0 +1,3 @@
+# No comments in code
+
+Java sources and `*.gradle` files carry no comments of any kind (`//`, `/* */`, `/** */`). Agents use comments to excuse shortcuts and to narrate what the code already says; both rot. A reason that must outlive a change goes into an ADR, everything else is carried by names and tests. Data files keep their own `#` line syntax, because that is part of their format (ADR 0004). Checkstyle (`TodoComment` matching every comment, so strings such as `"http://"` never trip it) enforces this for Java and the `checkGradleComments` task for Gradle files, both under `./gradlew check`. The cost is no inline javadoc for readers; the glossary, ADRs and test names stand in.

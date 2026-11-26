@@ -14,7 +14,6 @@ class WinningTest {
     private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
-    /** Every Floor runs the full timer, so Floor 3's timer starts one timer after Floor 2's. */
     private static final long FLOOR_3_START = 2 * TIMER;
 
     private final FakeClock clock = new FakeClock();
@@ -33,10 +32,9 @@ class WinningTest {
         return engine.tick();
     }
 
-    /** Everyone descends Floor 1 and Floor 2 in their Windows; the clock ends with Floor 3's Window open. */
     private void everyoneToFloor3(UUID... crawlers) {
         for (long floorStart : new long[] {0, TIMER}) {
-            tickTo(floorStart + 22 * MIN); // inside every Floor's Descent Window
+            tickTo(floorStart + 22 * MIN);
             for (UUID c : crawlers) {
                 engine.handle(new Event.StairwellUsed(c));
             }

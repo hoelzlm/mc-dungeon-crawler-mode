@@ -10,17 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Data-driven Faction definitions. Lines (blank and {@code #} lines ignored; values may be double-quoted):
- * <pre>
- * faction goblins floor=1 name="Marble Goblins"
- * mob goblins grunt entity=minecraft:zombie name="Hall Goblin" health=14 damage=3 weight=60 mainhand=minecraft:stone_sword
- * mob goblins shaman entity=minecraft:witch name="Hexer" health=24 damage=2 weight=10 ability=heal_allies
- * </pre>
- * Validated on load: every Faction has a Grunt, Elite and Shaman, spawn weights fall strictly from Grunt to
- * Elite to Shaman, stats are positive, a Shaman has at least one known ability, and every Floor has three or more
- * Factions.
- */
 public final class Factions {
     public static final int MIN_FACTIONS_PER_FLOOR = 3;
 
@@ -154,7 +143,6 @@ public final class Factions {
                 return n;
             }
         } catch (NumberFormatException ignored) {
-            // fall through
         }
         throw new FactionFormatException(what + " must be a whole number of at least 1");
     }
@@ -179,7 +167,6 @@ public final class Factions {
         return opts;
     }
 
-    /** Splits on spaces; a double-quoted part (as in {@code name="Hall Goblin"}) may contain spaces. */
     private static List<String> tokenize(String line) {
         List<String> tokens = new ArrayList<>();
         StringBuilder cur = new StringBuilder();

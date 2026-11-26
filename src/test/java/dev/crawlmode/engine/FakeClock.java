@@ -1,6 +1,5 @@
 package dev.crawlmode.engine;
 
-/** Test clock: time only moves when the test says so. */
 final class FakeClock implements Clock {
     private long ticks;
 

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
@@ -31,16 +30,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
-/**
- * Carries out the engine's Boss plan on each template Floor: spawns each Boss, fills closed gates with iron bars, opens them
- * when the Boss dies, announces a revealed Stairwell and reports the Loot Box grant. Placement, gating, reveal
- * and rewards are all decided in {@code dev.crawlmode.engine.boss}; Boss stats come from bosses.txt.
- */
 final class BossAdapter {
     private static final String TAG_BOSS = "crawlmode_boss:";
     private static final BlockState GATE_STATE = Blocks.IRON_BARS.defaultBlockState();
 
-    /** One Floor's Boss plan, live encounter state and the blocks of its Boss gates. */
     private record FloorBosses(FloorLayout layout, BossPlan plan, BossEncounter encounter,
             Map<GateGeometry.Pos, Gate> gateBlocks) {}
 
@@ -48,7 +41,6 @@ final class BossAdapter {
 
     private BossAdapter() {}
 
-    /** @param lootGranted receives the engine events of a Boss kill (Loot Box grant, "kill.boss" trigger). */
     static void register(Consumer<Event> lootGranted) {
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent event) -> {
             if (!(event.getEntity() instanceof Mob mob) || !(event.getSource().getEntity() instanceof ServerPlayer killer)
@@ -84,14 +76,12 @@ final class BossAdapter {
         FLOORS.clear();
     }
 
-    /** Closed gate blocks cannot be broken or blown up. */
     static boolean isClosedGateBlock(int floor, int x, int y, int z) {
         FloorBosses f = FLOORS.get(floor);
         Gate gate = f == null ? null : f.gateBlocks().get(new GateGeometry.Pos(x, y, z));
         return gate != null && f.encounter().isGateClosed(gate);
     }
 
-    /** Called after a cell's structure is written: seal a closed gate here, stand the Boss if its spot is here. */
     static void onCellBuilt(ServerLevel level, int floor, Cell cell) {
         FloorBosses f = FLOORS.get(floor);
         if (f == null) {
@@ -113,7 +103,6 @@ final class BossAdapter {
 
     private static void spawnBoss(ServerLevel level, BossPlacement placement) {
         BossDef def = placement.def();
-        // FactionMobs builds from a MobDef; a Boss has no spawn weight and the rank is not used when spawning.
         MobDef mob = new MobDef(def.factionId(), Rank.ELITE, def.entity(), def.name(), def.health(), def.damage(), 1,
                 def.gear(), List.of());
         Mob spawned = FactionMobs.spawn(level, new PlannedSpawn(mob, placement.x(), placement.y(), placement.z()));

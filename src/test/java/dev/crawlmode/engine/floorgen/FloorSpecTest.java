@@ -63,7 +63,6 @@ class FloorSpecTest {
         }
     }
 
-    /** Walkable means two free blocks of headroom above the floor; secret walls count as free (a Crawler can break them). */
     private static boolean walkable(FloorTemplate t, int x, int z) {
         return (t.blockAt(x, 1, z, EnumSet.allOf(Side.class)).map(TemplateBlock::secret).orElse(true))
                 && (t.blockAt(x, 2, z, EnumSet.allOf(Side.class)).map(TemplateBlock::secret).orElse(true));

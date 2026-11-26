@@ -23,7 +23,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
-/** Turns game deaths into Achievement events. Kept apart from CrawlAdapter; no rules live here. */
 final class AchievementAdapter {
     private static final String RESOURCE = "/data/crawlmode/achievement/achievements.txt";
     static final String TAG_RANK = "crawlmode_rank:";
@@ -41,7 +40,6 @@ final class AchievementAdapter {
         }
     }
 
-    /** The engine event for a death, if it matters to Achievements. Bosses are reported by their own code. */
     static Optional<Event> eventFor(LivingDeathEvent event) {
         LivingEntity victim = event.getEntity();
         if (victim instanceof ServerPlayer player) {
@@ -66,7 +64,6 @@ final class AchievementAdapter {
 
     private static final SillyTriggers.Tally TALLY = new SillyTriggers.Tally();
 
-    /** Hooks the silly-trigger listeners (jumping, eating); {@code sink} receives each event. */
     static void registerSilly(Consumer<Event> sink) {
         NeoForge.EVENT_BUS.addListener((LivingEvent.LivingJumpEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer player) {
@@ -81,7 +78,6 @@ final class AchievementAdapter {
         });
     }
 
-    /** Extra silly-trigger events for a death: how a Crawler died, what they killed, kill tallies. */
     static List<Event> sillyEventsFor(LivingDeathEvent event) {
         List<Event> out = new ArrayList<>();
         LivingEntity victim = event.getEntity();

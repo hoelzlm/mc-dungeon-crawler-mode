@@ -9,26 +9,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SplittableRandom;
 
-/**
- * The maths of the four Stairwell Aids. Pure and Minecraft-free. None of them ever yields an exact position:
- * the Draught gives one of eight compass points, the Chime one of four distance bands, the Map a large
- * rectangle that merely contains a Stairwell, and the Lantern only uncovers secret wall blocks nearby.
- */
 public final class StairwellAids {
     public static final String SEEKERS_DRAUGHT = "seekers_draught";
     public static final String ECHO_CHIME = "echo_chime";
     public static final String REVEALING_LANTERN = "revealing_lantern";
     public static final String FRAGMENT_MAP = "fragment_map";
 
-    /** Every aid is one-use: the item is spent when used. */
     public static final boolean CONSUMED_ON_USE = true;
-    /** Side of the square a Fragment Map outlines, in blocks (four cells). */
     public static final int MAP_SIZE = 64;
-    /** The Lantern uncovers secret blocks within this many blocks on every axis. */
     public static final int LANTERN_RADIUS = 8;
-    /** How long uncovered blocks stay marked: 30 seconds. */
     public static final int LANTERN_REVEAL_TICKS = 20 * 30;
-    /** The outline keeps its Stairwell at least this far from every edge. */
     private static final int MAP_MARGIN = 8;
 
     public record Pos(int x, int y, int z) {}
@@ -47,7 +37,6 @@ public final class StairwellAids {
         return nearest(x, z, wells).map(w -> DistanceBand.of(Math.hypot(w.x() - x, w.z() - z)));
     }
 
-    /** A {@link #MAP_SIZE} square around the nearest Stairwell, placed by {@code salt} and the Stairwell alone. */
     public static Optional<Area> fragmentMap(int x, int z, List<Stairwell> wells, long salt) {
         return nearest(x, z, wells).map(w -> {
             SplittableRandom rnd = new SplittableRandom(salt ^ (w.x() * 73856093L) ^ (w.z() * 19349663L));
@@ -58,7 +47,6 @@ public final class StairwellAids {
         });
     }
 
-    /** Secret wall blocks around a position, for the adapter to mark for {@link #LANTERN_REVEAL_TICKS}. */
     public static List<Pos> revealingLantern(FloorLayout layout, int x, int y, int z) {
         List<Pos> found = new ArrayList<>();
         for (int dy = -LANTERN_RADIUS; dy <= LANTERN_RADIUS; dy++) {

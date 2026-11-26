@@ -38,7 +38,6 @@ class StairwellAidsTest {
 
     @Test
     void seekersDraughtGivesTheSameCompassPointForAnyBearingWithinTheSameSector() {
-        // About 10 and 20 degrees off east: indistinguishable, so the exact bearing cannot be recovered.
         assertEquals(StairwellAids.seekersDraught(0, 0, List.of(well(1000, 176))),
                 StairwellAids.seekersDraught(0, 0, List.of(well(1000, 364))));
     }
@@ -56,9 +55,7 @@ class StairwellAidsTest {
         assertEquals(Optional.of(DistanceBand.CLOSE), StairwellAids.echoChime(0, 0, List.of(well(0, 40))));
         assertEquals(Optional.of(DistanceBand.FAR), StairwellAids.echoChime(0, 0, List.of(well(100, 0))));
         assertEquals(Optional.of(DistanceBand.VERY_FAR), StairwellAids.echoChime(0, 0, List.of(well(300, 0))));
-        // The nearest one counts.
         assertEquals(Optional.of(DistanceBand.CLOSE), StairwellAids.echoChime(0, 0, List.of(well(300, 0), well(0, -40))));
-        // Everything inside a band sounds the same.
         assertEquals(StairwellAids.echoChime(0, 0, List.of(well(70, 0))), StairwellAids.echoChime(0, 0, List.of(well(150, 0))));
     }
 

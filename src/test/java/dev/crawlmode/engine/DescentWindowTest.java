@@ -14,7 +14,6 @@ class DescentWindowTest {
     private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
-    /** Every Floor runs the full configured timer. */
     private static final long FLOOR_2_TIMER = TIMER;
 
     private final FakeClock clock = new FakeClock();
@@ -28,7 +27,6 @@ class DescentWindowTest {
         engine.handle(new Event.ApocalypseCommanded());
     }
 
-    /** Move the clock to an absolute tick (the Apocalypse is at tick 0) and tick the engine once. */
     private List<Effect> tickTo(long tick) {
         clock.advance(tick - clock.nowTicks());
         return engine.tick();
@@ -38,7 +36,6 @@ class DescentWindowTest {
     void stairwellRejectsUseBeforeTheWindowAndSaysWhenItOpens() {
         start(CARL);
         tickTo(5 * MIN);
-        // timer 30m, window opens with 10m left, i.e. at 20m; 15m to go
         assertEquals(
                 List.of(new Effect.StairwellSealed(CARL, 15 * MIN)),
                 engine.handle(new Event.StairwellUsed(CARL)));
@@ -127,7 +124,6 @@ class DescentWindowTest {
         assertTrue(collapse.contains(new Effect.Collapse(DONUT, 1)));
         assertTrue(collapse.contains(new Effect.Spectate(DONUT)));
         assertTrue(engine.isEliminated(DONUT));
-        // Already eliminated, so a later fatal blow is not handled a second time.
         assertEquals(List.of(), engine.handle(new Event.CrawlerDied(DONUT)));
         assertTrue(tickTo(TIMER + TIMER).stream().noneMatch(e -> e.equals(new Effect.Collapse(DONUT, 2))));
     }
@@ -167,7 +163,7 @@ class DescentWindowTest {
         tickTo(25 * MIN);
         engine.handle(new Event.StairwellUsed(CARL));
         tickTo(TIMER);
-        tickTo(TIMER + TIMER); // Floor 2 collapses on Carl
+        tickTo(TIMER + TIMER);
         assertTrue(engine.isEliminated(CARL));
 
         engine.handle(new Event.FreshCrawlChosen(CARL));

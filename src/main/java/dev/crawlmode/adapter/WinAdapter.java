@@ -8,7 +8,6 @@ import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-/** The Host's win screen for a Crawler who passed the last Stairwell. */
 final class WinAdapter {
     private WinAdapter() {}
 

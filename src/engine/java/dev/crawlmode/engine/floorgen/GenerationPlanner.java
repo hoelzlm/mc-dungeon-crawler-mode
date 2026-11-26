@@ -5,17 +5,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * Decides which cells of a Floor to build next so generation follows the Crawlers without long hitches: only a
- * small budget of cells per call, nearest first.
- */
 public final class GenerationPlanner {
     private GenerationPlanner() {}
 
-    /**
-     * Up to {@code budget} planned, not yet built cells within {@code radiusCells} (Chebyshev) of any Crawler,
-     * ordered by distance to the nearest Crawler.
-     */
     public static List<CellPos> cellsToBuild(FloorLayout layout, List<PlayerBlock> players, int radiusCells,
             Predicate<CellPos> alreadyBuilt, int budget) {
         record Candidate(CellPos pos, int distance) {}

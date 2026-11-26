@@ -30,7 +30,6 @@ class GateGeometryTest {
                 for (var p : blocks) {
                     assertTrue((alongZ ? p.z() : p.x()) == fixed, "plane is flat across the travel direction");
                 }
-                // Every air block of the plane inside the cell's height is part of the gate.
                 int height = layout.cell(gate.cell()).orElseThrow().template().height();
                 for (int i = 0; i < 16; i++) {
                     for (int y = FloorLayout.FLOOR_Y + 1; y < FloorLayout.FLOOR_Y + height; y++) {

@@ -9,7 +9,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class FloorTemplateTest {
-    /** A tiny template: a floor layer, then one layer with a wall, a north gate, a secret block and a marker. */
     private static String sample() {
         StringBuilder sb = new StringBuilder();
         sb.append("name tiny\nrole stairwell_room\nheight 2\n");

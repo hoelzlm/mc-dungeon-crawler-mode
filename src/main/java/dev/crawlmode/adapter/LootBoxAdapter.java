@@ -21,7 +21,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-/** Carries out Loot Box effects. Kept apart from CrawlAdapter; no rules live here. */
 final class LootBoxAdapter {
     private static final String TABLES_RESOURCE = "/data/crawlmode/loot/tables.txt";
 
