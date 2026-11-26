@@ -1,0 +1,1369 @@
+// Floor 3 templates: villages (open, no hostile spawns, decorative shops) and ruins (crumbling walls,
+// open to the sky) joined by ruined roads. Generated once from a script, now hand-editable data.
+name village_square
+role village
+height 6
+palette # minecraft:cobblestone
+palette G minecraft:grass_block
+palette P minecraft:dirt_path
+palette O minecraft:oak_planks
+palette S minecraft:spruce_planks
+palette f minecraft:oak_fence
+palette R minecraft:red_wool
+palette B minecraft:blue_wool
+palette Y minecraft:yellow_wool
+palette W minecraft:white_wool
+palette H minecraft:hay_block
+palette L minecraft:lantern
+palette g minecraft:glass_pane
+palette l minecraft:oak_log
+palette p minecraft:potted_poppy
+palette m minecraft:melon
+palette u minecraft:pumpkin
+palette c minecraft:cobblestone
+palette a minecraft:oak_slab
+palette r minecraft:poppy
+palette d minecraft:dandelion
+layer 0
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+PPPPPPPPPPPPPPPP
+PPPPPPPPPPPPPPPP
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+layer 1
+................
+................
+..........lOOOl.
+...ccc....O...O.
+...c.c....O...O.
+...ccc....lO.Ol.
+......f.....a...
+................
+................
+....a....f......
+..lO.l.....rrd..
+..O..O..........
+..O..O..........
+..lOOl..........
+................
+................
+layer 2
+................
+................
+..........lOOgl.
+...f.f....O...O.
+..........O...g.
+...f.f....lO.gl.
+......f.........
+................
+................
+.........f......
+..lO.l..........
+..O..O..........
+..O..O..........
+..lOOl..........
+................
+................
+layer 3
+................
+................
+..........lOOOl.
+...f.f....O...O.
+..........O...O.
+...f.f....lOOOl.
+......f.........
+................
+................
+.........f......
+..lOOl..........
+..O..O..........
+..O..O..........
+..lOOl..........
+................
+................
+layer 4
+................
+................
+..........SSSSS.
+...aaa....SSSSS.
+...aaa....SSSSS.
+...aaa....SSSSS.
+......L.........
+................
+................
+.........L......
+..SSSS..........
+..SSSS..........
+..SSSS..........
+..SSSS..........
+................
+................
+---
+name village_market
+role village
+height 6
+palette # minecraft:cobblestone
+palette G minecraft:grass_block
+palette P minecraft:dirt_path
+palette O minecraft:oak_planks
+palette S minecraft:spruce_planks
+palette f minecraft:oak_fence
+palette R minecraft:red_wool
+palette B minecraft:blue_wool
+palette Y minecraft:yellow_wool
+palette W minecraft:white_wool
+palette H minecraft:hay_block
+palette L minecraft:lantern
+palette g minecraft:glass_pane
+palette l minecraft:oak_log
+palette p minecraft:potted_poppy
+palette m minecraft:melon
+palette u minecraft:pumpkin
+palette c minecraft:cobblestone
+palette a minecraft:oak_slab
+palette r minecraft:poppy
+palette d minecraft:dandelion
+layer 0
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+PPPPPPPPPPPPPPPP
+PPPPPPPPPPPPPPPP
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+layer 1
+................
+................
+................
+................
+.f..f.....f..f..
+.OOOO.....OOOO..
+......f..f......
+................
+................
+......f..f......
+.OOOO.....OOOO..
+.f..f.....f..f..
+................
+................
+................
+................
+layer 2
+................
+................
+................
+................
+.f..f.....f..f..
+.Hump.....umpH..
+......f..f......
+................
+................
+......f..f......
+.pHum.....Hupm..
+.f..f.....f..f..
+................
+................
+................
+................
+layer 3
+................
+................
+................
+................
+.f..f.....f..f..
+...L........L...
+......f..f......
+................
+................
+......f..f......
+...L........L...
+.f..f.....f..f..
+................
+................
+................
+................
+layer 4
+................
+................
+................
+................
+.RWRW.....RWRW..
+.RWRW.....RWRW..
+......L..L......
+................
+................
+......L..L......
+.RWRW.....RWRW..
+.RWRW.....RWRW..
+................
+................
+................
+................
+---
+name village_farmstead
+role village
+height 6
+palette # minecraft:cobblestone
+palette G minecraft:grass_block
+palette P minecraft:dirt_path
+palette O minecraft:oak_planks
+palette S minecraft:spruce_planks
+palette f minecraft:oak_fence
+palette R minecraft:red_wool
+palette B minecraft:blue_wool
+palette Y minecraft:yellow_wool
+palette W minecraft:white_wool
+palette H minecraft:hay_block
+palette L minecraft:lantern
+palette g minecraft:glass_pane
+palette l minecraft:oak_log
+palette p minecraft:potted_poppy
+palette m minecraft:melon
+palette u minecraft:pumpkin
+palette c minecraft:cobblestone
+palette a minecraft:oak_slab
+palette r minecraft:poppy
+palette d minecraft:dandelion
+layer 0
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+PPPPPPPPPPPPPPPP
+PPPPPPPPPPPPPPPP
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+layer 1
+................
+.lOOOl..........
+.O...O..........
+.O...O....fHHfH.
+.lO.Ol....OOOO..
+...a............
+......f.........
+................
+................
+................
+..........ff.ff.
+..........fmH.f.
+..........fH.uf.
+..........f.umf.
+..........fffff.
+................
+layer 2
+................
+.lgOOl..........
+.g...O..........
+.O...O....f..f..
+.lg.Ol....uHmu..
+................
+......f.........
+................
+................
+................
+................
+................
+................
+................
+................
+................
+layer 3
+................
+.lOOOl..........
+.O...O..........
+.O...O....f..f..
+.lOOOl......L...
+................
+......f.........
+................
+................
+................
+................
+................
+................
+................
+................
+................
+layer 4
+................
+.SSSSS..........
+.SSSSS..........
+.SSSSS....RWRW..
+.SSSSS....RWRW..
+................
+......L.........
+................
+................
+................
+................
+................
+................
+................
+................
+................
+---
+name village_lanes
+role village
+height 6
+palette # minecraft:cobblestone
+palette G minecraft:grass_block
+palette P minecraft:dirt_path
+palette O minecraft:oak_planks
+palette S minecraft:spruce_planks
+palette f minecraft:oak_fence
+palette R minecraft:red_wool
+palette B minecraft:blue_wool
+palette Y minecraft:yellow_wool
+palette W minecraft:white_wool
+palette H minecraft:hay_block
+palette L minecraft:lantern
+palette g minecraft:glass_pane
+palette l minecraft:oak_log
+palette p minecraft:potted_poppy
+palette m minecraft:melon
+palette u minecraft:pumpkin
+palette c minecraft:cobblestone
+palette a minecraft:oak_slab
+palette r minecraft:poppy
+palette d minecraft:dandelion
+layer 0
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+PPPPPPPPPPPPPPPP
+PPPPPPPPPPPPPPPP
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+GGGGGGGPPGGGGGGG
+layer 1
+................
+.lOOOl....lOOOl.
+.O...O....O...O.
+.O...O....O...O.
+.O...O....lO.Ol.
+.lO.Ol......a...
+...a..f.........
+................
+................
+.........f......
+............a...
+.OOOO.....lO.Ol.
+.f..f...r.O...O.
+........r.O...O.
+..........lOOOl.
+................
+layer 2
+................
+.lgOOl....lgOOl.
+.g...O....g...O.
+.O...O....O...O.
+.O...g....lg.Ol.
+.lO.gl..........
+......f.........
+................
+................
+.........f......
+................
+.pHmp.....lO.gl.
+.f..f.....O...O.
+..........O...g.
+..........lOOgl.
+................
+layer 3
+................
+.lOOOl....lOOOl.
+.O...O....O...O.
+.O...O....O...O.
+.O...O....lOOOl.
+.lOOOl..........
+......f.........
+................
+................
+.........f......
+................
+...L......lOOOl.
+.f..f.....O...O.
+..........O...O.
+..........lOOOl.
+................
+layer 4
+................
+.SSSSS....SSSSS.
+.SSSSS....SSSSS.
+.SSSSS....SSSSS.
+.SSSSS....SSSSS.
+.SSSSS..........
+......L.........
+................
+................
+.........L......
+................
+.RWRW.....SSSSS.
+.RWRW.....SSSSS.
+..........SSSSS.
+..........SSSSS.
+................
+---
+name ruin_chapel
+role room
+height 8
+palette # minecraft:stone_bricks
+palette M minecraft:mossy_stone_bricks
+palette C minecraft:cracked_stone_bricks
+palette F minecraft:cobblestone
+palette G minecraft:mossy_cobblestone
+palette D minecraft:coarse_dirt
+palette P minecraft:polished_andesite
+palette R minecraft:cobblestone
+palette V minecraft:cobweb
+palette B minecraft:stone_brick_slab
+layer 0
+GFDFFGDGGFDGGFDG
+GGFDDFFGFGGFDGDD
+GFFGDFFFFFFFDFFD
+FFGFFFFGDFGGGFDF
+FFDDDGFFFFFFFFGF
+FFFDDGGGGFGGGFGF
+FGGGFFDFFGDGDFDF
+GDGGFDFGDFGFGGGF
+GGGGFGFFFFFDFGFG
+FDFGGFDFGDGFDDDF
+FGFFGFGFFFFGFFDF
+GGGDFFFGFFFGFFGF
+GFDFFFFDGFFDFFGF
+GFFGFDFFFGGGFFFG
+FFFFFGGFFGGGGFDD
+FFFFFFFFFDFFFGFG
+layer 1
+C#C#C#nnnn##M##M
+#P............P#
+C..............#
+M...R....R.R...C
+#.R.P......P...#
+C...R.....R....M
+w.........R.R..e
+w..............e
+w..R...........e
+w..............e
+#......R.....R.#
+#...PR..R..P...#
+M..............C
+#..........R...C
+#P............PM
+##CCCMssss###MM#
+layer 2
+###MCCnnnnCCM#M#
+#P............P#
+M.V............M
+C..............#
+#...P......P...M
+#..............M
+w..............e
+w..............e
+w..............e
+w..............e
+M..............M
+#...P..........#
+#..............#
+#.V..........V.#
+MP............P#
+M##CC#ssss###C#M
+layer 3
+C####Mnnnn#C####
+MP............PC
+C..............M
+M..............M
+C..............M
+M..............C
+w..............e
+w..............e
+w..............e
+w..............e
+#..............M
+M..............#
+C..............C
+#..............M
+#P............P#
+#M#CM#ssss##MMM#
+layer 4
+M..#C.M##.MC#CC#
+CP............P#
+#...............
+C...............
+...............M
+C..............#
+C...............
+#..............#
+#..............#
+M...............
+C...............
+...............C
+M...............
+#..............M
+...............#
+##.##C#M###.C###
+layer 5
+.#C...##...##..#
+.P..............
+#...............
+................
+#..............#
+#...............
+...............M
+#...............
+M...............
+#..............M
+................
+................
+................
+#..............#
+C...............
+#.CM#.M#M#.#....
+layer 6
+.........#......
+................
+...............#
+................
+................
+C...............
+................
+................
+................
+................
+#...............
+...............#
+...............M
+...............#
+................
+......#.#...M...
+layer 7
+..#.............
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+...............#
+................
+M...............
+................
+......#.........
+---
+name ruin_courtyard
+role room
+height 8
+palette # minecraft:stone_bricks
+palette M minecraft:mossy_stone_bricks
+palette C minecraft:cracked_stone_bricks
+palette F minecraft:cobblestone
+palette G minecraft:mossy_cobblestone
+palette D minecraft:coarse_dirt
+palette P minecraft:polished_andesite
+palette R minecraft:cobblestone
+palette V minecraft:cobweb
+palette B minecraft:stone_brick_slab
+layer 0
+FDGDDFDFGFGGGGGF
+DGGFFGGDFGFFGGFF
+FGDGDGGGFFGDGFFF
+FGGFDGFFFFGFDGGF
+DFDFFGGFFDFGFFDG
+FGGFFDFFFFFFGFFF
+GGGGGDDDFDFDGGGF
+GGFDFFDFGFFGGGFG
+FFFFGFFFFDFFDFFD
+GFGFDDGFFGFDGFGF
+FGDFFGDFFGGGGFGF
+DFGGGFGGFGFGGFFF
+FFFGGGGFGGGGFFFF
+FDFGFFFDFDFFGFGF
+DFGGGFFFDGGFFFDF
+GFFDFFGGGGFGDDDF
+layer 1
+MM####nnnn###CMM
+#P.............M
+#..............C
+#..............M
+#...#.#.M#.#...#
+M...#......M...M
+w..............e
+w...M......M...e
+w...#.PPPPPM...e
+w...C......#...e
+M...M..........#
+#....M##.CC#...C
+#..............M
+M..............#
+#.............PM
+###CC#ssssM###C#
+layer 2
+M###C#nnnn#C##CC
+MP.............#
+C..............#
+#..............#
+#........#.....#
+M..........#...M
+w..............e
+w..........M...e
+w...#..P.......e
+w..............e
+#...#..........#
+C....#.........#
+#..............#
+#..............C
+C.............PC
+##M#C#ssss#MMMM#
+layer 3
+##M#M#nnnn##C#M#
+#P.............C
+#..............#
+#..............C
+C..............C
+#..............C
+w..............e
+w..............e
+w..............e
+w..............e
+#..............C
+M..............#
+#..............M
+#..............#
+#.............PC
+MMM#C#ssssMCM##C
+layer 4
+.M##M.#M##..##M#
+MP.............M
+................
+...............M
+#..............#
+...............M
+...............#
+#...............
+#...............
+#..............#
+#..............C
+...............#
+#..............#
+#..............#
+#.............P#
+#####M.###CM#..#
+layer 5
+.#.#.#.#.#M..#.M
+CP..............
+#..............C
+................
+................
+................
+...............C
+................
+...............#
+................
+................
+...............#
+................
+...............#
+#.............P.
+###.MM....#....#
+layer 6
+..#C.#.#C.......
+................
+................
+...............M
+................
+...............#
+................
+................
+................
+#..............C
+...............#
+...............M
+...............#
+...............#
+................
+#..##....M......
+layer 7
+.......#........
+................
+................
+................
+................
+................
+................
+................
+................
+C...............
+................
+................
+................
+................
+................
+................
+---
+name ruin_barracks
+role room
+height 8
+palette # minecraft:stone_bricks
+palette M minecraft:mossy_stone_bricks
+palette C minecraft:cracked_stone_bricks
+palette F minecraft:cobblestone
+palette G minecraft:mossy_cobblestone
+palette D minecraft:coarse_dirt
+palette P minecraft:polished_andesite
+palette R minecraft:cobblestone
+palette V minecraft:cobweb
+palette B minecraft:stone_brick_slab
+layer 0
+FGFFGDDGGDFGFGFF
+DGGGFGFFGFGFFGGG
+FFFDDFFFDGDGFFGF
+FFFFGDFFFFFDGGFG
+FGGFFFFDFDFFFDFD
+DFFDFFFGGFFFFFGG
+DFGFFGGDDFGFGDGF
+GFDDFGFFDFGGGGFF
+DFFFFFGGGFDFFGGG
+GGFFFGFGFFGFGDFG
+FFGGGGFFFGFDFFFG
+FFGFFFDFGGGFGGFF
+FDDFFDDGFGFFDFFG
+GFDFGGGDFFGFDGFF
+FGFGFFGFDFFGDGFG
+DFFFFFFGFFFFFFGG
+layer 1
+C##C#Mnnnn####C#
+##............M#
+M.B..........B.C
+#..............M
+M..............#
+M##M#M....MMM#MM
+w..............e
+w..............e
+w..............e
+w..............e
+#MM#.#....M#M###
+M..............C
+M..............C
+C.B..........B.M
+#M............MC
+CC#MC#ssss#M##C#
+layer 2
+###M##nnnn###C##
+##............MM
+M.V..........V.#
+#..............#
+M..............C
+###.......MM.##M
+w..............e
+w..............e
+w..............e
+w..............e
+M#.#.M.....####M
+#..............#
+M..............#
+#.V..........V.#
+C#............M#
+##MC##ssss#C##M#
+layer 3
+##C###nnnn#M##MC
+##............MM
+#..............#
+M..............#
+#..............#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+M..............M
+#..............#
+#..............#
+M#............MC
+#M#M#CssssM##M#M
+layer 4
+....###M##CM..#M
+.#............MM
+#...............
+................
+#...............
+#..............#
+C..............#
+...............M
+M...............
+#..............C
+M..............#
+M...............
+C..............C
+M..............M
+.#............##
+CM#C##M#..CM.###
+layer 5
+##M.#M..#.#.#M..
+...............M
+C..............#
+...............M
+M...............
+...............M
+...............#
+................
+................
+...............#
+C...............
+#..............#
+................
+M..............C
+................
+#.#...##..M.#.CM
+layer 6
+.........#.....#
+................
+................
+...............#
+................
+...............#
+................
+................
+................
+................
+#...............
+...............#
+#...............
+................
+................
+#M.....C....M.##
+layer 7
+.....C..........
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+---
+name ruin_watch
+role room
+height 8
+palette # minecraft:stone_bricks
+palette M minecraft:mossy_stone_bricks
+palette C minecraft:cracked_stone_bricks
+palette F minecraft:cobblestone
+palette G minecraft:mossy_cobblestone
+palette D minecraft:coarse_dirt
+palette P minecraft:polished_andesite
+palette R minecraft:cobblestone
+palette V minecraft:cobweb
+palette B minecraft:stone_brick_slab
+layer 0
+FGFDFGGFGGFFFFGF
+FGFGDDGGDDGDFGGG
+FDFFFFDGFGGFGGGF
+FFFFFFGGGDGFGFGF
+GFDFDFFFGGFFGFFF
+GDGGGGDGFFDFFDGF
+FDGGDGGGFFFGDFFF
+DGGFGFGFFFFFFGGF
+FDFGFFFFDDGFFFFG
+FGGFFFGGFFFFFFFG
+FFDDFGFGGDFGFGDG
+FFGGGFFFFDFGFGDD
+DDFFFFGFFGGGGGFF
+GFFFFFGGGGGGGDFD
+GFFFDDFGGGGDDFGG
+DDDFGFDFFFGFFGFF
+layer 1
+C#M#C#nnnn#M#M#C
+#.........#M#MC#
+#.........#...##
+#.........#...#M
+#.........M#MMC#
+M..............#
+w....R....R....e
+w..............e
+w...R......R...e
+w...R.....RR...e
+#.R.......R....M
+#..............C
+#.R..RR......R.M
+#........R.R...#
+#PP............M
+CCM###ssss#M#C#C
+layer 2
+####M#nnnnCMMMC#
+#.........M#####
+C.............##
+#.............MM
+M.............CM
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#..............#
+#..............#
+M..V...........#
+#PP............#
+C#C###ssss####MC
+layer 3
+#M####nnnn#MCMC#
+M.........#M####
+C.............M#
+M.............#M
+M.............#C
+#..............M
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#..............#
+#..............#
+C..............M
+CPP............M
+#MM##MssssMMC#M#
+layer 4
+##M##M####.#M.M#
+M.........#M##C#
+..............C#
+#.............##
+..............#M
+#...............
+M..............#
+M..............#
+#...............
+...............M
+M..............#
+#..............M
+M..............#
+M..............C
+M...............
+CC#M##.#.#C##MC#
+layer 5
+####M.#..#.C..M#
+C..........C#M#.
+..............#.
+M...............
+..............M#
+M...............
+#..............M
+#..............C
+M...............
+M..............C
+...............C
+#..............M
+M..............#
+C...............
+#...............
+MC..##.#.#...#..
+layer 6
+.#...#.........#
+............#MM.
+................
+...............#
+................
+................
+................
+#...............
+................
+M..............#
+................
+................
+C...............
+#...............
+................
+....##.....M..#.
+layer 7
+.....M..........
+................
+................
+................
+................
+M...............
+................
+#...............
+................
+................
+................
+................
+................
+#...............
+................
+........#......#
+---
+name ruin_crypt
+role stairwell_room
+height 8
+palette # minecraft:stone_bricks
+palette F minecraft:cobblestone
+palette C minecraft:cracked_stone_bricks
+palette P minecraft:polished_andesite
+palette L minecraft:lantern
+palette M minecraft:mossy_stone_bricks
+palette X minecraft:end_portal_frame
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1
+######nnnn######
+#...#..........#
+#.X.k..........#
+#...#..........#
+#####......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 2
+######nnnn######
+#...#..........#
+#...k..........#
+#...#..........#
+#####......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 3
+######nnnn######
+#...#..........#
+#...#..........#
+#...#..........#
+#####......P...#
+#..............#
+w..............e
+w..............e
+w..............e
+w..............e
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+######ssss######
+layer 4
+################
+#####..........#
+#####..........#
+#####..........#
+#####......P...#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+################
+layer 5-6
+################
+#..............#
+#..............#
+#..............#
+#..........P...#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#...P......P...#
+#..............#
+#..............#
+#..............#
+################
+layer 7
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCLCCCCCCCCCCCCC
+CCCCCCCCCCCCLCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCLCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+---
+name ruin_road
+role corridor
+height 6
+palette # minecraft:stone_bricks
+palette M minecraft:mossy_stone_bricks
+palette C minecraft:cracked_stone_bricks
+palette F minecraft:cobblestone
+palette G minecraft:mossy_cobblestone
+palette D minecraft:coarse_dirt
+palette P minecraft:polished_andesite
+palette R minecraft:cobblestone
+palette V minecraft:cobweb
+palette B minecraft:stone_brick_slab
+layer 0
+FFDDDFDDDFFGFDGD
+DFDDFDFDDFFGGFDG
+DFGFFFFDDDDDFDFF
+FDDDGDFDDDGFFDGF
+DFFDFFDGDFFGDDDG
+GGFFFGDDGDDFFDFD
+DFFDDDGGDDGDDFFF
+GDFFDFFDFDFFDFGD
+DGDGDDDDGFFFDFFF
+FFFDDDGDFDDDFFDF
+FFDDFGGFFDFFDFDF
+DGDFGDDFFDFDFFDF
+FFDDFFFFDGDFDDGD
+GDDDDDGGDDFFGFGD
+DFGDFFFFDFFDFGFD
+GDFFFDDFFDFDFDDF
+layer 1
+M##MC#nnnnC###C#
+M#M#C#....#M####
+CMC#M#....#M#C#M
+##C#M#....M#MMCM
+###M#M....M#C##C
+MCMM##....#MMMM#
+w..............e
+w..............e
+w..............e
+w..............e
+M#MMMM....#M#MM#
+M####M....M##CC#
+###M##....#MM#MM
+#####M....#####M
+##CMMM....C#CM#M
+MCM###ssss#C#M##
+layer 2
+#M#C##nnnn#####M
+##MMM#....#C####
+##M##M....##C###
+#M##M#....M#M##M
+M#M##M....####MC
+####MM....CMC#M#
+w..............e
+w..............e
+w..............e
+w..............e
+#####M....M##MMC
+##C###....##C#C#
+MC###M....###MCM
+M##M#M....MM#C##
+##CM##....M##MMM
+##M#CMssss#M####
+layer 3
+#M##C#nnnn###MM#
+##C#C#....M#MMM#
+MM#M#M....#C#MMM
+#M#M##....#M##M#
+#M#M#C....#M####
+MM##M#....CC##M#
+w..............e
+w..............e
+w..............e
+w..............e
+M#####....##MMC#
+CM##MC....MMMM##
+C#MM#M....####MM
+###CM#....M#####
+M#M#M#....M#M#M#
+#C#CC#ssss###M#C
+layer 4
+#C#C##nnnnMCC#MM
+##C###....#C#M##
+#M##MM....###M#M
+C#MC##....#####M
+####CM....##CMM#
+##MM##....MM##MC
+w..............e
+w..............e
+w..............e
+w..............e
+M#####....#M####
+###C##....#CMC##
+##CM##....##C#M#
+#MC##C....M####C
+M#####....M#M##M
+CMMM##ssss#M##CM
+---
+name ruin_lane
+role corridor
+height 6
+palette # minecraft:stone_bricks
+palette M minecraft:mossy_stone_bricks
+palette C minecraft:cracked_stone_bricks
+palette F minecraft:cobblestone
+palette G minecraft:mossy_cobblestone
+palette D minecraft:coarse_dirt
+palette P minecraft:polished_andesite
+palette R minecraft:cobblestone
+palette V minecraft:cobweb
+palette B minecraft:stone_brick_slab
+layer 0
+FFFFDDGDFDFDGFDD
+DGFFDGFFDFDFDDGF
+DGFGFFFFFFDGDDGD
+FFFFDFFFDDDGDDFF
+FDDDGGDGFDDDGDDD
+FDFDDFDGDFFFGGDF
+FFDFFDFGFFDGDFFD
+FFFDFGFDDGFDDDDG
+FGFGDGDDGGFFGDDF
+GFDDFDDFDFDFFDDD
+FGDDFDGDDFFFGFDF
+DFFFFDGGDGDGGDDD
+FDFGDFFFDGFDFDFF
+FDDFFDGFDDGDDDDF
+DFDGDFDDGFFDFFFD
+DDFGDFFFGDGDGDDF
+layer 1
+###M#MnnnnM##M#M
+#M###M....###M##
+C#CM##....##MM##
+CM###M....CC###M
+MCM###....CM#M##
+C#MM##....CCM###
+w..............e
+w..............e
+w..............e
+w..............e
+#M#M#C....#MMMC#
+MC##M#....##M#MM
+##C###....MMC#CM
+#M#M##....###M##
+##CM#M....M###CC
+M#C#CMssss#C####
+layer 2
+CM#M##nnnn###M##
+M##M#M....#C####
+MCMCM#....C#MCC#
+CMMM#M....#MMMMM
+M#M#M#....##MM##
+##MMC#....##M##M
+w..............e
+w..............e
+w..............e
+w..............e
+MMC##C....#M####
+####C#....#M#MMM
+#M####....#####C
+#CMM##....##C#MC
+#CC###....##MCC#
+#M#MCCssssM##MM#
+layer 3
+#C#M##nnnn#M#MC#
+MM#MM#....######
+###MM#....MMCMCM
+M##M#M....#C#MM#
+MMC###....##M#MC
+C#CM#M....M#####
+w..............e
+w..............e
+w..............e
+w..............e
+M###CM....C###M#
+#C####....MMCM##
+MMCCMM....######
+#M####....C#MMM#
+#MMM##....C#MC#M
+#CM#MMssssMM#MMM
+layer 4
+M#M###nnnnM####M
+######....##M##C
+M#####....######
+MMMC#M....#C#CMC
+#M####....C#MM##
+MCM###....M#####
+w..............e
+w..............e
+w..............e
+w..............e
+#MC#C#....#M##M#
+MC##M#....###MMM
+#CC###....CCCMM#
+C###M#....MMM#C#
+##C#M#....MMM###
+CC##M#ssss#MC#M#

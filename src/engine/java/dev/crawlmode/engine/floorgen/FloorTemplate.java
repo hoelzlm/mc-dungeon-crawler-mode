@@ -10,7 +10,7 @@ import java.util.Set;
  *
  * <pre>
  * name hall_pillars
- * role room | corridor | stairwell_room
+ * role room | corridor | village | stairwell_room
  * height 8
  * palette # minecraft:polished_diorite
  * layer 0          (or "layer 1-3": one grid shared by several layers)
@@ -27,6 +27,7 @@ public final class FloorTemplate {
     public enum Role {
         ROOM,
         CORRIDOR,
+        VILLAGE,
         STAIRWELL_ROOM
     }
 
@@ -196,6 +197,7 @@ public final class FloorTemplate {
         return switch (s) {
             case "room" -> Role.ROOM;
             case "corridor" -> Role.CORRIDOR;
+            case "village" -> Role.VILLAGE;
             case "stairwell_room" -> Role.STAIRWELL_ROOM;
             default -> throw new FloorTemplateFormatException("Unknown role: " + s);
         };

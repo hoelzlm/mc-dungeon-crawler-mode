@@ -43,6 +43,11 @@ public final class FloorLayout {
         this.stairwellSet = Set.copyOf(stairwells);
     }
 
+    /** Assembles a plan built by another generator (for example {@link VillageRuinsLayout}). */
+    static FloorLayout assemble(int areaCount, Map<CellPos, Cell> cells, List<Stairwell> stairwells, List<Gate> gates) {
+        return new FloorLayout(areaCount, Collections.unmodifiableMap(cells), List.copyOf(stairwells), List.copyOf(gates));
+    }
+
     public static FloorLayout generate(long seed, TemplateLibrary library) {
         return generate(seed, library, DEFAULT_AREAS);
     }

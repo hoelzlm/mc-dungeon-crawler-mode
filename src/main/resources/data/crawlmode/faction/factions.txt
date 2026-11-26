@@ -15,3 +15,19 @@ faction sour_llamas floor=1 name="Sour Llama Gang"
 mob sour_llamas grunt entity=minecraft:pillager name="Llama Rustler" health=15 damage=3 weight=60 mainhand=minecraft:crossbow
 mob sour_llamas elite entity=minecraft:vindicator name="Llama Enforcer" health=34 damage=7 weight=28 mainhand=minecraft:iron_axe chest=minecraft:chainmail_chestplate
 mob sour_llamas shaman entity=minecraft:witch name="Llama Alchemist" health=26 damage=2 weight=12 ability=rally ability=fireball
+
+# Floor 3: villages ringed by ruins. Lineup is provisional.
+faction ghost_bandits floor=3 name="Ghost Bandits"
+mob ghost_bandits grunt entity=minecraft:skeleton name="Ghost Cutthroat" health=16 damage=4 weight=60 mainhand=minecraft:iron_sword head=minecraft:leather_helmet
+mob ghost_bandits elite entity=minecraft:stray name="Ghost Highwayman" health=36 damage=6 weight=28 mainhand=minecraft:bow chest=minecraft:chainmail_chestplate
+mob ghost_bandits shaman entity=minecraft:evoker name="Ghost Fence" health=28 damage=3 weight=12 ability=heal_allies ability=rally
+
+faction wild_beasts floor=3 name="Ruin Beasts"
+mob wild_beasts grunt entity=minecraft:spider name="Ruin Skitterer" health=15 damage=3 weight=60
+mob wild_beasts elite entity=minecraft:ravager name="Tusk Charger" health=44 damage=7 weight=28
+mob wild_beasts shaman entity=minecraft:witch name="Beastcaller" health=26 damage=2 weight=12 ability=rally ability=fireball
+
+faction ash_cult floor=3 name="Cult of the Ashen Lamp"
+mob ash_cult grunt entity=minecraft:zombie name="Ashen Acolyte" health=15 damage=3 weight=60 mainhand=minecraft:stone_axe chest=minecraft:leather_chestplate
+mob ash_cult elite entity=minecraft:husk name="Lamp Zealot" health=34 damage=6 weight=28 mainhand=minecraft:iron_sword head=minecraft:iron_helmet
+mob ash_cult shaman entity=minecraft:witch name="Lamp Oracle" health=26 damage=2 weight=12 ability=heal_allies ability=fireball

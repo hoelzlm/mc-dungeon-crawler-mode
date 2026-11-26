@@ -2,6 +2,7 @@ package dev.crawlmode.engine.faction;
 
 import dev.crawlmode.engine.floorgen.Cell;
 import dev.crawlmode.engine.floorgen.FloorLayout;
+import dev.crawlmode.engine.floorgen.FloorTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,7 +15,8 @@ public final class SpawnPlanner {
     private SpawnPlanner() {}
 
     public static List<PlannedSpawn> forCell(Cell cell, FactionAreas areas, long seed) {
-        if (cell.area() < 1 || cell.template().stairwellMarker().isPresent()) {
+        if (cell.area() < 1 || cell.template().stairwellMarker().isPresent()
+                || cell.template().role() == FloorTemplate.Role.VILLAGE) {
             return List.of();
         }
         var faction = areas.factionOf(cell.area());
