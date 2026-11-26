@@ -20,6 +20,7 @@ public final class CrawlEngine {
     private final LootTables loot;
     private final IntUnaryOperator lootPick;
     private boolean apocalypseHappened;
+    private boolean finalWarningGiven;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -44,7 +45,10 @@ public final class CrawlEngine {
         return switch (event) {
             case Event.CrawlerJoined joined -> {
                 crawlers.add(joined.crawler());
-                yield List.of();
+                if (apocalypseHappened) {
+                    yield List.of(new Effect.PullToFloor(joined.crawler(), 1));
+                }
+                yield said("apocalypse-start", joined.crawler());
             }
             case Event.ApocalypseCommanded ignored -> apocalypse();
             case Event.LootBoxGranted granted -> openLootBox(granted);
@@ -63,11 +67,30 @@ public final class CrawlEngine {
         return effects;
     }
 
+    public boolean apocalypseHappened() {
+        return apocalypseHappened;
+    }
+
     public List<Effect> tick() {
+        long elapsed = clock.nowTicks() - startedAt;
+        if (!apocalypseHappened && !finalWarningGiven && config.warningLeadTicks() > 0
+                && elapsed >= config.apocalypseDelayTicks() - config.warningLeadTicks()
+                && elapsed < config.apocalypseDelayTicks()) {
+            finalWarningGiven = true;
+            List<Effect> effects = new ArrayList<>();
+            for (UUID crawler : crawlers) {
+                effects.addAll(said("apocalypse-soon", crawler));
+            }
+            return effects;
+        }
         if (clock.nowTicks() - startedAt >= config.apocalypseDelayTicks()) {
             return apocalypse();
         }
         return List.of();
+    }
+
+    private List<Effect> said(String topic, UUID crawler) {
+        return host.lineFor(topic).map(line -> List.<Effect>of(new Effect.HostSays(crawler, line))).orElse(List.of());
     }
 
     private List<Effect> apocalypse() {
