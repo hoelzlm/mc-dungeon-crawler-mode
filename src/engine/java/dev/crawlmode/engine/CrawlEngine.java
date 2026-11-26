@@ -90,7 +90,8 @@ public final class CrawlEngine {
                     ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
             case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
             case Event.SafeRoomExited exited -> exitSafeRoom(exited.crawler());
-            case Event.LootBoxGranted granted -> openLootBox(granted);
+            case Event.LootBoxGranted granted -> giveLootBox(granted);
+            case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
                 boolean onTimerFloor = Integer.valueOf(timerFloor).equals(floorOf.get(used.crawler()));
                 List<Effect> effects = new ArrayList<>(useStairwell(used.crawler()));
@@ -118,7 +119,7 @@ public final class CrawlEngine {
         List<Effect> effects = new ArrayList<>();
         for (Achievement a : achievements.unlock(crawler, trigger)) {
             effects.add(new Effect.HostSays(crawler, a.line()));
-            effects.addAll(openLootBox(new Event.LootBoxGranted(crawler, a.reward(), LootSource.ACHIEVEMENT)));
+            effects.addAll(giveLootBox(new Event.LootBoxGranted(crawler, a.reward(), LootSource.ACHIEVEMENT)));
         }
         return effects;
     }
@@ -188,15 +189,23 @@ public final class CrawlEngine {
         return List.of(new Effect.RestoreWorld(crawler));
     }
 
-    private List<Effect> openLootBox(Event.LootBoxGranted granted) {
+    private List<Effect> giveLootBox(Event.LootBoxGranted granted) {
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.GiveLootBox(granted.crawler(), granted.tier()));
+        host.lineFor("lootbox.granted")
+                .ifPresent(line -> effects.add(new Effect.HostSays(granted.crawler(), line)));
+        return effects;
+    }
+
+    private List<Effect> openLootBox(Event.LootBoxOpened opened) {
         if (loot == null) {
             return List.of();
         }
         List<Effect> effects = new ArrayList<>();
-        effects.add(new Effect.LootBoxOpening(granted.crawler(), granted.tier()));
-        host.lineFor("lootbox." + granted.tier().key())
-                .ifPresent(line -> effects.add(new Effect.HostSays(granted.crawler(), line)));
-        effects.add(new Effect.GrantLoot(granted.crawler(), granted.tier(), loot.open(granted.tier(), lootPick)));
+        effects.add(new Effect.LootBoxOpening(opened.crawler(), opened.tier()));
+        host.lineFor("lootbox." + opened.tier().key())
+                .ifPresent(line -> effects.add(new Effect.HostSays(opened.crawler(), line)));
+        effects.add(new Effect.GrantLoot(opened.crawler(), opened.tier(), loot.open(opened.tier(), lootPick)));
         return effects;
     }
 

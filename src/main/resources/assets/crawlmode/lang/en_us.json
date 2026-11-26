@@ -2,5 +2,9 @@
   "item.crawlmode.seekers_draught": "Seeker's Draught",
   "item.crawlmode.echo_chime": "Echo Chime",
   "item.crawlmode.revealing_lantern": "Revealing Lantern",
-  "item.crawlmode.fragment_map": "Fragment Map"
+  "item.crawlmode.fragment_map": "Fragment Map",
+  "item.crawlmode.copper_loot_box": "Copper Loot Box",
+  "item.crawlmode.silver_loot_box": "Silver Loot Box",
+  "item.crawlmode.gold_loot_box": "Gold Loot Box",
+  "item.crawlmode.radiant_loot_box": "Radiant Loot Box"
 }

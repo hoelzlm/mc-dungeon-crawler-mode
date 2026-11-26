@@ -55,6 +55,11 @@ public final class CrawlAdapter {
 
     public static void register(net.neoforged.bus.api.IEventBus modBus) {
         AidAdapter.register(modBus);
+        LootBoxAdapter.register(modBus, e -> {
+            if (engine != null) {
+                apply(engine.handle(e));
+            }
+        });
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStarting);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStopped);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onPlayerLoggedIn);
@@ -234,6 +239,7 @@ public final class CrawlAdapter {
                 case Effect.StairwellSealed sealed -> StairwellAdapter.sealed(server, sealed);
                 case Effect.Collapse collapse -> StairwellAdapter.collapse(server, collapse);
                 case Effect.ShowWinScreen win -> WinAdapter.showWinScreen(server, win);
+                case Effect.GiveLootBox box -> LootBoxAdapter.give(server, box);
                 case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
                 case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.EnterSafeRoom enter -> SafeRoomAdapter.enter(server, enter);

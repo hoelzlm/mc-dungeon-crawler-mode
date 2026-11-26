@@ -55,8 +55,7 @@ class AchievementsTest {
 
         assertEquals(new Effect.HostSays(CARL, new HostLine("achievement.first-grunt", "You killed a grunt. Hooray!")),
                 effects.get(0));
-        assertEquals(new Effect.LootBoxOpening(CARL, LootTier.COPPER), effects.get(1));
-        assertTrue(effects.stream().anyMatch(e -> e instanceof Effect.GrantLoot g && g.tier() == LootTier.COPPER));
+        assertEquals(new Effect.GiveLootBox(CARL, LootTier.COPPER), effects.get(1));
     }
 
     @Test
@@ -77,7 +76,7 @@ class AchievementsTest {
     void genericTriggersUnlockToo() {
         var effects = engine(DATA).handle(new Event.Triggered(CARL, "death.fall"));
 
-        assertEquals(new Effect.LootBoxOpening(CARL, LootTier.SILVER), effects.get(1));
+        assertEquals(new Effect.GiveLootBox(CARL, LootTier.SILVER), effects.get(1));
     }
 
     @Test

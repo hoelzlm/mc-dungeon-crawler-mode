@@ -9,6 +9,7 @@ lootbox.copper: A copper box! Truly, the participation trophy of the dungeon!
 lootbox.silver: Silver! Someone is being almost competent. Open wide!
 lootbox.gold: Gold! The audience is on its feet! Do not trip over the loot!
 lootbox.radiant: A RADIANT box! Savor it, contestant. It may be the last nice thing that happens to you!
+lootbox.granted: A Loot Box has been placed in your inventory! Right-click it to open it. Be tidy about it.
 apocalypse-start: Welcome, contestant! The world ends on day three. Do enjoy the brief remainder of your freedom!
 apocalypse-start: Ooh, a fresh face! Pack a snack. In a few days you will not be leaving this planet, or what remains of it!
 apocalypse-soon: Five minutes, contestants! Say goodbye to the sun. It never really liked you anyway!

@@ -40,11 +40,43 @@ class LootBoxTest {
         return engine;
     }
 
+    private static CrawlEngine hostEngine(LootTables tables, int pick) {
+        HostLineSource host = DataFileHostLineSource.load(
+                new StringReader("lootbox.copper: A shiny copper thing!\nlootbox.granted: A box is in your inventory!"),
+                bound -> 0);
+        CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables, bound -> Math.min(pick, bound - 1));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        return engine;
+    }
+
+    @Test
+    void grantingABoxGivesTheUnopenedItemAndTheHostSaysItIsInTheInventory() {
+        var engine = hostEngine(tables(VALID), 0);
+
+        List<Effect> effects = engine.handle(new Event.LootBoxGranted(CARL, LootTier.GOLD, LootSource.BOSS_KILL));
+
+        assertEquals(
+                List.of(
+                        new Effect.GiveLootBox(CARL, LootTier.GOLD),
+                        new Effect.HostSays(CARL, new HostLine("lootbox.granted", "A box is in your inventory!"))),
+                effects);
+    }
+
+    @Test
+    void everyGrantSourceGivesAnUnopenedBoxAndNoLoot() {
+        var engine = hostEngine(tables(VALID), 0);
+        for (LootSource source : LootSource.values()) {
+            List<Effect> effects = engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, source));
+            assertEquals(new Effect.GiveLootBox(CARL, LootTier.COPPER), effects.getFirst(), source.name());
+            assertTrue(effects.stream().noneMatch(e -> e instanceof Effect.GrantLoot), source.name());
+        }
+    }
+
     @Test
     void openingAnimatesThenTheHostSpeaksThenTheLootIsGranted() {
-        var engine = engine(tables(VALID), 0);
+        var engine = hostEngine(tables(VALID), 0);
 
-        List<Effect> effects = engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.BOSS_KILL));
+        List<Effect> effects = engine.handle(new Event.LootBoxOpened(CARL, LootTier.COPPER));
 
         assertEquals(
                 List.of(
@@ -59,25 +91,14 @@ class LootBoxTest {
     }
 
     @Test
-    void everyGrantSourceOpensABox() {
-        var engine = engine(tables(VALID), 0);
-        for (LootSource source : LootSource.values()) {
-            assertEquals(3, engine.handle(new Event.LootBoxGranted(CARL, LootTier.COPPER, source)).size(),
-                    source.name());
-        }
-    }
-
-    @Test
     void entriesAreChosenByWeightAndRolledOncePerRoll() {
         var engine = engine(tables(VALID), 3);
 
-        var grant = (Effect.GrantLoot) engine.handle(
-                new Event.LootBoxGranted(CARL, LootTier.COPPER, LootSource.ACHIEVEMENT)).getLast();
+        var grant = (Effect.GrantLoot) engine.handle(new Event.LootBoxOpened(CARL, LootTier.COPPER)).getLast();
 
         assertEquals(List.of(new LootItem(LootItem.Kind.FOOD, "minecraft:bread", 4, Map.of())), grant.items());
 
-        var radiant = (Effect.GrantLoot) engine.handle(
-                new Event.LootBoxGranted(CARL, LootTier.RADIANT, LootSource.FLOOR_MILESTONE)).getLast();
+        var radiant = (Effect.GrantLoot) engine.handle(new Event.LootBoxOpened(CARL, LootTier.RADIANT)).getLast();
         assertEquals(4, radiant.items().size());
     }
 

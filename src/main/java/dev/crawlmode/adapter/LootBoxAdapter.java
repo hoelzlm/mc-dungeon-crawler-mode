@@ -1,13 +1,19 @@
 package dev.crawlmode.adapter;
 
+import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.Effect;
+import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.LootItem;
 import dev.crawlmode.engine.LootTables;
+import dev.crawlmode.engine.LootTier;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -18,13 +24,68 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 final class LootBoxAdapter {
     private static final String TABLES_RESOURCE = "/data/crawlmode/loot/tables.txt";
 
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(CrawlMode.MOD_ID);
+    private static final Map<LootTier, DeferredItem<Item>> BOXES = new EnumMap<>(LootTier.class);
+
     private LootBoxAdapter() {}
+
+    static void register(IEventBus modBus, Consumer<Event> events) {
+        for (LootTier tier : LootTier.values()) {
+            BOXES.put(tier, ITEMS.registerItem(tier.key() + "_loot_box",
+                    props -> new LootBoxItem(tier, events, props)));
+        }
+        ITEMS.register(modBus);
+    }
+
+    static void give(MinecraftServer server, Effect.GiveLootBox box) {
+        ServerPlayer player = server.getPlayerList().getPlayer(box.crawler());
+        if (player != null) {
+            hand(player, new ItemStack(BOXES.get(box.tier()).get()));
+        }
+    }
+
+    private static void hand(ServerPlayer player, ItemStack stack) {
+        if (!player.getInventory().add(stack) && player.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            player.spawnAtLocation(level, stack);
+        }
+    }
+
+    private static final class LootBoxItem extends Item {
+        private final LootTier tier;
+        private final Consumer<Event> events;
+
+        LootBoxItem(LootTier tier, Consumer<Event> events, Item.Properties props) {
+            super(props.stacksTo(64));
+            this.tier = tier;
+            this.events = events;
+        }
+
+        @Override
+        public InteractionResult use(Level level, Player player, InteractionHand hand) {
+            if (level.isClientSide() || !(player instanceof ServerPlayer crawler)) {
+                return InteractionResult.SUCCESS;
+            }
+            if (!crawler.getAbilities().instabuild) {
+                player.getItemInHand(hand).shrink(1);
+            }
+            events.accept(new Event.LootBoxOpened(crawler.getUUID(), tier));
+            return InteractionResult.SUCCESS;
+        }
+    }
 
     static LootTables loadTables() {
         try (InputStream in = LootBoxAdapter.class.getResourceAsStream(TABLES_RESOURCE)) {
@@ -59,7 +120,7 @@ final class LootBoxAdapter {
         for (LootItem item : grant.items()) {
             ItemStack stack = stackFor(server, item);
             if (!stack.isEmpty()) {
-                if (!player.getInventory().add(stack)) { if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) player.spawnAtLocation(sl, stack); }
+                hand(player, stack);
             }
         }
     }

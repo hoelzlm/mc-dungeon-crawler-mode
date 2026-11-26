@@ -17,6 +17,8 @@ public sealed interface Effect {
 
     record Leave(UUID crawler) implements Effect {}
 
+    record GiveLootBox(UUID crawler, LootTier tier) implements Effect {}
+
     record LootBoxOpening(UUID crawler, LootTier tier) implements Effect {}
 
     record GrantLoot(UUID crawler, LootTier tier, java.util.List<LootItem> items) implements Effect {}
