@@ -5,12 +5,19 @@ import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.DoorPos;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
+import dev.crawlmode.engine.SafeRoomRules;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -19,6 +26,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -39,6 +51,12 @@ final class SafeRoomAdapter {
     private static final int PLACEHOLDER_DOOR_FLOOR = 1;
     private static final BlockPos PLACEHOLDER_DOOR_OFFSET = new BlockPos(3, 0, 0);
 
+    private static final String RULES_RESOURCE = "/data/crawlmode/saferoom/rules.txt";
+    private static final BlockPos ROOM_BUFFET = new BlockPos(-3, ROOM_FLOOR_Y + 1, 0);
+    private static final List<BlockPos> ROOM_CHESTS = List.of(
+            new BlockPos(-3, ROOM_FLOOR_Y + 1, -3), new BlockPos(0, ROOM_FLOOR_Y + 1, -3),
+            new BlockPos(3, ROOM_FLOOR_Y + 1, -3));
+
     private static final Map<UUID, ServerLevel> ROOMS = new HashMap<>();
     private static final Map<Integer, BlockPos> DOORS = new HashMap<>();
 
@@ -51,6 +69,11 @@ final class SafeRoomAdapter {
             }
             BlockPos p = event.getPos();
             UUID crawler = event.getEntity().getUUID();
+            if (isRoomOf(event.getLevel(), crawler) && p.equals(ROOM_BUFFET)) {
+                event.setCanceled(true);
+                events.accept(new Event.BuffetUsed(crawler));
+                return;
+            }
             if (isRoomOf(event.getLevel(), crawler) && p.equals(ROOM_EXIT)) {
                 event.setCanceled(true);
                 events.accept(new Event.SafeRoomExited(crawler));
@@ -63,6 +86,48 @@ final class SafeRoomAdapter {
                 }
             });
         });
+    }
+
+    static void registerRules(Predicate<UUID> inSafeRoom) {
+        NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent event) -> {
+            boolean victimSafe = event.getEntity() instanceof ServerPlayer p && inSafeRoom.test(p.getUUID());
+            boolean attackerSafe = event.getSource().getEntity() instanceof ServerPlayer a
+                    && inSafeRoom.test(a.getUUID());
+            if (victimSafe || attackerSafe) {
+                event.setCanceled(true);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((FinalizeSpawnEvent event) -> {
+            if (ROOMS.containsValue(event.getLevel().getLevel())) {
+                event.setSpawnCancelled(true);
+            }
+        });
+    }
+
+    static SafeRoomRules loadRules() {
+        try (InputStream in = SafeRoomAdapter.class.getResourceAsStream(RULES_RESOURCE)) {
+            if (in == null) {
+                throw new IllegalStateException("Missing " + RULES_RESOURCE);
+            }
+            return SafeRoomRules.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    static void startRegeneration(MinecraftServer server, Effect.StartSafeRoomRegeneration start) {
+        ServerPlayer player = server.getPlayerList().getPlayer(start.crawler());
+        if (player != null) {
+            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, MobEffectInstance.INFINITE_DURATION,
+                    start.amplifier(), true, false));
+        }
+    }
+
+    static void stopRegeneration(MinecraftServer server, Effect.StopSafeRoomRegeneration stop) {
+        ServerPlayer player = server.getPlayerList().getPlayer(stop.crawler());
+        if (player != null) {
+            player.removeEffect(MobEffects.REGENERATION);
+        }
     }
 
     static void clear() {
@@ -139,6 +204,9 @@ final class SafeRoomAdapter {
             }
         }
         room.setBlockAndUpdate(ROOM_EXIT, Blocks.CRYING_OBSIDIAN.defaultBlockState());
+        room.setBlockAndUpdate(ROOM_BUFFET, Blocks.HAY_BLOCK.defaultBlockState());
+        BlockState chest = Blocks.CHEST.defaultBlockState();
+        ROOM_CHESTS.forEach(at -> room.setBlockAndUpdate(at, chest));
     }
 
     private static Object field(MinecraftServer server, String name) throws ReflectiveOperationException {

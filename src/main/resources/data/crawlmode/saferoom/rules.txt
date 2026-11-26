@@ -1,0 +1,8 @@
+# Safe Room rules. Tune after playtesting.
+# regeneration: Regeneration amplifier (0 = Regeneration I). buffet-cooldown-ticks: refill time per Crawler.
+# food | item id | count: what one buffet serving gives.
+regeneration | 0
+buffet-cooldown-ticks | 1200
+food | minecraft:bread | 4
+food | minecraft:baked_potato | 4
+food | minecraft:cooked_beef | 2

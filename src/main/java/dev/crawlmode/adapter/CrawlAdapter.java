@@ -87,6 +87,7 @@ public final class CrawlAdapter {
                 apply(engine.handle(e));
             }
         });
+        SafeRoomAdapter.registerRules(crawler -> engine != null && engine.isInSafeRoom(crawler));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (engine != null) {
                 AchievementAdapter.eventFor(e).ifPresent(ev -> apply(engine.handle(ev)));
@@ -147,7 +148,8 @@ public final class CrawlAdapter {
         CrawlConfig config = configFromSystemProperties();
         engine = new CrawlEngine(clock, config, loadHostLines(),
                 LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server))
-                .withAchievements(AchievementAdapter.load());
+                .withAchievements(AchievementAdapter.load())
+                .withSafeRoomRules(SafeRoomAdapter.loadRules());
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
         LOGGER.info("Crawl engine ready");
@@ -244,6 +246,9 @@ public final class CrawlAdapter {
                 case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.EnterSafeRoom enter -> SafeRoomAdapter.enter(server, enter);
                 case Effect.ExitSafeRoom exit -> SafeRoomAdapter.exit(server, exit);
+                case Effect.StartSafeRoomRegeneration start -> SafeRoomAdapter.startRegeneration(server, start);
+                case Effect.StopSafeRoomRegeneration stop -> SafeRoomAdapter.stopRegeneration(server, stop);
+                case Effect.ServeBuffet buffet -> LootBoxAdapter.handItems(server, buffet.crawler(), buffet.items());
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
                     if (player != null) {

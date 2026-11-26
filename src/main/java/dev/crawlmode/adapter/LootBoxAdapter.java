@@ -113,11 +113,15 @@ final class LootBoxAdapter {
     }
 
     static void grant(MinecraftServer server, Effect.GrantLoot grant) {
-        ServerPlayer player = server.getPlayerList().getPlayer(grant.crawler());
+        handItems(server, grant.crawler(), grant.items());
+    }
+
+    static void handItems(MinecraftServer server, java.util.UUID crawler, java.util.List<LootItem> items) {
+        ServerPlayer player = server.getPlayerList().getPlayer(crawler);
         if (player == null) {
             return;
         }
-        for (LootItem item : grant.items()) {
+        for (LootItem item : items) {
             ItemStack stack = stackFor(server, item);
             if (!stack.isEmpty()) {
                 hand(player, stack);
