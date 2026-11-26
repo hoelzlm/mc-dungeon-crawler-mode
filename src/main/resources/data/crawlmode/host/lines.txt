@@ -4,3 +4,8 @@
 apocalypse: Congratulations, contestant! The world is closed, the dungeon is open, and you were not consulted!
 apocalypse: Surprise! Everything you knew is gone. Please keep your arms and legs inside the dungeon at all times!
 apocalypse: Welcome to the Crawl! Do try to die entertainingly. The audience adores a good flop!
+
+apocalypse-start: Welcome, contestant! The world ends on day three. Do enjoy the brief remainder of your freedom!
+apocalypse-start: Ooh, a fresh face! Pack a snack. In a few days you will not be leaving this planet, or what remains of it!
+apocalypse-soon: Five minutes, contestants! Say goodbye to the sun. It never really liked you anyway!
+apocalypse-soon: The countdown is nearly over! Final hugs, final loot, final regrets!

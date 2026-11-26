@@ -15,6 +15,20 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -36,7 +50,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 public final class CrawlAdapter {
     private static final String HOST_LINES_RESOURCE = "/data/crawlmode/host/lines.txt";
-    private static final long DEFAULT_APOCALYPSE_DELAY_TICKS = 3L * 24_000L;
+    private static final String MOD_ID = "crawlmode";
 
     private static CrawlEngine engine;
     private static MinecraftServer server;
@@ -48,12 +62,63 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStopped);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerTick);
+        NeoForge.EVENT_BUS.addListener(CrawlAdapter::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(CrawlAdapter::onTravel);
+    }
+
+    private static ResourceKey<Level> floorKey(int floor) {
+        return ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath(MOD_ID, "floor_" + floor));
+    }
+
+    private static void onRegisterCommands(RegisterCommandsEvent event) {
+        CommandDispatcher<CommandSourceStack> d = event.getDispatcher();
+        d.register(Commands.literal("crawl")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("apocalypse").executes(ctx -> {
+                    if (engine != null) {
+                        apply(engine.handle(new Event.ApocalypseCommanded()));
+                    }
+                    return 1;
+                })));
+    }
+
+    /** Once the Apocalypse has happened, nobody may travel to a dimension outside the Crawl. */
+    private static void onTravel(EntityTravelToDimensionEvent event) {
+        if (engine != null && engine.apocalypseHappened()
+                && !event.getDimension().identifier().getNamespace().equals(MOD_ID)) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static void pullToFloor(ServerPlayer player, int floor) {
+        ServerLevel level = server.getLevel(floorKey(floor));
+        if (level == null) {
+            player.sendSystemMessage(Component.literal("Floor " + floor + " dimension is missing"));
+            return;
+        }
+        BlockPos spawn = new BlockPos(0, 64, 0);
+        for (int x = -2; x <= 2; x++) {
+            for (int z = -2; z <= 2; z++) {
+                level.setBlockAndUpdate(spawn.offset(x, -1, z), Blocks.STONE.defaultBlockState());
+            }
+        }
+        // Inventory travels with the player; only the position and dimension change.
+        player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
     }
 
     private static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
         Clock clock = () -> server.getTickCount();
-        engine = new CrawlEngine(clock, new CrawlConfig(DEFAULT_APOCALYPSE_DELAY_TICKS), loadHostLines());
+        engine = new CrawlEngine(clock, configFromSystemProperties(), loadHostLines());
+    }
+
+    /** Delay in in-game days via -Dcrawlmode.apocalypseDelayDays=N; defaults to day 3. */
+    private static CrawlConfig configFromSystemProperties() {
+        String days = System.getProperty("crawlmode.apocalypseDelayDays");
+        if (days == null) {
+            return CrawlConfig.DEFAULT;
+        }
+        return new CrawlConfig((long) (Double.parseDouble(days) * CrawlConfig.TICKS_PER_DAY), CrawlConfig.DEFAULT.warningLeadTicks());
     }
 
     private static void onServerStopped(ServerStoppedEvent event) {
@@ -107,8 +172,7 @@ public final class CrawlAdapter {
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
                     if (player != null) {
-                        // Floor dimensions arrive in a later ticket; for now just announce.
-                        player.sendSystemMessage(Component.literal("Pulled to floor " + pull.floor()));
+                        pullToFloor(player, pull.floor());
                     }
                 }
             }

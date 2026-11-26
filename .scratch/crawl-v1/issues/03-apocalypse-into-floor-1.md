@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Delay is configurable and defaults to day 3
-- [ ] Host warns at the start and shortly before
-- [ ] Command triggers the Apocalypse at once
+- [x] Delay is configurable and defaults to day 3 (engine config verified by test; adapter reads -Dcrawlmode.apocalypseDelayDays, untested in game)
+- [x] Host warns at the start and shortly before (engine-level; lines in lines.txt)
+- [x] Command triggers the Apocalypse at once (engine verified; /crawl apocalypse compiled, not run in game)
 - [ ] Inventory is kept and the vanilla world can no longer be reached
-- [ ] Engine scenarios cover the delay and the command
+- [x] Engine scenarios cover the delay and the command
