@@ -35,4 +35,7 @@ public sealed interface Effect {
 
     /** The Floor collapsed under this Crawler, killing them. */
     record Collapse(UUID crawler, int floor) implements Effect {}
+
+    /** The Crawler passed the last Stairwell: show the Host's win screen. */
+    record ShowWinScreen(UUID crawler) implements Effect {}
 }

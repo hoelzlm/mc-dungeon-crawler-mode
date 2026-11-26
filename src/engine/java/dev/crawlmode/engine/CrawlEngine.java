@@ -29,6 +29,9 @@ public final class CrawlEngine {
     /** The Floor whose timer is running (or, before the Apocalypse, Floor 1). */
     private int timerFloor = 1;
     private boolean windowAnnounced;
+    /** The last Floor; passing its Stairwell wins the Crawl. */
+    public static final int FINAL_FLOOR = 3;
+    private final Set<UUID> winners = new LinkedHashSet<>();
     private final Map<UUID, Integer> floorOf = new HashMap<>();
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
@@ -73,6 +76,9 @@ public final class CrawlEngine {
             case Event.CrawlerJoined joined -> {
                 floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
                 crawlers.add(joined.crawler());
+                if (winners.contains(joined.crawler())) {
+                    yield List.of();
+                }
                 if (eliminated.contains(joined.crawler())) {
                     yield List.of(new Effect.Spectate(joined.crawler()));
                 }
@@ -101,7 +107,8 @@ public final class CrawlEngine {
     }
 
     private List<Effect> died(UUID crawler) {
-        if (!apocalypseHappened || !crawlers.contains(crawler) || eliminated.contains(crawler)) {
+        if (!apocalypseHappened || !crawlers.contains(crawler) || eliminated.contains(crawler)
+                || winners.contains(crawler)) {
             return List.of();
         }
         if (elimination.mode() == EliminationConfig.Mode.RESPAWN) {
@@ -125,6 +132,7 @@ public final class CrawlEngine {
             return List.of();
         }
         eliminated.clear();
+        winners.clear();
         apocalypseHappened = false;
         finalWarningGiven = false;
         floorTimer.reset();
@@ -208,6 +216,14 @@ public final class CrawlEngine {
         floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
         if (!floorTimer.windowOpen()) {
             return List.of(new Effect.StairwellSealed(crawler, floorTimer.untilWindow()));
+        }
+        if (floor == FINAL_FLOOR) {
+            winners.add(crawler);
+            floorOf.remove(crawler);
+            List<Effect> effects = new ArrayList<>(said("win", crawler));
+            effects.add(new Effect.ShowWinScreen(crawler));
+            effects.add(new Effect.RestoreWorld(crawler));
+            return effects;
         }
         floorOf.put(crawler, floor + 1);
         return List.of(new Effect.PullToFloor(crawler, floor + 1));

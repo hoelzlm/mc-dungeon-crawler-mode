@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Win screen is shown
+- [x] Win screen is shown (engine effect verified; adapter title packets not run in-game)
 - [ ] Crawler returns to the restored vanilla world with loot
-- [ ] Winners are not killed by later collapses
+- [x] Winners are not killed by later collapses
