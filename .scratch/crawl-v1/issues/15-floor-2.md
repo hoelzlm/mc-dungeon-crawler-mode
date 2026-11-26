@@ -7,6 +7,6 @@
 **Status:** ready-for-agent
 
 - [ ] Floor 2 generates with an industrial-maze look
-- [ ] Three Factions with all ranks and Bosses
-- [ ] 3 to 4 hidden Stairwells
+- [x] Three Factions with all ranks and Bosses
+- [x] 3 to 4 hidden Stairwells
 - [ ] Reachable from Floor 1's Stairwell

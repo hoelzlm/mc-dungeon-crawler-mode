@@ -9,6 +9,11 @@ public record CrawlConfig(long apocalypseDelayTicks, long warningLeadTicks, long
     public static final long TICKS_PER_DAY = 24_000L;
     public static final CrawlConfig DEFAULT = new CrawlConfig(3 * TICKS_PER_DAY, TICKS_PER_DAY / 4, DEFAULT_FLOOR_TIMER_TICKS);
 
+    /** The timer length of one Floor: the configured timer scaled by that Floor's own percentage. */
+    public long floorTimerTicksFor(int floor) {
+        return floorTimerTicks * dev.crawlmode.engine.floorgen.FloorSpec.timerPercent(floor) / 100;
+    }
+
     public CrawlConfig(long apocalypseDelayTicks) {
         this(apocalypseDelayTicks, 0);
     }

@@ -5,11 +5,8 @@ import dev.crawlmode.engine.faction.Factions;
 import dev.crawlmode.engine.faction.GearSlot;
 import dev.crawlmode.engine.faction.MobDef;
 import dev.crawlmode.engine.faction.PlannedSpawn;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
+import dev.crawlmode.engine.floorgen.FloorSpec;
+import java.io.StringReader;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -35,7 +32,6 @@ import net.minecraft.world.phys.Vec3;
  * its Faction and abilities as entity tags, so nothing has to be remembered across restarts.
  */
 final class FactionMobs {
-    private static final String RESOURCE = "/data/crawlmode/faction/factions.txt";
     private static final String TAG_MOB = "crawlmode_mob";
     private static final String TAG_FACTION = "crawlmode_faction:";
     private static final String TAG_ABILITY = "crawlmode_ability:";
@@ -52,14 +48,7 @@ final class FactionMobs {
 
     static Factions factions() {
         if (factions == null) {
-            try (InputStream in = FactionMobs.class.getResourceAsStream(RESOURCE)) {
-                if (in == null) {
-                    throw new IllegalStateException("Missing " + RESOURCE);
-                }
-                factions = Factions.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            factions = Factions.load(new StringReader(FloorSpec.readFactionData("factions")));
         }
         return factions;
     }

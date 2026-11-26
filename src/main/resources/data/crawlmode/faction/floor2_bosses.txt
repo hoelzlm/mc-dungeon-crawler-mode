@@ -1,0 +1,5 @@
+# Floor 2 bosses, loaded together with bosses.txt. Same format. Exactly one of the three reveals a Stairwell.
+
+boss mash_grubs entity=minecraft:ravager name="Brood Mother" health=130 damage=9 tier=gold
+boss dune_dingoes entity=minecraft:husk name="Dingo King" health=140 damage=11 tier=gold reveals=true mainhand=minecraft:diamond_sword head=minecraft:iron_helmet chest=minecraft:iron_chestplate
+boss rust_wasps entity=minecraft:phantom name="Hive Queen" health=150 damage=10 tier=radiant

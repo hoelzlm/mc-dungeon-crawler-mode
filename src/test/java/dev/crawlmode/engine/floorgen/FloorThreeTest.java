@@ -12,7 +12,6 @@ import dev.crawlmode.engine.faction.FactionAreas;
 import dev.crawlmode.engine.faction.Factions;
 import dev.crawlmode.engine.faction.PlannedSpawn;
 import dev.crawlmode.engine.faction.SpawnPlanner;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
@@ -27,19 +26,11 @@ class FloorThreeTest {
     private static final TemplateLibrary LIBRARY = library();
 
     private static Factions factions() {
-        try (var in = FloorThreeTest.class.getResourceAsStream("/data/crawlmode/faction/factions.txt")) {
-            return Factions.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        return Factions.load(new java.io.StringReader(FloorSpec.readFactionData("factions")));
     }
 
     private static Bosses bosses() {
-        try (var in = FloorThreeTest.class.getResourceAsStream("/data/crawlmode/faction/bosses.txt")) {
-            return Bosses.load(new InputStreamReader(in, StandardCharsets.UTF_8), FACTIONS);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        return Bosses.load(new java.io.StringReader(FloorSpec.readFactionData("bosses")), FACTIONS);
     }
 
     private static TemplateLibrary library() {
@@ -56,6 +47,17 @@ class FloorThreeTest {
         assertTrue(LIBRARY.rooms().size() >= 3);
         assertTrue(LIBRARY.corridors().size() >= 2);
         assertFalse(LIBRARY.stairwellRooms().isEmpty());
+    }
+
+    @Test
+    void floorThreeSpecBuildsTheVillageAndRuinsLayoutWithThreeStairwells() {
+        FloorSpec spec = FloorSpec.forFloor(3).orElseThrow();
+        for (long seed = 0; seed < 20; seed++) {
+            FloorLayout layout = FloorLayout.generate(seed, LIBRARY, spec);
+            assertEquals(spec.areas(), layout.areaCount());
+            assertEquals(3, layout.stairwells().size());
+            assertTrue(layout.cells().stream().anyMatch(c -> c.template().role() == FloorTemplate.Role.VILLAGE));
+        }
     }
 
     @Test

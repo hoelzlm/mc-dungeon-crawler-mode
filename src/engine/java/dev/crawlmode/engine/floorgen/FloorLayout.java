@@ -53,6 +53,19 @@ public final class FloorLayout {
     }
 
     public static FloorLayout generate(long seed, TemplateLibrary library, int areas) {
+        return generate(seed, library, areas, 5, 6);
+    }
+
+    /** A library with village templates builds a village-and-ruins Floor (see {@link VillageRuinsLayout}). */
+    public static FloorLayout generate(long seed, TemplateLibrary library, FloorSpec spec) {
+        if (!library.villages().isEmpty()) {
+            return VillageRuinsLayout.generate(seed, library);
+        }
+        return generate(seed, library, spec.areas(), spec.minStairwells(), spec.maxStairwells());
+    }
+
+    /** @param minWells fewest Stairwells hidden on the Floor; {@code maxWells} the most (inclusive). */
+    public static FloorLayout generate(long seed, TemplateLibrary library, int areas, int minWells, int maxWells) {
         Random rnd = new Random(seed);
 
         // Area centres on a lattice, each joined to an earlier one.
@@ -100,7 +113,7 @@ public final class FloorLayout {
         }
 
         // Stairwell rooms: one in the start area (not the spawn cell), the rest anywhere else.
-        int wellCount = 5 + rnd.nextInt(2);
+        int wellCount = minWells + rnd.nextInt(maxWells - minWells + 1);
         List<CellPos> startCandidates = new ArrayList<>();
         List<CellPos> otherCandidates = new ArrayList<>();
         for (Map.Entry<CellPos, Integer> e : areaOf.entrySet()) {

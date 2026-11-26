@@ -29,9 +29,6 @@ class BossesTest {
             boss marble_goblins entity=minecraft:ravager name="Goblin Warlord" health=120 damage=9 tier=gold reveals=true head=minecraft:iron_helmet
             boss brass_constructs entity=minecraft:iron_golem name="The Clockwork Colossus" health=150 damage=10 tier=radiant
             boss sour_llamas entity=minecraft:vindicator name="Llama Overlord" health=110 damage=11 tier=gold
-            boss ghost_bandits entity=minecraft:vindicator name="Thief King" health=120 damage=10 tier=gold reveals=true
-            boss wild_beasts entity=minecraft:ravager name="Tusk Mother" health=140 damage=11 tier=gold
-            boss ash_cult entity=minecraft:wither_skeleton name="Prophet" health=150 damage=9 tier=radiant
             """;
 
     @Test
