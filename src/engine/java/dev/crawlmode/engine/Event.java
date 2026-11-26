@@ -12,4 +12,7 @@ public sealed interface Event {
 
     /** A Crawler earned a Loot Box (Achievement, Boss kill or floor milestone). */
     record LootBoxGranted(UUID crawler, LootTier tier, LootSource source) implements Event {}
+
+    /** A Crawler tried to use a Stairwell. */
+    record StairwellUsed(UUID crawler) implements Event {}
 }

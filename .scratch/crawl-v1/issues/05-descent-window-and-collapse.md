@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Stairwell rejects use before the window
+- [x] Stairwell rejects use before the window
 - [ ] Hint and Host announcement appear
-- [ ] Descending in the window moves the Crawler and they survive the collapse
-- [ ] Those left behind die at the collapse
-- [ ] Next Floor's timer starts at the previous collapse, not on arrival
+- [x] Descending in the window moves the Crawler and they survive the collapse
+- [x] Those left behind die at the collapse
+- [x] Next Floor's timer starts at the previous collapse, not on arrival

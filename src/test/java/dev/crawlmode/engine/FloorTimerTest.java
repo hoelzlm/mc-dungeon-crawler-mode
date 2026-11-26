@@ -79,7 +79,7 @@ class FloorTimerTest {
         for (long t = 20; t <= 90 * MIN; t += 20) {
             clock.advance(20);
             for (Effect e : engine.tick()) {
-                if (e instanceof Effect.HostSays s) {
+                if (e instanceof Effect.HostSays s && !s.line().topic().equals("descent-window")) {
                     topics.add(s.line().topic());
                     long remaining = 90 * MIN - t;
                     long expected = switch (s.line().topic()) {

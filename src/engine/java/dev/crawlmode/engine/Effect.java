@@ -17,4 +17,10 @@ public sealed interface Effect {
 
     /** Hand the rolled rewards to a Crawler. */
     record GrantLoot(UUID crawler, LootTier tier, java.util.List<LootItem> items) implements Effect {}
+
+    /** The Stairwell is still sealed; it opens in this many ticks. */
+    record StairwellSealed(UUID crawler, long opensInTicks) implements Effect {}
+
+    /** The Floor collapsed under this Crawler, killing them. */
+    record Collapse(UUID crawler, int floor) implements Effect {}
 }

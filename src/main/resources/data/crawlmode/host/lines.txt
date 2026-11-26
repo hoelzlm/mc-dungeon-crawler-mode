@@ -17,3 +17,6 @@ apocalypse-soon: The countdown is nearly over! Final hugs, final loot, final reg
 timer-10m: Ten minutes left on this floor, contestants! Time flies when you are being hunted!
 timer-1m: One minute! Sixty delicious seconds of suspense!
 timer-10s: Ten seconds! Nine! Eight! Honestly, do not bother counting!
+
+descent-window: The stairwells are open, contestants! Ten minutes to go down or go out with a bang!
+descent-window: Doors unsealed! Run, crawl or stumble downward. The floor is about to quit!

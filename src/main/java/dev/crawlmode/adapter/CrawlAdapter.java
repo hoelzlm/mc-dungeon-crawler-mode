@@ -82,6 +82,12 @@ public final class CrawlAdapter {
                     }
                     return 1;
                 })));
+        d.register(Commands.literal("stairwell").executes(ctx -> {
+            if (engine != null && ctx.getSource().getEntity() instanceof ServerPlayer player) {
+                apply(engine.handle(new Event.StairwellUsed(player.getUUID())));
+            }
+            return 1;
+        }));
     }
 
     /** Once the Apocalypse has happened, nobody may travel to a dimension outside the Crawl. */
@@ -197,6 +203,8 @@ public final class CrawlAdapter {
                         timerHud.show(player, timer.remainingTicks());
                     }
                 }
+                case Effect.StairwellSealed sealed -> StairwellAdapter.sealed(server, sealed);
+                case Effect.Collapse collapse -> StairwellAdapter.collapse(server, collapse);
                 case Effect.LootBoxOpening opening -> LootBoxAdapter.animate(server, opening);
                 case Effect.GrantLoot grant -> LootBoxAdapter.grant(server, grant);
                 case Effect.PullToFloor pull -> {

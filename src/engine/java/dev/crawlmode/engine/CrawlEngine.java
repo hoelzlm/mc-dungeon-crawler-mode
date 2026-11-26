@@ -2,7 +2,9 @@ package dev.crawlmode.engine;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.IntUnaryOperator;
@@ -21,7 +23,11 @@ public final class CrawlEngine {
     private final IntUnaryOperator lootPick;
     private boolean apocalypseHappened;
     private boolean finalWarningGiven;
-    private final FloorTimer floorTimer;
+    private FloorTimer floorTimer;
+    /** The Floor whose timer is running (or, before the Apocalypse, Floor 1). */
+    private int timerFloor = 1;
+    private boolean windowAnnounced;
+    private final Map<UUID, Integer> floorOf = new HashMap<>();
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -48,18 +54,21 @@ public final class CrawlEngine {
             case Event.CrawlerLeft left -> {
                 floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
                 crawlers.remove(left.crawler());
+                floorOf.remove(left.crawler());
                 yield List.of();
             }
             case Event.CrawlerJoined joined -> {
                 floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
                 crawlers.add(joined.crawler());
                 if (apocalypseHappened) {
-                    yield List.of(new Effect.PullToFloor(joined.crawler(), 1));
+                    floorOf.put(joined.crawler(), timerFloor);
+                    yield List.of(new Effect.PullToFloor(joined.crawler(), timerFloor));
                 }
                 yield said("apocalypse-start", joined.crawler());
             }
             case Event.ApocalypseCommanded ignored -> apocalypse();
             case Event.LootBoxGranted granted -> openLootBox(granted);
+            case Event.StairwellUsed used -> useStairwell(used.crawler());
         };
     }
 
@@ -81,18 +90,67 @@ public final class CrawlEngine {
 
     public List<Effect> tick() {
         List<Effect> effects = new ArrayList<>(apocalypseTick());
+        effects.addAll(floorTick());
+        return effects;
+    }
+
+    private List<Effect> floorTick() {
+        List<Effect> effects = new ArrayList<>();
         floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
+        List<UUID> onTimerFloor = crawlersOn(timerFloor);
         for (String topic : floorTimer.newWarnings()) {
-            for (UUID crawler : crawlers) {
+            for (UUID crawler : onTimerFloor) {
                 effects.addAll(said(topic, crawler));
             }
         }
+        if (floorTimer.windowOpen() && !windowAnnounced) {
+            windowAnnounced = true;
+            for (UUID crawler : onTimerFloor) {
+                effects.addAll(said("descent-window", crawler));
+            }
+        }
         if (floorTimer.displayChanged()) {
-            for (UUID crawler : crawlers) {
+            for (UUID crawler : onTimerFloor) {
                 effects.add(new Effect.ShowTimer(crawler, floorTimer.remaining()));
             }
         }
+        if (floorTimer.expired()) {
+            effects.addAll(collapse(onTimerFloor));
+        }
         return effects;
+    }
+
+    /** The Floor collapses: whoever is still on it dies, and the next Floor's timer starts now. */
+    private List<Effect> collapse(List<UUID> left) {
+        List<Effect> effects = new ArrayList<>();
+        for (UUID crawler : left) {
+            effects.add(new Effect.Collapse(crawler, timerFloor));
+            floorOf.remove(crawler);
+        }
+        timerFloor++;
+        long collapsedAt = clock.nowTicks() - floorTimer.overshoot();
+        floorTimer = new FloorTimer(config.floorTimerTicks());
+        floorTimer.start(collapsedAt);
+        floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
+        windowAnnounced = false;
+        return effects;
+    }
+
+    private List<UUID> crawlersOn(int floor) {
+        return crawlers.stream().filter(c -> floorOf.getOrDefault(c, 0) == floor).toList();
+    }
+
+    private List<Effect> useStairwell(UUID crawler) {
+        Integer floor = floorOf.get(crawler);
+        if (floor == null || floor != timerFloor) {
+            return List.of();
+        }
+        floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
+        if (!floorTimer.windowOpen()) {
+            return List.of(new Effect.StairwellSealed(crawler, floorTimer.untilWindow()));
+        }
+        floorOf.put(crawler, floor + 1);
+        return List.of(new Effect.PullToFloor(crawler, floor + 1));
     }
 
     private List<Effect> apocalypseTick() {
@@ -126,6 +184,7 @@ public final class CrawlEngine {
         List<Effect> effects = new ArrayList<>();
         for (UUID crawler : crawlers) {
             effects.add(new Effect.PullToFloor(crawler, 1));
+            floorOf.put(crawler, 1);
             host.lineFor("apocalypse").ifPresent(line -> effects.add(new Effect.HostSays(crawler, line)));
         }
         return effects;

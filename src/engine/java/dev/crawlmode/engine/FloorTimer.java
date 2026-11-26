@@ -67,6 +67,27 @@ final class FloorTimer {
         return topics;
     }
 
+    static final long DESCENT_WINDOW_TICKS = 10 * 60 * TICKS_PER_SECOND;
+
+    /** How far past zero the timer has run, in ticks (a late tick or a long pause-free gap). */
+    long overshoot() {
+        return Math.max(0, elapsed - totalTicks);
+    }
+
+    boolean expired() {
+        return running && remaining() == 0;
+    }
+
+    /** Whether the Descent Window (the last ten minutes) is open. */
+    boolean windowOpen() {
+        return running && remaining() <= DESCENT_WINDOW_TICKS;
+    }
+
+    /** Ticks until the Descent Window opens; zero once it has. */
+    long untilWindow() {
+        return Math.max(0, remaining() - DESCENT_WINDOW_TICKS);
+    }
+
     private long secondsLeft() {
         return (remaining() + TICKS_PER_SECOND - 1) / TICKS_PER_SECOND;
     }
