@@ -44,30 +44,45 @@ final class BossAdapter {
     private static final String TAG_BOSS = "crawlmode_boss:";
     private static final BlockState GATE_STATE = Blocks.IRON_BARS.defaultBlockState();
 
-    private static FloorLayout layout;
-    private static BossPlan plan;
-    private static BossEncounter encounter;
-    private static final Map<GateGeometry.Pos, Gate> GATE_BLOCKS = new HashMap<>();
+    /** Everything the adapter holds for one Floor; each Floor is its own dimension with its own plan. */
+    private record FloorBosses(FloorLayout layout, BossPlan plan, BossEncounter encounter,
+            Map<GateGeometry.Pos, Gate> gateBlocks) {}
+
+    private static final Map<Integer, FloorBosses> FLOORS = new HashMap<>();
 
     private BossAdapter() {}
 
     /** @param lootGranted receives the engine events of a Boss kill (Loot Box grant, "kill.boss" trigger). */
     static void register(Consumer<Event> lootGranted) {
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent event) -> {
-            if (encounter == null || !(event.getEntity() instanceof Mob mob)
-                    || !(event.getSource().getEntity() instanceof ServerPlayer killer)) {
+            if (!(event.getEntity() instanceof Mob mob) || !(event.getSource().getEntity() instanceof ServerPlayer killer)
+                    || !(mob.level() instanceof ServerLevel level)) {
+                return;
+            }
+            FloorBosses floor = FLOORS.get(floorOf(level));
+            if (floor == null) {
                 return;
             }
             for (String tag : mob.entityTags()) {
-                if (tag.startsWith(TAG_BOSS) && mob.level() instanceof ServerLevel level) {
-                    encounter.onBossKilled(tag.substring(TAG_BOSS.length()), killer.getUUID())
-                            .ifPresent(kill -> applyKill(level, killer, kill, lootGranted));
+                if (tag.startsWith(TAG_BOSS)) {
+                    floor.encounter().onBossKilled(tag.substring(TAG_BOSS.length()), killer.getUUID())
+                            .ifPresent(kill -> applyKill(floor, level, killer, kill, lootGranted));
                 }
             }
         });
     }
 
+    /** The Floor number of a level, from its dimension id {@code crawlmode:floor_N}; 0 for anything else. */
+    static int floorOf(net.minecraft.world.level.Level level) {
+        String path = level.dimension().identifier().getPath();
+        return path.startsWith("floor_") ? Integer.parseInt(path.substring("floor_".length())) : 0;
+    }
+
     static void init(FloorLayout floorLayout, FactionAreas areas, long seed) {
+        init(1, floorLayout, areas, seed);
+    }
+
+    static void init(int floor, FloorLayout floorLayout, FactionAreas areas, long seed) {
         Bosses bosses;
         try (InputStream in = BossAdapter.class.getResourceAsStream(RESOURCE)) {
             if (in == null) {
@@ -77,45 +92,47 @@ final class BossAdapter {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        layout = floorLayout;
-        plan = BossPlan.generate(floorLayout, areas, FactionMobs.factions().forFloor(1), bosses, seed);
-        encounter = new BossEncounter(floorLayout, areas, plan);
-        GATE_BLOCKS.clear();
+        BossPlan plan = BossPlan.generate(floorLayout, areas, FactionMobs.factions().forFloor(floor), bosses, seed);
+        Map<GateGeometry.Pos, Gate> gateBlocks = new HashMap<>();
         for (Gate gate : floorLayout.gates()) {
             for (GateGeometry.Pos p : GateGeometry.blocks(floorLayout, gate)) {
-                GATE_BLOCKS.put(p, gate);
+                gateBlocks.put(p, gate);
             }
         }
+        FLOORS.put(floor, new FloorBosses(floorLayout, plan, new BossEncounter(floorLayout, areas, plan), gateBlocks));
     }
 
     static void clear() {
-        layout = null;
-        plan = null;
-        encounter = null;
-        GATE_BLOCKS.clear();
+        FLOORS.clear();
     }
 
     /** Closed gate blocks cannot be broken or blown up. */
     static boolean isClosedGateBlock(int x, int y, int z) {
-        Gate gate = encounter == null ? null : GATE_BLOCKS.get(new GateGeometry.Pos(x, y, z));
-        return gate != null && encounter.isGateClosed(gate);
+        return isClosedGateBlock(1, x, y, z);
+    }
+
+    static boolean isClosedGateBlock(int floor, int x, int y, int z) {
+        FloorBosses f = FLOORS.get(floor);
+        Gate gate = f == null ? null : f.gateBlocks().get(new GateGeometry.Pos(x, y, z));
+        return gate != null && f.encounter().isGateClosed(gate);
     }
 
     /** Called after a cell's structure is written: seal a closed gate here, stand the Boss if its spot is here. */
     static void onCellBuilt(ServerLevel level, Cell cell) {
-        if (encounter == null) {
+        FloorBosses floor = FLOORS.get(floorOf(level));
+        if (floor == null) {
             return;
         }
-        for (Gate gate : layout.gates()) {
-            if (gate.cell().equals(cell.pos()) && encounter.isGateClosed(gate)) {
-                for (GateGeometry.Pos p : GateGeometry.blocks(layout, gate)) {
+        for (Gate gate : floor.layout().gates()) {
+            if (gate.cell().equals(cell.pos()) && floor.encounter().isGateClosed(gate)) {
+                for (GateGeometry.Pos p : GateGeometry.blocks(floor.layout(), gate)) {
                     level.setBlock(new BlockPos(p.x(), p.y(), p.z()), GATE_STATE, 2);
                 }
             }
         }
-        for (BossPlacement p : plan.placements()) {
+        for (BossPlacement p : floor.plan().placements()) {
             boolean here = Math.floorDiv(p.x(), 16) == cell.pos().x() && Math.floorDiv(p.z(), 16) == cell.pos().z();
-            if (here && !encounter.isDead(p.def().factionId())) {
+            if (here && !floor.encounter().isDead(p.def().factionId())) {
                 spawnBoss(level, p);
             }
         }
@@ -132,9 +149,9 @@ final class BossAdapter {
         }
     }
 
-    private static void applyKill(ServerLevel level, ServerPlayer killer, BossKill kill, Consumer<Event> lootGranted) {
+    private static void applyKill(FloorBosses floor, ServerLevel level, ServerPlayer killer, BossKill kill, Consumer<Event> lootGranted) {
         for (Gate gate : kill.openedGates()) {
-            for (GateGeometry.Pos p : GateGeometry.blocks(layout, gate)) {
+            for (GateGeometry.Pos p : GateGeometry.blocks(floor.layout(), gate)) {
                 BlockPos pos = new BlockPos(p.x(), p.y(), p.z());
                 if (level.hasChunkAt(pos) && level.getBlockState(pos).is(Blocks.IRON_BARS)) {
                     level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
