@@ -32,4 +32,10 @@ public sealed interface Effect {
     record EnterSafeRoom(UUID crawler, boolean firstEntry) implements Effect {}
 
     record ExitSafeRoom(UUID crawler, DoorPos door) implements Effect {}
+
+    record StartSafeRoomRegeneration(UUID crawler, int amplifier) implements Effect {}
+
+    record StopSafeRoomRegeneration(UUID crawler) implements Effect {}
+
+    record ServeBuffet(UUID crawler, java.util.List<LootItem> items) implements Effect {}
 }

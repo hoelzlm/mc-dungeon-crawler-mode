@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] No damage, no hostile mobs and no PvP inside the Safe Room
-- [ ] Light regeneration applies while inside and stops when leaving
-- [ ] Chests keep their contents across leaving and re-entering
-- [ ] The food buffet refills on a cooldown and its items can be carried out
-- [ ] Food, cooldown and regeneration strength are read from data files, with unit tests for loading
-- [ ] The Floor Timer is unaffected while inside
+- [x] No damage, no hostile mobs and no PvP inside the Safe Room
+- [x] Light regeneration applies while inside and stops when leaving
+- [x] Chests keep their contents across leaving and re-entering
+- [x] The food buffet refills on a cooldown and its items can be carried out
+- [x] Food, cooldown and regeneration strength are read from data files, with unit tests for loading
+- [x] The Floor Timer is unaffected while inside

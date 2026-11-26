@@ -28,4 +28,6 @@ public sealed interface Event {
     record SafeRoomDoorUsed(UUID crawler, DoorPos door) implements Event {}
 
     record SafeRoomExited(UUID crawler) implements Event {}
+
+    record BuffetUsed(UUID crawler) implements Event {}
 }

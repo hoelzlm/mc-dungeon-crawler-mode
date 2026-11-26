@@ -90,6 +90,7 @@ public final class CrawlEngine {
                     ? List.of(new Effect.Leave(chosen.crawler())) : List.of();
             case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
             case Event.SafeRoomExited exited -> exitSafeRoom(exited.crawler());
+            case Event.BuffetUsed used -> useBuffet(used.crawler());
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
@@ -163,12 +164,50 @@ public final class CrawlEngine {
             return List.of();
         }
         safeRoomOrigin.put(crawler, door);
-        return List.of(new Effect.EnterSafeRoom(crawler, safeRoomsCreated.add(crawler)));
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.EnterSafeRoom(crawler, safeRoomsCreated.add(crawler)));
+        if (safeRoomRules != null) {
+            effects.add(new Effect.StartSafeRoomRegeneration(crawler, safeRoomRules.regenerationAmplifier()));
+        }
+        return effects;
     }
 
     private List<Effect> exitSafeRoom(UUID crawler) {
         DoorPos door = safeRoomOrigin.remove(crawler);
-        return door == null ? List.of() : List.of(new Effect.ExitSafeRoom(crawler, door));
+        if (door == null) {
+            return List.of();
+        }
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.ExitSafeRoom(crawler, door));
+        if (safeRoomRules != null) {
+            effects.add(new Effect.StopSafeRoomRegeneration(crawler));
+        }
+        return effects;
+    }
+
+    private SafeRoomRules safeRoomRules;
+    private final Map<UUID, Long> buffetServedAt = new HashMap<>();
+
+    public CrawlEngine withSafeRoomRules(SafeRoomRules rules) {
+        this.safeRoomRules = rules;
+        return this;
+    }
+
+    public boolean isInSafeRoom(UUID crawler) {
+        return safeRoomOrigin.containsKey(crawler);
+    }
+
+    private List<Effect> useBuffet(UUID crawler) {
+        if (safeRoomRules == null || !isInSafeRoom(crawler)) {
+            return List.of();
+        }
+        Long last = buffetServedAt.get(crawler);
+        long now = clock.nowTicks();
+        if (last != null && now - last < safeRoomRules.buffetCooldownTicks()) {
+            return List.of();
+        }
+        buffetServedAt.put(crawler, now);
+        return List.of(new Effect.ServeBuffet(crawler, safeRoomRules.food()));
     }
 
     private List<Effect> freshCrawl(UUID crawler) {
@@ -184,6 +223,7 @@ public final class CrawlEngine {
         floorOf.clear();
         safeRoomOrigin.clear();
         safeRoomsCreated.clear();
+        buffetServedAt.clear();
         windowAnnounced = false;
         startedAt = clock.nowTicks();
         return List.of(new Effect.RestoreWorld(crawler));
