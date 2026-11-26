@@ -17,6 +17,8 @@ public sealed interface Event {
 
     record LootBoxGranted(UUID crawler, LootTier tier, LootSource source) implements Event {}
 
+    record LootBoxOpened(UUID crawler, LootTier tier) implements Event {}
+
     record StairwellUsed(UUID crawler) implements Event {}
 
     record MobKilled(UUID crawler, dev.crawlmode.engine.faction.Rank rank) implements Event {}

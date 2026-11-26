@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Four distinct tier items exist and stack by tier
-- [ ] Every existing grant path yields an unopened box item
-- [ ] Right-click opens one box, consumes it, plays the animation and Host line, and grants the table contents
-- [ ] The grant Host line says the box is in the inventory
-- [ ] Engine tests cover grant and open through the Crawl engine seam
+- [x] Four distinct tier items exist and stack by tier
+- [x] Every existing grant path yields an unopened box item
+- [x] Right-click opens one box, consumes it, plays the animation and Host line, and grants the table contents
+- [x] The grant Host line says the box is in the inventory
+- [x] Engine tests cover grant and open through the Crawl engine seam
