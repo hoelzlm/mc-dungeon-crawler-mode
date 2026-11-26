@@ -4,11 +4,11 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The floor generation planner places at least four doors per Floor, for all three Floors
-- [ ] Doors keep a minimum spacing and are spread rather than clustered
-- [ ] No door sits in or near a Boss area
-- [ ] Doors work throughout the Floor Timer, including the Descent Window
-- [ ] The placeholder door is gone
-- [ ] Planner tests cover count, spread and Boss exclusion
+- [x] The floor generation planner places at least four doors per Floor, for all three Floors
+- [x] Doors keep a minimum spacing and are spread rather than clustered
+- [x] No door sits in or near a Boss area
+- [x] Doors work throughout the Floor Timer, including the Descent Window
+- [x] The placeholder door is gone
+- [x] Planner tests cover count, spread and Boss exclusion

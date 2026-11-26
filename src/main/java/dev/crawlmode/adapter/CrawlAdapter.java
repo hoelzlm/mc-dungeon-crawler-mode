@@ -136,7 +136,6 @@ public final class CrawlAdapter {
             return;
         }
         BlockPos spawn = TemplateFloorAdapter.prepareSpawn(level);
-        SafeRoomAdapter.placePlaceholderDoor(level, spawn);
         player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
     }
 

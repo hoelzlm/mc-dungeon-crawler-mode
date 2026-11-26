@@ -97,4 +97,18 @@ class SafeRoomTest {
 
         assertEquals(List.of(), engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR)));
     }
+
+    @Test
+    void doorsWorkThroughoutTheFloorTimerIncludingTheDescentWindow() {
+        CrawlEngine engine = new CrawlEngine(clock, new CrawlConfig(72_000, 0, 30 * 20 * 60));
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+
+        for (long minute : new long[] {1, 15, 25, 29}) {
+            clock.advance(minute * 20 * 60 - clock.nowTicks());
+            engine.tick();
+            assertEquals(1, engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR)).size(), "minute " + minute);
+            engine.handle(new Event.SafeRoomExited(CARL));
+        }
+    }
 }
