@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Villages have no hostile spawns
-- [ ] Shops are decorative only
-- [ ] Ruins hold the Factions and Bosses
-- [ ] 3 hidden Stairwells
+- [x] Villages have no hostile spawns
+- [x] Shops are decorative only
+- [x] Ruins hold the Factions and Bosses
+- [x] 3 hidden Stairwells
 - [ ] Floor 3's Stairwells lead to the win in ticket 07
