@@ -1,0 +1,3 @@
+# One Safe Room dimension per Crawler
+
+Each **Crawler**'s **Safe Room** is its own dedicated dimension, created when they first enter it and kept for the whole **Crawl**, reached from the **Safe Room Doors** of every **Floor**. We chose this over a shared Safe Room dimension with a plot per **Crawler**, or a pocket inside each **Floor**, because a private room that is the same across **Floors** needs a home that no **Floor** collapse can delete, and a dimension of its own makes privacy and deleting an eliminated **Crawler**'s room trivial. The cost is many dimensions in a multiplayer **Crawl**, and the engine must remember which **Floor** and door each **Crawler** entered from.

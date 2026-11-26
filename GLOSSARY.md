@@ -70,5 +70,13 @@ A named feat the **System** recognises and rewards.
 _Avoid_: Advancement, quest
 
 **Loot Box**:
-A tiered container of rewards handed out by the **System**.
+A tiered container of rewards handed out by the **System**, kept unopened in a **Crawler**'s inventory and opened only inside the **Safe Room**.
 _Avoid_: Chest, crate, drop
+
+**Safe Room**:
+A **Crawler**'s own private refuge, the same one across every **Floor** of the **Crawl**, holding their stored items, a food supply and the only place **Loot Boxes** can be opened. Nothing can hurt a **Crawler** inside, but the **Floor Timer** keeps running and a collapse of the **Floor** they entered from still kills them. A light regeneration soothes them while inside.
+_Avoid_: Lobby, hub, bunker
+
+**Safe Room Door**:
+A visible entrance to the **Safe Room** found on a **Floor**, at least four per **Floor**. Every door leads to the same **Safe Room** of the **Crawler** using it, and leaving returns them to the door they came through.
+_Avoid_: Portal, entrance
