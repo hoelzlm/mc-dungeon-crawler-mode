@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Apocalypse arrival lines state the Loot Box rule
-- [ ] The first-box line fires once per Crawler on their first Loot Box
-- [ ] The first-entry welcome line fires once per Crawler
-- [ ] All lines are in Host data files with loading tests
-- [ ] Engine tests cover the once-only triggers
+- [x] Apocalypse arrival lines state the Loot Box rule
+- [x] The first-box line fires once per Crawler on their first Loot Box
+- [x] The first-entry welcome line fires once per Crawler
+- [x] All lines are in Host data files with loading tests
+- [x] Engine tests cover the once-only triggers
