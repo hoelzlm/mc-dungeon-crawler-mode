@@ -102,6 +102,7 @@ final class FactionMobs {
         def.gear().forEach((slot, itemId) -> equip(mob, slot, itemId));
         mob.addTag(TAG_MOB);
         mob.addTag(TAG_FACTION + def.factionId());
+        mob.addTag(AchievementAdapter.TAG_RANK + def.rank().key());
         def.abilities().forEach(a -> mob.addTag(TAG_ABILITY + a.key()));
         level.addFreshEntity(mob);
     }
