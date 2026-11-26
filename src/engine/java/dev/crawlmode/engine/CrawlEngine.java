@@ -146,6 +146,7 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
+        safeRoomOrigin.remove(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.Spectate(crawler));
         if (elimination.singlePlayer()) {
@@ -197,7 +198,16 @@ public final class CrawlEngine {
         return effects;
     }
 
+    private List<Effect> poofLootBox(UUID crawler) {
+        List<Effect> effects = new ArrayList<>(said("lootbox.poof", crawler));
+        effects.addAll(unlock(crawler, "lootbox.poof"));
+        return effects;
+    }
+
     private List<Effect> openLootBox(Event.LootBoxOpened opened) {
+        if (!safeRoomOrigin.containsKey(opened.crawler())) {
+            return poofLootBox(opened.crawler());
+        }
         if (loot == null) {
             return List.of();
         }

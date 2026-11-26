@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] A Crawler inside at collapse is Eliminated like anyone left on the Floor
-- [ ] Time spent inside does not pause or reset the Floor Timer
-- [ ] A Crawler who leaves and descends before the collapse survives
-- [ ] Engine tests cover collapse and Descent Window scenarios with a fake clock
+- [x] A Crawler inside at collapse is Eliminated like anyone left on the Floor
+- [x] Time spent inside does not pause or reset the Floor Timer
+- [x] A Crawler who leaves and descends before the collapse survives
+- [x] Engine tests cover collapse and Descent Window scenarios with a fake clock
