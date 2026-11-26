@@ -13,6 +13,7 @@ import dev.crawlmode.engine.faction.MobDef;
 import dev.crawlmode.engine.faction.PlannedSpawn;
 import dev.crawlmode.engine.faction.Rank;
 import dev.crawlmode.engine.floorgen.Cell;
+import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
 import dev.crawlmode.engine.floorgen.FloorSpec;
 import dev.crawlmode.engine.floorgen.Gate;
@@ -20,6 +21,8 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -70,6 +73,12 @@ final class BossAdapter {
             }
         }
         FLOORS.put(floor, new FloorBosses(floorLayout, plan, new BossEncounter(floorLayout, areas, plan), gateBlocks));
+    }
+
+    static Set<CellPos> bossCells(int floor) {
+        FloorBosses f = FLOORS.get(floor);
+        return f == null ? Set.of() : f.plan().placements().stream()
+                .map(p -> new CellPos(Math.floorDiv(p.x(), 16), Math.floorDiv(p.z(), 16))).collect(Collectors.toSet());
     }
 
     static void clear() {

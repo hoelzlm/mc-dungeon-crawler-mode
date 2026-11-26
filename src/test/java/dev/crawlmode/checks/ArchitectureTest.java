@@ -26,7 +26,7 @@ class ArchitectureTest {
             "AidAdapter", Set.of("TemplateFloorAdapter"),
             "FactionMobs", Set.of("AchievementAdapter"),
             "LootBoxAdapter", Set.of("AidAdapter"),
-            "TemplateFloorAdapter", Set.of("BossAdapter", "FactionMobs"),
+            "TemplateFloorAdapter", Set.of("BossAdapter", "FactionMobs", "SafeRoomAdapter"),
             "BossAdapter", Set.of("FactionMobs"),
             "StairwellAdapter", Set.of("TimerHud"));
 

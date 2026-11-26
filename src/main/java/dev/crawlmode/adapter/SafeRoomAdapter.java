@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import dev.crawlmode.engine.floorgen.CellPos;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -48,8 +49,7 @@ final class SafeRoomAdapter {
     private static final int ROOM_FLOOR_Y = 64;
     private static final BlockPos ROOM_EXIT = new BlockPos(0, ROOM_FLOOR_Y + 1, 3);
     private static final BlockPos ROOM_SPAWN = new BlockPos(0, ROOM_FLOOR_Y + 1, 0);
-    private static final int PLACEHOLDER_DOOR_FLOOR = 1;
-    private static final BlockPos PLACEHOLDER_DOOR_OFFSET = new BlockPos(3, 0, 0);
+    private static final int TEMPLATE_FLOOR = 1;
 
     private static final String RULES_RESOURCE = "/data/crawlmode/saferoom/rules.txt";
     private static final BlockPos ROOM_BUFFET = new BlockPos(-3, ROOM_FLOOR_Y + 1, 0);
@@ -58,7 +58,7 @@ final class SafeRoomAdapter {
             new BlockPos(3, ROOM_FLOOR_Y + 1, -3));
 
     private static final Map<UUID, ServerLevel> ROOMS = new HashMap<>();
-    private static final Map<Integer, BlockPos> DOORS = new HashMap<>();
+    private static final Map<Integer, List<DoorPos>> DOORS = new HashMap<>();
 
     private SafeRoomAdapter() {}
 
@@ -80,9 +80,10 @@ final class SafeRoomAdapter {
                 return;
             }
             Floors.numberOf(event.getLevel()).ifPresent(floor -> {
-                if (p.equals(DOORS.get(floor))) {
+                DoorPos door = new DoorPos(floor, p.getX(), p.getY(), p.getZ());
+                if (DOORS.getOrDefault(floor, List.of()).contains(door)) {
                     event.setCanceled(true);
-                    events.accept(new Event.SafeRoomDoorUsed(crawler, new DoorPos(floor, p.getX(), p.getY(), p.getZ())));
+                    events.accept(new Event.SafeRoomDoorUsed(crawler, door));
                 }
             });
         });
@@ -135,12 +136,16 @@ final class SafeRoomAdapter {
         DOORS.clear();
     }
 
-    static void placePlaceholderDoor(ServerLevel level, BlockPos spawn) {
-        Floors.numberOf(level).stream().filter(f -> f == PLACEHOLDER_DOOR_FLOOR).forEach(f -> {
-            BlockPos door = spawn.offset(PLACEHOLDER_DOOR_OFFSET);
-            level.setBlockAndUpdate(door, Blocks.CRYING_OBSIDIAN.defaultBlockState());
-            DOORS.put(f, door);
-        });
+    static void plan(int floor, List<DoorPos> doors) {
+        DOORS.put(floor, doors);
+    }
+
+    static void onCellBuilt(ServerLevel level, int floor, CellPos cell) {
+        for (DoorPos door : DOORS.getOrDefault(floor, List.of())) {
+            if (Math.floorDiv(door.x(), 16) == cell.x() && Math.floorDiv(door.z(), 16) == cell.z()) {
+                level.setBlockAndUpdate(new BlockPos(door.x(), door.y(), door.z()), Blocks.CRYING_OBSIDIAN.defaultBlockState());
+            }
+        }
     }
 
     static void enter(MinecraftServer server, Effect.EnterSafeRoom enter) {
@@ -180,7 +185,7 @@ final class SafeRoomAdapter {
             return existing;
         }
         try {
-            ServerLevel template = server.getLevel(Floors.key(PLACEHOLDER_DOOR_FLOOR));
+            ServerLevel template = server.getLevel(Floors.key(TEMPLATE_FLOOR));
             ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION,
                     Identifier.fromNamespaceAndPath(CrawlMode.MOD_ID, ROOM_PREFIX + crawler));
             LevelStem stem = new LevelStem(template.dimensionTypeRegistration(), template.getChunkSource().getGenerator());
