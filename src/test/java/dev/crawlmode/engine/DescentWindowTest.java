@@ -14,6 +14,8 @@ class DescentWindowTest {
     private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
+    /** Floor 2 runs 80 percent of the configured timer (see FloorSpec). */
+    private static final long FLOOR_2_TIMER = 24 * MIN;
 
     private final FakeClock clock = new FakeClock();
     private CrawlEngine engine;
@@ -66,7 +68,17 @@ class DescentWindowTest {
         tickTo(25 * MIN);
         engine.handle(new Event.StairwellUsed(CARL));
         tickTo(TIMER);
-        assertEquals(TIMER - 100, lastShown(tickTo(TIMER + 100), CARL));
+        assertEquals(FLOOR_2_TIMER - 100, lastShown(tickTo(TIMER + 100), CARL));
+    }
+
+    @Test
+    void floorTwoCollapsesAtItsOwnShorterTimer() {
+        start(CARL);
+        tickTo(25 * MIN);
+        engine.handle(new Event.StairwellUsed(CARL));
+        tickTo(TIMER);
+        tickTo(TIMER + FLOOR_2_TIMER - 1);
+        assertTrue(tickTo(TIMER + FLOOR_2_TIMER).contains(new Effect.Collapse(CARL, 2)));
     }
 
     @Test
@@ -84,7 +96,7 @@ class DescentWindowTest {
         engine.handle(new Event.StairwellUsed(CARL));
         tickTo(TIMER + 100);
         assertEquals(
-                List.of(new Effect.StairwellSealed(CARL, 20 * MIN - 100)),
+                List.of(new Effect.StairwellSealed(CARL, FLOOR_2_TIMER - 10 * MIN - 100)),
                 engine.handle(new Event.StairwellUsed(CARL)));
     }
 

@@ -1,0 +1,16 @@
+# Floor 2 factions (industrial maze), loaded together with factions.txt. Same format; lineup is provisional.
+
+faction mash_grubs floor=2 name="Mash Grubs"
+mob mash_grubs grunt entity=minecraft:silverfish name="Vat Grub" health=10 damage=2 weight=60
+mob mash_grubs elite entity=minecraft:spider name="Bloated Grub" health=30 damage=5 weight=28
+mob mash_grubs shaman entity=minecraft:witch name="Pupa Brewer" health=24 damage=2 weight=12 ability=heal_allies
+
+faction dune_dingoes floor=2 name="Dune Dingo Riders"
+mob dune_dingoes grunt entity=minecraft:husk name="Dingo Rider" health=15 damage=3 weight=60 mainhand=minecraft:wooden_sword head=minecraft:leather_helmet
+mob dune_dingoes elite entity=minecraft:vindicator name="Dingo Packleader" health=34 damage=7 weight=28 mainhand=minecraft:iron_axe chest=minecraft:leather_chestplate
+mob dune_dingoes shaman entity=minecraft:witch name="Dingo Mystic" health=26 damage=2 weight=12 ability=rally ability=fireball
+
+faction rust_wasps floor=2 name="Rust Wasps"
+mob rust_wasps grunt entity=minecraft:blaze name="Rust Wasp" health=12 damage=3 weight=60
+mob rust_wasps elite entity=minecraft:phantom name="Hornet Matron" health=30 damage=6 weight=28
+mob rust_wasps shaman entity=minecraft:skeleton name="Venom Caller" health=26 damage=3 weight=12 mainhand=minecraft:blaze_rod ability=fireball

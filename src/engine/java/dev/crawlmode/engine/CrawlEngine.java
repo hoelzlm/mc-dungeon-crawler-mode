@@ -228,7 +228,7 @@ public final class CrawlEngine {
         }
         timerFloor++;
         long collapsedAt = clock.nowTicks() - floorTimer.overshoot();
-        floorTimer = new FloorTimer(config.floorTimerTicks());
+        floorTimer = new FloorTimer(config.floorTimerTicksFor(timerFloor));
         floorTimer.start(collapsedAt);
         floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
         windowAnnounced = false;

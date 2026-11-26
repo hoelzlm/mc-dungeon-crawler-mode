@@ -32,7 +32,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /**
  * The four Stairwell Aid items and their effects. All direction, distance, area and reveal maths lives in
  * {@link StairwellAids}; this class registers the items, feeds the maths the Floor's Stairwells, and shows the
- * answer as chat text, sound and particles. Every aid is spent on use and only works on Floor 1.
+ * answer as chat text, sound and particles. Every aid is spent on use and only works on a generated Floor.
  */
 final class AidAdapter {
     private static final String MOD_ID = "crawlmode";

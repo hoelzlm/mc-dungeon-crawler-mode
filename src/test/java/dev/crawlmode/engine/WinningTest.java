@@ -14,6 +14,8 @@ class WinningTest {
     private static final HostLineSource TOPIC_ECHO = topic -> java.util.Optional.of(new HostLine(topic, topic));
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
+    /** Floor 2 runs 80 percent of the timer, so Floor 3's timer starts that much after Floor 2's. */
+    private static final long FLOOR_3_START = TIMER + 24 * MIN;
 
     private final FakeClock clock = new FakeClock();
     private CrawlEngine engine;
@@ -33,13 +35,13 @@ class WinningTest {
 
     /** Everyone descends Floor 1 and Floor 2 in their Windows; the clock ends with Floor 3's Window open. */
     private void everyoneToFloor3(UUID... crawlers) {
-        for (int floor = 0; floor < 2; floor++) {
-            tickTo(floor * TIMER + 25 * MIN);
+        for (long floorStart : new long[] {0, TIMER}) {
+            tickTo(floorStart + 22 * MIN); // inside every Floor's Descent Window
             for (UUID c : crawlers) {
                 engine.handle(new Event.StairwellUsed(c));
             }
         }
-        tickTo(2 * TIMER + 25 * MIN);
+        tickTo(FLOOR_3_START + 25 * MIN);
     }
 
     @Test
@@ -57,7 +59,7 @@ class WinningTest {
     void theLastStairwellIsStillSealedOutsideTheWindow() {
         start(CARL);
         everyoneToFloor3(CARL);
-        tickTo(2 * TIMER + 5 * MIN);
+        tickTo(FLOOR_3_START + 5 * MIN);
         assertTrue(engine.handle(new Event.StairwellUsed(CARL)).get(0) instanceof Effect.StairwellSealed);
     }
 
@@ -66,7 +68,7 @@ class WinningTest {
         start(CARL, DONUT);
         everyoneToFloor3(CARL, DONUT);
         engine.handle(new Event.StairwellUsed(CARL));
-        List<Effect> collapse = tickTo(3 * TIMER);
+        List<Effect> collapse = tickTo(FLOOR_3_START + TIMER);
         assertFalse(collapse.contains(new Effect.Collapse(CARL, 3)));
         assertTrue(collapse.contains(new Effect.Collapse(DONUT, 3)));
     }

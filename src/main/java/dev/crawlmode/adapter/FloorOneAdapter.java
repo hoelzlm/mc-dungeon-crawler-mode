@@ -5,6 +5,7 @@ import dev.crawlmode.engine.faction.SpawnPlanner;
 import dev.crawlmode.engine.floorgen.Cell;
 import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
+import dev.crawlmode.engine.floorgen.FloorSpec;
 import dev.crawlmode.engine.floorgen.FloorTemplate;
 import dev.crawlmode.engine.floorgen.GenerationPlanner;
 import dev.crawlmode.engine.floorgen.PlayerBlock;
@@ -17,6 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -35,12 +38,11 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
 /**
- * Builds Floor 1 from the pure {@link FloorLayout} a few cells at a time near Crawlers, keeps the structure
+ * Builds each template Floor (see {@link FloorSpec}: Floors 1 and 2) from the pure {@link FloorLayout} a few cells at a time near Crawlers, keeps the structure
  * unbreakable and turns right-clicks on a Stairwell marker into engine events. Layout and placement rules live in
  * the engine source set; this class only writes blocks and forwards events.
  */
 final class FloorOneAdapter {
-    private static final String TEMPLATES_RESOURCE = "/data/crawlmode/floor/floor1_templates.txt";
     /** How far from a Crawler cells are built, in cells (3 = 48 blocks). */
     static final int RADIUS_CELLS = 3;
     /** Cells built per server tick; each is about two thousand block writes. */
@@ -50,31 +52,41 @@ final class FloorOneAdapter {
 
     private static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
-    private static FloorLayout layout;
-    private static FactionAreas factionAreas;
-    private static long seed;
+    /** One built Floor's plan: its generation settings, layout, Faction territories and seed. */
+    private record FloorState(FloorSpec spec, FloorLayout layout, FactionAreas areas, long seed) {}
+
+    private static final Map<Integer, FloorState> FLOORS = new HashMap<>();
     private static final Map<String, BlockState> STATES = new HashMap<>();
 
     private FloorOneAdapter() {}
 
+    /** The generated Floor {@code level} belongs to, if it is one of the Crawl's template Floors. */
+    private static Optional<FloorState> stateOf(Level level) {
+        return Floors.numberOf(level).stream().mapToObj(FLOORS::get).filter(Objects::nonNull).findFirst();
+    }
+
+    /** True if this adapter generates the given Floor. */
+    static boolean generates(int floor) {
+        return FLOORS.containsKey(floor);
+    }
+
     static void register(Consumer<UUID> stairwellUsed) {
         NeoForge.EVENT_BUS.addListener((BreakBlockEvent event) -> {
-            if (layout != null && isFloor1(event.getPlayer().level()) && (layout.isProtected(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ()) || BossAdapter.isClosedGateBlock(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ()))) {
+            BlockPos p = event.getPos();
+            Level level = event.getPlayer().level();
+            if (stateOf(level).filter(f -> f.layout().isProtected(p.getX(), p.getY(), p.getZ())
+                    || BossAdapter.isClosedGateBlock(f.spec().floor(), p.getX(), p.getY(), p.getZ())).isPresent()) {
                 event.setCanceled(true);
                 event.setNotifyClient(true);
             }
         });
         NeoForge.EVENT_BUS.addListener((ExplosionEvent.Detonate event) -> {
-            if (isFloor1(event.getLevel()) && layout != null) {
-                event.getAffectedBlocks().removeIf(p -> layout.isProtected(p.getX(), p.getY(), p.getZ()) || BossAdapter.isClosedGateBlock(p.getX(), p.getY(), p.getZ()));
-            }
+            stateOf(event.getLevel()).ifPresent(f -> event.getAffectedBlocks().removeIf(p -> f.layout().isProtected(p.getX(), p.getY(), p.getZ())
+                    || BossAdapter.isClosedGateBlock(f.spec().floor(), p.getX(), p.getY(), p.getZ())));
         });
         NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickBlock event) -> {
-            if (layout == null || !isFloor1(event.getLevel())) {
-                return;
-            }
             BlockPos p = event.getPos();
-            if (layout.isStairwell(p.getX(), p.getY(), p.getZ())) {
+            if (stateOf(event.getLevel()).filter(f -> f.layout().isStairwell(p.getX(), p.getY(), p.getZ())).isPresent()) {
                 event.setCanceled(true);
                 if (!event.getLevel().isClientSide() && event.getHand() == InteractionHand.MAIN_HAND) {
                     stairwellUsed.accept(event.getEntity().getUUID());
@@ -84,64 +96,62 @@ final class FloorOneAdapter {
     }
 
     static void init(MinecraftServer server) {
-        try (InputStream in = FloorOneAdapter.class.getResourceAsStream(TEMPLATES_RESOURCE)) {
-            if (in == null) {
-                throw new IllegalStateException("Missing " + TEMPLATES_RESOURCE);
+        for (FloorSpec spec : FloorSpec.ALL) {
+            try (InputStream in = FloorOneAdapter.class.getResourceAsStream(spec.templatesResource())) {
+                if (in == null) {
+                    throw new IllegalStateException("Missing " + spec.templatesResource());
+                }
+                TemplateLibrary library = TemplateLibrary.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+                // The same world seed always gives the same Floors, so they survive restarts. Floor 1 uses the
+                // world seed itself; later Floors are offset so they do not repeat Floor 1's layout.
+                long seed = server.overworld().getSeed() + (spec.floor() - 1) * 0x9E3779B97F4A7C15L;
+                FloorLayout layout = FloorLayout.generate(seed, library, spec);
+                FactionAreas areas = FactionAreas.assign(FactionMobs.factions().forFloor(spec.floor()), layout.areaCount());
+                FLOORS.put(spec.floor(), new FloorState(spec, layout, areas, seed));
+                BossAdapter.init(spec.floor(), layout, areas, seed);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
-            TemplateLibrary library = TemplateLibrary.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-            // The same world seed always gives the same Floor 1, so it survives restarts.
-            seed = server.overworld().getSeed();
-            layout = FloorLayout.generate(seed, library);
-            factionAreas = FactionAreas.assign(FactionMobs.factions().forFloor(1), layout.areaCount());
-            BossAdapter.init(layout, factionAreas, seed);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
     }
 
     static void clear() {
-        layout = null;
-        factionAreas = null;
+        FLOORS.clear();
         BossAdapter.clear();
         FactionMobs.clear();
         STATES.clear();
     }
 
-    /** The Floor 1 plan if {@code level} is Floor 1 and the plan exists. */
-    static java.util.Optional<FloorLayout> layoutFor(Level level) {
-        return layout != null && isFloor1(level) ? java.util.Optional.of(layout) : java.util.Optional.empty();
-    }
-
-    private static boolean isFloor1(Level level) {
-        return level.dimension().identifier().equals(Identifier.fromNamespaceAndPath("crawlmode", "floor_1"));
+    /** The plan of the Floor {@code level} is, if it is one of the generated Floors. */
+    static Optional<FloorLayout> layoutFor(Level level) {
+        return stateOf(level).map(FloorState::layout);
     }
 
     /** Build the start area's surroundings and return where to put an arriving Crawler. */
     static BlockPos prepareSpawn(ServerLevel level) {
-        SpawnPoint spawn = layout.spawn();
-        for (CellPos pos : GenerationPlanner.cellsToBuild(layout, List.of(new PlayerBlock(spawn.x(), spawn.z())),
+        FloorState floor = stateOf(level).orElseThrow();
+        SpawnPoint spawn = floor.layout().spawn();
+        for (CellPos pos : GenerationPlanner.cellsToBuild(floor.layout(), List.of(new PlayerBlock(spawn.x(), spawn.z())),
                 SPAWN_RADIUS_CELLS, p -> built(level, p), Integer.MAX_VALUE)) {
-            build(level, pos);
+            build(level, floor, pos);
         }
         return new BlockPos(spawn.x(), spawn.y(), spawn.z());
     }
 
-    /** Called every server tick: build a few cells near Crawlers on Floor 1. */
+    /** Called every server tick: build a few cells near Crawlers on each generated Floor. */
     static void tick(MinecraftServer server) {
-        if (layout == null) {
-            return;
+        for (FloorState floor : FLOORS.values()) {
+            ServerLevel level = server.getLevel(Floors.key(floor.spec().floor()));
+            if (level == null || level.players().isEmpty()) {
+                continue;
+            }
+            List<PlayerBlock> players = level.players().stream()
+                    .map((ServerPlayer p) -> new PlayerBlock(p.getBlockX(), p.getBlockZ())).toList();
+            for (CellPos pos : GenerationPlanner.cellsToBuild(floor.layout(), players, RADIUS_CELLS, p -> built(level, p), CELLS_PER_TICK)) {
+                build(level, floor, pos);
+            }
+            FactionMobs.tick(level);
         }
-        ServerLevel level = server.getLevel(net.minecraft.resources.ResourceKey.create(
-                net.minecraft.core.registries.Registries.DIMENSION, Identifier.fromNamespaceAndPath("crawlmode", "floor_1")));
-        if (level == null || level.players().isEmpty()) {
-            return;
-        }
-        List<PlayerBlock> players = level.players().stream()
-                .map((ServerPlayer p) -> new PlayerBlock(p.getBlockX(), p.getBlockZ())).toList();
-        for (CellPos pos : GenerationPlanner.cellsToBuild(layout, players, RADIUS_CELLS, p -> built(level, p), CELLS_PER_TICK)) {
-            build(level, pos);
-        }
-        FactionMobs.tick(level);
     }
 
     /** Every template's lowest corner is a solid floor block, so air there means the cell was never built. */
@@ -149,8 +159,8 @@ final class FloorOneAdapter {
         return !level.getBlockState(new BlockPos(pos.x() * 16, FloorLayout.FLOOR_Y, pos.z() * 16)).isAir();
     }
 
-    private static void build(ServerLevel level, CellPos pos) {
-        Cell cell = layout.cell(pos).orElseThrow();
+    private static void build(ServerLevel level, FloorState floor, CellPos pos) {
+        Cell cell = floor.layout().cell(pos).orElseThrow();
         FloorTemplate template = cell.template();
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
         for (int y = 0; y < template.height(); y++) {
@@ -164,8 +174,8 @@ final class FloorOneAdapter {
                 }
             }
         }
-        FactionMobs.spawnAll(level, SpawnPlanner.forCell(cell, factionAreas, seed));
-        BossAdapter.onCellBuilt(level, cell);
+        FactionMobs.spawnAll(level, SpawnPlanner.forCell(cell, floor.areas(), floor.seed()));
+        BossAdapter.onCellBuilt(level, floor.spec().floor(), cell);
     }
 
     private static BlockState state(String id) {

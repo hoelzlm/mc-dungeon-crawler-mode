@@ -95,7 +95,7 @@ public final class CrawlAdapter {
     }
 
     private static ResourceKey<Level> floorKey(int floor) {
-        return ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath(MOD_ID, "floor_" + floor));
+        return Floors.key(floor);
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -131,7 +131,7 @@ public final class CrawlAdapter {
             player.sendSystemMessage(Component.literal("Floor " + floor + " dimension is missing"));
             return;
         }
-        BlockPos spawn = floor == 1 ? FloorOneAdapter.prepareSpawn(level) : stonePlatform(level);
+        BlockPos spawn = FloorOneAdapter.generates(floor) ? FloorOneAdapter.prepareSpawn(level) : stonePlatform(level);
         // Inventory travels with the player; only the position and dimension change.
         player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
     }
