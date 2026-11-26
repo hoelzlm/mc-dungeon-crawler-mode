@@ -20,3 +20,9 @@ timer-10s: Ten seconds! Nine! Eight! Honestly, do not bother counting!
 
 descent-window: The stairwells are open, contestants! Ten minutes to go down or go out with a bang!
 descent-window: Doors unsealed! Run, crawl or stumble downward. The floor is about to quit!
+
+elimination: And that is the end of you! The audience is delighted. You may watch the others suffer from the cheap seats.
+elimination: Splat! Thank you for your service as a cautionary tale. Spectator seating is to your left.
+
+game-over: Oh dear, you died alone, with nobody to laugh at you except me and several million viewers! Another Crawl, or do you flee?
+game-over: Game over, contestant! A dazzling failure. Shall we begin again, or will you slink away?

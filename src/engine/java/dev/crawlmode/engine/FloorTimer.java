@@ -22,6 +22,13 @@ final class FloorTimer {
         this.totalTicks = totalTicks;
     }
 
+    /** Back to untouched, as before the Apocalypse; a fresh Crawl starts the cycle over. */
+    void reset() {
+        running = false;
+        elapsed = 0;
+        warningsGiven = 0;
+    }
+
     void start(long now) {
         if (!running) {
             running = true;

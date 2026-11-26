@@ -55,6 +55,7 @@ public final class CrawlAdapter {
     private static CrawlEngine engine;
     private static MinecraftServer server;
     private static TimerHud timerHud;
+    private static EliminationBridge elimination;
 
     private CrawlAdapter() {}
 
@@ -66,6 +67,11 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerTick);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onTravel);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
+            if (elimination != null) {
+                elimination.onDeath(e);
+            }
+        });
     }
 
     private static ResourceKey<Level> floorKey(int floor) {
@@ -74,6 +80,7 @@ public final class CrawlAdapter {
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> d = event.getDispatcher();
+        new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply).registerCommands(d);
         d.register(Commands.literal("crawl")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("apocalypse").executes(ctx -> {
@@ -119,8 +126,9 @@ public final class CrawlAdapter {
         Clock clock = () -> server.getTickCount();
         CrawlConfig config = configFromSystemProperties();
         engine = new CrawlEngine(clock, config, loadHostLines(),
-                LootBoxAdapter.loadTables(), new Random()::nextInt);
+                LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server));
         timerHud = new TimerHud(config.floorTimerTicks());
+        elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
     }
 
     /** Delay in in-game days via -Dcrawlmode.apocalypseDelayDays=N; defaults to day 3. */
@@ -190,6 +198,9 @@ public final class CrawlAdapter {
 
     private static void apply(List<Effect> effects) {
         for (Effect effect : effects) {
+            if (elimination != null && elimination.applyEffect(effect)) {
+                continue;
+            }
             switch (effect) {
                 case Effect.HostSays says -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(says.crawler());
@@ -213,6 +224,7 @@ public final class CrawlAdapter {
                         pullToFloor(player, pull.floor());
                     }
                 }
+                default -> {} // elimination effects are handled by EliminationBridge above
             }
         }
     }
