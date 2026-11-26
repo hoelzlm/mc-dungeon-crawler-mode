@@ -1,0 +1,17 @@
+# Faction definitions. See Factions for the format. Weights set spawn rarity: grunt > elite > shaman.
+# Shaman abilities: heal_allies, rally (support), fireball (magic). Floor 1 lineup is provisional.
+
+faction marble_goblins floor=1 name="Marble Goblins"
+mob marble_goblins grunt entity=minecraft:zombie name="Hall Goblin" health=14 damage=3 weight=60 mainhand=minecraft:stone_sword head=minecraft:leather_helmet
+mob marble_goblins elite entity=minecraft:husk name="Goblin Brute" health=32 damage=6 weight=28 mainhand=minecraft:iron_axe chest=minecraft:iron_chestplate head=minecraft:iron_helmet
+mob marble_goblins shaman entity=minecraft:witch name="Goblin Hexer" health=24 damage=2 weight=12 ability=heal_allies ability=rally
+
+faction brass_constructs floor=1 name="Brass Constructs"
+mob brass_constructs grunt entity=minecraft:skeleton name="Clockwork Archer" health=16 damage=3 weight=60 mainhand=minecraft:bow head=minecraft:golden_helmet
+mob brass_constructs elite entity=minecraft:stray name="Gearwork Sentinel" health=34 damage=5 weight=28 mainhand=minecraft:bow chest=minecraft:chainmail_chestplate head=minecraft:chainmail_helmet
+mob brass_constructs shaman entity=minecraft:skeleton name="Sparkcaller" health=26 damage=3 weight=12 mainhand=minecraft:blaze_rod ability=fireball
+
+faction sour_llamas floor=1 name="Sour Llama Gang"
+mob sour_llamas grunt entity=minecraft:pillager name="Llama Rustler" health=15 damage=3 weight=60 mainhand=minecraft:crossbow
+mob sour_llamas elite entity=minecraft:vindicator name="Llama Enforcer" health=34 damage=7 weight=28 mainhand=minecraft:iron_axe chest=minecraft:chainmail_chestplate
+mob sour_llamas shaman entity=minecraft:witch name="Llama Alchemist" health=26 damage=2 weight=12 ability=rally ability=fireball

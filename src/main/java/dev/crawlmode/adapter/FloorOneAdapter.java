@@ -1,5 +1,7 @@
 package dev.crawlmode.adapter;
 
+import dev.crawlmode.engine.faction.FactionAreas;
+import dev.crawlmode.engine.faction.SpawnPlanner;
 import dev.crawlmode.engine.floorgen.Cell;
 import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
@@ -49,6 +51,8 @@ final class FloorOneAdapter {
     private static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
     private static FloorLayout layout;
+    private static FactionAreas factionAreas;
+    private static long seed;
     private static final Map<String, BlockState> STATES = new HashMap<>();
 
     private FloorOneAdapter() {}
@@ -86,7 +90,9 @@ final class FloorOneAdapter {
             }
             TemplateLibrary library = TemplateLibrary.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
             // The same world seed always gives the same Floor 1, so it survives restarts.
-            layout = FloorLayout.generate(server.overworld().getSeed(), library);
+            seed = server.overworld().getSeed();
+            layout = FloorLayout.generate(seed, library);
+            factionAreas = FactionAreas.assign(FactionMobs.factions().forFloor(1), layout.areaCount());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -94,6 +100,8 @@ final class FloorOneAdapter {
 
     static void clear() {
         layout = null;
+        factionAreas = null;
+        FactionMobs.clear();
         STATES.clear();
     }
 
@@ -126,6 +134,7 @@ final class FloorOneAdapter {
         for (CellPos pos : GenerationPlanner.cellsToBuild(layout, players, RADIUS_CELLS, p -> built(level, p), CELLS_PER_TICK)) {
             build(level, pos);
         }
+        FactionMobs.tick(level);
     }
 
     /** Every template's lowest corner is a solid floor block, so air there means the cell was never built. */
@@ -148,6 +157,7 @@ final class FloorOneAdapter {
                 }
             }
         }
+        FactionMobs.spawnAll(level, SpawnPlanner.forCell(cell, factionAreas, seed));
     }
 
     private static BlockState state(String id) {

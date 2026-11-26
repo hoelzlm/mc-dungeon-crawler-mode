@@ -6,8 +6,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] Faction and rank definitions load from data and are validated
-- [ ] Spawn rarity is Grunt > Elite > Shaman
+- [x] Faction and rank definitions load from data and are validated
+- [x] Spawn rarity is Grunt > Elite > Shaman
 - [ ] Shamans use at least one support or magic ability
-- [ ] Three Floor 1 Factions occupy separate areas
+- [x] Three Floor 1 Factions occupy separate areas
 - [ ] Custom names, stats and gear are visible in game
+
+Note: engine logic is unit-tested; Shaman abilities and visible names/gear are implemented in the adapter (FactionMobs) but not yet verified in a running game.
