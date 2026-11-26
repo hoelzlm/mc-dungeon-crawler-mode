@@ -17,3 +17,9 @@ apocalypse-soon: The countdown is nearly over! Final hugs, final loot, final reg
 timer-10m: Ten minutes left on this floor, contestants! Time flies when you are being hunted!
 timer-1m: One minute! Sixty delicious seconds of suspense!
 timer-10s: Ten seconds! Nine! Eight! Honestly, do not bother counting!
+
+elimination: And that is the end of you! The audience is delighted. You may watch the others suffer from the cheap seats.
+elimination: Splat! Thank you for your service as a cautionary tale. Spectator seating is to your left.
+
+game-over: Oh dear, you died alone, with nobody to laugh at you except me and several million viewers! Another Crawl, or do you flee?
+game-over: Game over, contestant! A dazzling failure. Shall we begin again, or will you slink away?
