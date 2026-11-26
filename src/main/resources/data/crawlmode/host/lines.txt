@@ -9,3 +9,7 @@ apocalypse-start: Welcome, contestant! The world ends on day three. Do enjoy the
 apocalypse-start: Ooh, a fresh face! Pack a snack. In a few days you will not be leaving this planet, or what remains of it!
 apocalypse-soon: Five minutes, contestants! Say goodbye to the sun. It never really liked you anyway!
 apocalypse-soon: The countdown is nearly over! Final hugs, final loot, final regrets!
+
+timer-10m: Ten minutes left on this floor, contestants! Time flies when you are being hunted!
+timer-1m: One minute! Sixty delicious seconds of suspense!
+timer-10s: Ten seconds! Nine! Eight! Honestly, do not bother counting!

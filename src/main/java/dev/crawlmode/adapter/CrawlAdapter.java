@@ -54,6 +54,7 @@ public final class CrawlAdapter {
 
     private static CrawlEngine engine;
     private static MinecraftServer server;
+    private static TimerHud timerHud;
 
     private CrawlAdapter() {}
 
@@ -61,6 +62,7 @@ public final class CrawlAdapter {
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStarting);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerStopped);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(CrawlAdapter::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onServerTick);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(CrawlAdapter::onTravel);
@@ -109,19 +111,31 @@ public final class CrawlAdapter {
     private static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
         Clock clock = () -> server.getTickCount();
-        engine = new CrawlEngine(clock, configFromSystemProperties(), loadHostLines());
+        CrawlConfig config = configFromSystemProperties();
+        engine = new CrawlEngine(clock, config, loadHostLines());
+        timerHud = new TimerHud(config.floorTimerTicks());
     }
 
     /** Delay in in-game days via -Dcrawlmode.apocalypseDelayDays=N; defaults to day 3. */
     private static CrawlConfig configFromSystemProperties() {
         String days = System.getProperty("crawlmode.apocalypseDelayDays");
-        if (days == null) {
-            return CrawlConfig.DEFAULT;
+        CrawlConfig base = CrawlConfig.DEFAULT;
+        if (days != null) {
+            base = new CrawlConfig((long) (Double.parseDouble(days) * CrawlConfig.TICKS_PER_DAY), base.warningLeadTicks(), base.floorTimerTicks());
         }
-        return new CrawlConfig((long) (Double.parseDouble(days) * CrawlConfig.TICKS_PER_DAY), CrawlConfig.DEFAULT.warningLeadTicks());
+        // Floor timer length in minutes via -Dcrawlmode.floorTimerMinutes=N; defaults to 90.
+        String minutes = System.getProperty("crawlmode.floorTimerMinutes");
+        if (minutes != null) {
+            base = new CrawlConfig(base.apocalypseDelayTicks(), base.warningLeadTicks(), (long) (Double.parseDouble(minutes) * 60 * 20));
+        }
+        return base;
     }
 
     private static void onServerStopped(ServerStoppedEvent event) {
+        if (timerHud != null) {
+            timerHud.clear();
+        }
+        timerHud = null;
         engine = null;
         server = null;
     }
@@ -129,6 +143,13 @@ public final class CrawlAdapter {
     private static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (engine != null && event.getEntity() instanceof ServerPlayer player) {
             apply(engine.handle(new Event.CrawlerJoined(player.getUUID())));
+        }
+    }
+
+    private static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (engine != null && event.getEntity() instanceof ServerPlayer player) {
+            engine.handle(new Event.CrawlerLeft(player.getUUID()));
+            timerHud.remove(player.getUUID());
         }
     }
 
@@ -167,6 +188,12 @@ public final class CrawlAdapter {
                     ServerPlayer player = server.getPlayerList().getPlayer(says.crawler());
                     if (player != null) {
                         speak(player, says.line());
+                    }
+                }
+                case Effect.ShowTimer timer -> {
+                    ServerPlayer player = server.getPlayerList().getPlayer(timer.crawler());
+                    if (player != null) {
+                        timerHud.show(player, timer.remainingTicks());
                     }
                 }
                 case Effect.PullToFloor pull -> {

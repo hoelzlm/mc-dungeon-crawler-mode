@@ -18,6 +18,7 @@ public final class CrawlEngine {
     private final Set<UUID> crawlers = new LinkedHashSet<>();
     private boolean apocalypseHappened;
     private boolean finalWarningGiven;
+    private final FloorTimer floorTimer;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -28,11 +29,18 @@ public final class CrawlEngine {
         this.config = config;
         this.host = host;
         this.startedAt = clock.nowTicks();
+        this.floorTimer = new FloorTimer(config.floorTimerTicks());
     }
 
     public List<Effect> handle(Event event) {
         return switch (event) {
+            case Event.CrawlerLeft left -> {
+                floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
+                crawlers.remove(left.crawler());
+                yield List.of();
+            }
             case Event.CrawlerJoined joined -> {
+                floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
                 crawlers.add(joined.crawler());
                 if (apocalypseHappened) {
                     yield List.of(new Effect.PullToFloor(joined.crawler(), 1));
@@ -48,6 +56,22 @@ public final class CrawlEngine {
     }
 
     public List<Effect> tick() {
+        List<Effect> effects = new ArrayList<>(apocalypseTick());
+        floorTimer.advance(clock.nowTicks(), !crawlers.isEmpty());
+        for (String topic : floorTimer.newWarnings()) {
+            for (UUID crawler : crawlers) {
+                effects.addAll(said(topic, crawler));
+            }
+        }
+        if (floorTimer.displayChanged()) {
+            for (UUID crawler : crawlers) {
+                effects.add(new Effect.ShowTimer(crawler, floorTimer.remaining()));
+            }
+        }
+        return effects;
+    }
+
+    private List<Effect> apocalypseTick() {
         long elapsed = clock.nowTicks() - startedAt;
         if (!apocalypseHappened && !finalWarningGiven && config.warningLeadTicks() > 0
                 && elapsed >= config.apocalypseDelayTicks() - config.warningLeadTicks()
@@ -74,6 +98,7 @@ public final class CrawlEngine {
             return List.of();
         }
         apocalypseHappened = true;
+        floorTimer.start(clock.nowTicks());
         List<Effect> effects = new ArrayList<>();
         for (UUID crawler : crawlers) {
             effects.add(new Effect.PullToFloor(crawler, 1));

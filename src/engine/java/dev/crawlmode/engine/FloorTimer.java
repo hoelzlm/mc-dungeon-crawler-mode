@@ -1,0 +1,73 @@
+package dev.crawlmode.engine;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Floor 1's countdown. Starts at the Apocalypse and only runs while at least one Crawler is online.
+ */
+final class FloorTimer {
+    private static final long TICKS_PER_SECOND = 20;
+    private static final long[] WARNING_TICKS = {10 * 60 * TICKS_PER_SECOND, 60 * TICKS_PER_SECOND, 10 * TICKS_PER_SECOND};
+    private static final String[] WARNING_TOPICS = {"timer-10m", "timer-1m", "timer-10s"};
+
+    private final long totalTicks;
+    private boolean running;
+    private long elapsed;
+    private long lastSeen;
+    private long lastShownSecond;
+    private int warningsGiven;
+
+    FloorTimer(long totalTicks) {
+        this.totalTicks = totalTicks;
+    }
+
+    void start(long now) {
+        if (!running) {
+            running = true;
+            lastSeen = now;
+            lastShownSecond = secondsLeft();
+            while (warningsGiven < WARNING_TICKS.length && WARNING_TICKS[warningsGiven] >= totalTicks) {
+                warningsGiven++;
+            }
+        }
+    }
+
+    /** Move the timer on to {@code now}; time only counts if a Crawler was online up to this moment. */
+    void advance(long now, boolean crawlerOnline) {
+        if (running && crawlerOnline) {
+            elapsed += now - lastSeen;
+        }
+        lastSeen = now;
+    }
+
+    long remaining() {
+        return Math.max(0, totalTicks - elapsed);
+    }
+
+    /** Whether the displayed whole second changed since last asked. */
+    boolean displayChanged() {
+        long seconds = secondsLeft();
+        if (!running || seconds == lastShownSecond) {
+            return false;
+        }
+        lastShownSecond = seconds;
+        return true;
+    }
+
+    /** Topics of warnings whose threshold has just been crossed, each reported once. */
+    List<String> newWarnings() {
+        List<String> topics = new ArrayList<>();
+        if (!running) {
+            return topics;
+        }
+        while (warningsGiven < WARNING_TICKS.length && remaining() <= WARNING_TICKS[warningsGiven]) {
+            topics.add(WARNING_TOPICS[warningsGiven++]);
+        }
+        return topics;
+    }
+
+    private long secondsLeft() {
+        return (remaining() + TICKS_PER_SECOND - 1) / TICKS_PER_SECOND;
+    }
+}

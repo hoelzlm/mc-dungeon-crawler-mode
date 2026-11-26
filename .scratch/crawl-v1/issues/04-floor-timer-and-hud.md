@@ -7,7 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Timer is visible and accurate on screen
-- [ ] Timer pauses with nobody online
-- [ ] Default and configured lengths both work
-- [ ] Host warnings fire at the three thresholds
-- [ ] Engine scenarios use the fake clock
+- [x] Timer pauses with nobody online
+- [x] Default and configured lengths both work
+- [x] Host warnings fire at the three thresholds
+- [x] Engine scenarios use the fake clock

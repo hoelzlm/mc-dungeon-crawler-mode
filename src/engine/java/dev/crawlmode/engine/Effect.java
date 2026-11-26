@@ -6,6 +6,9 @@ import java.util.UUID;
 public sealed interface Effect {
     record PullToFloor(UUID crawler, int floor) implements Effect {}
 
+    /** The floor countdown on this Crawler's screen, in ticks left. */
+    record ShowTimer(UUID crawler, long remainingTicks) implements Effect {}
+
     /** The Host speaks to one Crawler: banner, sound cue and chat. */
     record HostSays(UUID crawler, HostLine line) implements Effect {}
 }

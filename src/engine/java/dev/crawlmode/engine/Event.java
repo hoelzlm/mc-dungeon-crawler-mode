@@ -6,5 +6,7 @@ import java.util.UUID;
 public sealed interface Event {
     record CrawlerJoined(UUID crawler) implements Event {}
 
+    record CrawlerLeft(UUID crawler) implements Event {}
+
     record ApocalypseCommanded() implements Event {}
 }
