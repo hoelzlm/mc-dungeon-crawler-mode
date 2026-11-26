@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Inside the Safe Room one right-click opens one box as in ticket 01
-- [ ] Outside, one right-click consumes one box with no contents and no animation
-- [ ] The joke Achievement unlocks once per Crawler and rewards a Copper Loot Box
-- [ ] Achievement text and Host line are in data files
-- [ ] Engine tests cover opening inside, poof outside and the Achievement firing only once
+- [x] Inside the Safe Room one right-click opens one box as in ticket 01
+- [x] Outside, one right-click consumes one box with no contents and no animation
+- [x] The joke Achievement unlocks once per Crawler and rewards a Copper Loot Box
+- [x] Achievement text and Host line are in data files
+- [x] Engine tests cover opening inside, poof outside and the Achievement firing only once

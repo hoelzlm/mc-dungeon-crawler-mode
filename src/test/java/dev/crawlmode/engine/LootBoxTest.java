@@ -37,6 +37,8 @@ class LootBoxTest {
                 new StringReader("lootbox.copper: A shiny copper thing!"), bound -> 0);
         CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables, bound -> Math.min(pick, bound - 1));
         engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
         return engine;
     }
 
@@ -46,6 +48,8 @@ class LootBoxTest {
                 bound -> 0);
         CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables, bound -> Math.min(pick, bound - 1));
         engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
         return engine;
     }
 
@@ -88,6 +92,60 @@ class LootBoxTest {
                                 List.of(new LootItem(LootItem.Kind.GEAR, "minecraft:iron_sword", 1,
                                         Map.of("crawlmode:blazing", 1))))),
                 effects);
+    }
+
+    private static CrawlEngine outsideEngine(Achievements achievements) {
+        HostLineSource host = DataFileHostLineSource.load(
+                new StringReader("lootbox.poof: Nothing happens. Poof."), bound -> 0);
+        CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables(VALID), bound -> 0)
+                .withAchievements(achievements);
+        engine.handle(new Event.CrawlerJoined(CARL));
+        engine.handle(new Event.ApocalypseCommanded());
+        return engine;
+    }
+
+    private static final String POOF_ACHIEVEMENT =
+            "wasted | lootbox.poof | copper | You opened a box in the open! Poof!";
+
+    @Test
+    void aBoxOpenedOutsideTheSafeRoomGivesNothingAndNoAnimation() {
+        var engine = outsideEngine(Achievements.load(new StringReader("")));
+
+        List<Effect> effects = engine.handle(new Event.LootBoxOpened(CARL, LootTier.GOLD));
+
+        assertEquals(List.of(new Effect.HostSays(CARL, new HostLine("lootbox.poof", "Nothing happens. Poof."))), effects);
+    }
+
+    @Test
+    void thePoofAchievementRewardsACopperBoxOnlyTheFirstTime() {
+        var engine = outsideEngine(Achievements.load(new StringReader(POOF_ACHIEVEMENT)));
+
+        List<Effect> first = engine.handle(new Event.LootBoxOpened(CARL, LootTier.GOLD));
+        List<Effect> second = engine.handle(new Event.LootBoxOpened(CARL, LootTier.GOLD));
+
+        assertEquals(1, first.stream().filter(e -> e.equals(new Effect.GiveLootBox(CARL, LootTier.COPPER))).count());
+        assertTrue(second.stream().noneMatch(e -> e instanceof Effect.GiveLootBox));
+    }
+
+    @Test
+    void aBoxOpensAgainOutsideAfterLeavingTheSafeRoom() {
+        var engine = hostEngine(tables(VALID), 0);
+        engine.handle(new Event.SafeRoomExited(CARL));
+
+        List<Effect> effects = engine.handle(new Event.LootBoxOpened(CARL, LootTier.COPPER));
+
+        assertTrue(effects.stream().noneMatch(e -> e instanceof Effect.GrantLoot || e instanceof Effect.LootBoxOpening));
+    }
+
+    @Test
+    void theShippedPoofAchievementAndHostLineExist() {
+        var achievements = Achievements.load(new InputStreamReader(
+                LootBoxTest.class.getResourceAsStream("/data/crawlmode/achievement/achievements.txt")));
+        var host = DataFileHostLineSource.load(new InputStreamReader(
+                LootBoxTest.class.getResourceAsStream("/data/crawlmode/host/lines.txt")), bound -> 0);
+        assertTrue(achievements.all().stream()
+                .anyMatch(a -> a.trigger().equals("lootbox.poof") && a.reward() == LootTier.COPPER));
+        assertTrue(host.lineFor("lootbox.poof").isPresent());
     }
 
     @Test
