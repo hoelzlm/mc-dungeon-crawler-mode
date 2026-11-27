@@ -5,6 +5,7 @@ import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.map.MapCell;
 import dev.crawlmode.network.MapDoorsPayload;
 import dev.crawlmode.network.RevealMapPayload;
+import dev.crawlmode.network.ShowFloorMapPayload;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -60,6 +61,14 @@ public final class FloorMapClient {
 
     public static void receive(MapDoorsPayload payload) {
         VIEW.showDoors(payload.floor(), payload.doors());
+    }
+
+    public static void receive(ShowFloorMapPayload payload) {
+        VIEW.clear();
+        ClientLevel level = Minecraft.getInstance().level;
+        if (payload.visible() && level != null) {
+            VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
+        }
     }
 
     @SubscribeEvent

@@ -50,5 +50,9 @@ public sealed interface Effect {
 
     record ShowMapDoors(UUID crawler, int floor, List<MapCell> doors) implements Effect {}
 
+    record ShowFloorMap(UUID crawler, int floor, List<MapSpan> spans) implements Effect {}
+
+    record HideFloorMap(UUID crawler) implements Effect {}
+
     record ServeBuffet(UUID crawler, List<LootItem> items) implements Effect {}
 }
