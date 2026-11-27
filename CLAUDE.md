@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Issues and specs are local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+Issues and specs are GitHub issues in `hoelzlm/mc-dungeon-crawler-mode`, used through the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
