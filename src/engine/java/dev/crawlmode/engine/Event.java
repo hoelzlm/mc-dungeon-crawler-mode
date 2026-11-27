@@ -1,6 +1,8 @@
 package dev.crawlmode.engine;
 
 import dev.crawlmode.engine.faction.Rank;
+import dev.crawlmode.engine.floorgen.Stairwell;
+import java.util.List;
 import java.util.UUID;
 
 public sealed interface Event {
@@ -31,6 +33,9 @@ public sealed interface Event {
     record SafeRoomExited(UUID crawler) implements Event {}
 
     record CrawlerMoved(UUID crawler, int x, int z) implements Event {}
+
+    record StairwellAidUsed(UUID crawler, String aid, int x, int z, List<Stairwell> stairwells, long salt)
+            implements Event {}
 
     record BuffetUsed(UUID crawler) implements Event {}
 }

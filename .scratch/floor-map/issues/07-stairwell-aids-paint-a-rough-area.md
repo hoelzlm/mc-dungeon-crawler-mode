@@ -4,11 +4,11 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** in-review
 
-- [ ] Each Aid paints an area on the user's map that contains a Stairwell
-- [ ] The area is never an exact cell
-- [ ] The four Aids differ in area size or accuracy
-- [ ] Without an Aid, no Stairwell appears on the map
-- [ ] The glossary entry is updated
-- [ ] Engine tests cover each Aid through the Crawl engine seam
+- [x] Each Aid paints an area on the user's map that contains a Stairwell (engine-verified; on-screen drawing needs a live playtest)
+- [x] The area is never an exact cell
+- [x] The four Aids differ in area size or accuracy
+- [x] Without an Aid, no Stairwell appears on the map
+- [x] The glossary entry is updated
+- [x] Engine tests cover each Aid through the Crawl engine seam

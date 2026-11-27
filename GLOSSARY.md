@@ -57,7 +57,7 @@ The top rank of a **Faction**, optional and not guarding a **Stairwell**. Defeat
 _Avoid_: Guardian, miniboss
 
 **Stairwell Aid**:
-An item that helps find a hidden **Stairwell** without giving its exact position: Seeker's Draught, Echo Chime, Revealing Lantern or Fragment Map.
+An item that helps find a hidden **Stairwell** without giving its exact position: Seeker's Draught, Echo Chime, Revealing Lantern or Fragment Map. Using one paints a rough area containing a **Stairwell** on the user's **Floor Map**, never an exact spot.
 _Avoid_: Compass, hint item
 
 **System**:

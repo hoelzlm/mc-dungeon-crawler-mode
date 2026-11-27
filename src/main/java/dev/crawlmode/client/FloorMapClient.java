@@ -1,6 +1,8 @@
 package dev.crawlmode.client;
 
 import dev.crawlmode.CrawlMode;
+import dev.crawlmode.engine.aids.Area;
+import dev.crawlmode.network.PaintMapAreaPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -28,6 +30,7 @@ public final class FloorMapClient {
     private static final int UNREVEALED = 0xB0000000;
     private static final int FRAME = 0xFFFFFFFF;
     private static final int SELF = 0xFFFFFFFF;
+    private static final int PAINTED = 0x6040C0FF;
 
     private FloorMapClient() {}
 
@@ -35,6 +38,13 @@ public final class FloorMapClient {
         ClientLevel level = Minecraft.getInstance().level;
         if (level != null) {
             VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
+        }
+    }
+
+    public static void receive(PaintMapAreaPayload payload) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) {
+            VIEW.paint(payload.floor(), level.dimension(), payload.area());
         }
     }
 
@@ -84,6 +94,16 @@ public final class FloorMapClient {
                     runStart = column;
                     runColour = colour;
                 }
+            }
+        }
+        for (Area area : VIEW.painted()) {
+            int fromX = Math.max(area.minX(), west);
+            int toX = Math.min(area.maxX(), west + blocks - 1);
+            int fromZ = Math.max(area.minZ(), north);
+            int toZ = Math.min(area.maxZ(), north + blocks - 1);
+            if (fromX <= toX && fromZ <= toZ) {
+                graphics.fill(left + (fromX - west) * PIXELS_PER_BLOCK, top + (fromZ - north) * PIXELS_PER_BLOCK,
+                        left + (toX - west + 1) * PIXELS_PER_BLOCK, top + (toZ - north + 1) * PIXELS_PER_BLOCK, PAINTED);
             }
         }
         int middle = size / 2;

@@ -1,6 +1,7 @@
 package dev.crawlmode.adapter;
 
 import dev.crawlmode.CrawlMode;
+import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.aids.Area;
 import dev.crawlmode.engine.aids.StairwellAids;
 import dev.crawlmode.engine.floorgen.FloorLayout;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -40,9 +42,9 @@ final class AidAdapter {
 
     private AidAdapter() {}
 
-    static void register(IEventBus modBus) {
+    static void register(IEventBus modBus, Consumer<Event> handle) {
         for (String id : StairwellAids.ids()) {
-            BY_ID.put(id, ITEMS.registerItem(id, props -> new AidItem(id, props)));
+            BY_ID.put(id, ITEMS.registerItem(id, props -> new AidItem(id, props, handle)));
         }
         ITEMS.register(modBus);
         NeoForge.EVENT_BUS.addListener(AidAdapter::onTick);
@@ -72,10 +74,12 @@ final class AidAdapter {
 
     private static final class AidItem extends Item {
         private final String id;
+        private final Consumer<Event> handle;
 
-        AidItem(String id, Item.Properties props) {
+        AidItem(String id, Item.Properties props, Consumer<Event> handle) {
             super(props.stacksTo(16));
             this.id = id;
+            this.handle = handle;
         }
 
         @Override
@@ -84,7 +88,7 @@ final class AidAdapter {
                 return InteractionResult.SUCCESS;
             }
             Optional<FloorLayout> layout = TemplateFloorAdapter.layoutFor(level);
-            if (layout.isEmpty() || !activate(id, server, crawler, layout.get())) {
+            if (layout.isEmpty() || !activate(id, server, crawler, layout.get(), handle)) {
                 crawler.sendSystemMessage(Component.literal("The aid fizzles. Nothing answers."), true);
                 return InteractionResult.FAIL;
             }
@@ -95,7 +99,8 @@ final class AidAdapter {
         }
     }
 
-    private static boolean activate(String id, ServerLevel level, ServerPlayer player, FloorLayout layout) {
+    private static boolean activate(String id, ServerLevel level, ServerPlayer player, FloorLayout layout,
+            Consumer<Event> handle) {
         int x = player.getBlockX();
         int y = player.getBlockY();
         int z = player.getBlockZ();
@@ -138,6 +143,7 @@ final class AidAdapter {
                 return false;
             }
         }
+        handle.accept(new Event.StairwellAidUsed(player.getUUID(), id, x, z, wells, level.getSeed()));
         return true;
     }
 

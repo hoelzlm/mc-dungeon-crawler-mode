@@ -1,5 +1,7 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.aids.Area;
+import dev.crawlmode.engine.aids.StairwellAids;
 import dev.crawlmode.engine.map.FloorMap;
 import dev.crawlmode.engine.map.FloorMapConfig;
 import dev.crawlmode.engine.map.MapCell;
@@ -112,6 +114,7 @@ public final class CrawlEngine {
             case Event.SafeRoomExited exited -> leaveSafeRoom(exited.crawler());
             case Event.BuffetUsed used -> useBuffet(used.crawler());
             case Event.CrawlerMoved moved -> reveal(moved);
+            case Event.StairwellAidUsed used -> paintAid(used);
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
@@ -143,13 +146,37 @@ public final class CrawlEngine {
         if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
             return List.of();
         }
+        FloorMap map = mapOf(crawler, floor);
+        List<MapSpan> spans = map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius());
+        return spans.isEmpty() ? List.of() : List.of(new Effect.RevealMapCells(crawler, floor, spans));
+    }
+
+    public List<Area> paintedAreas(UUID crawler) {
+        FloorMap map = floorMaps.get(crawler);
+        return map == null ? List.of() : map.painted();
+    }
+
+    private FloorMap mapOf(UUID crawler, int floor) {
         FloorMap map = floorMaps.get(crawler);
         if (map == null || map.floor() != floor) {
             map = new FloorMap(floor);
             floorMaps.put(crawler, map);
         }
-        List<MapSpan> spans = map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius());
-        return spans.isEmpty() ? List.of() : List.of(new Effect.RevealMapCells(crawler, floor, spans));
+        return map;
+    }
+
+    private List<Effect> paintAid(Event.StairwellAidUsed used) {
+        UUID crawler = used.crawler();
+        Integer floor = floorOf.get(crawler);
+        if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        return StairwellAids.paintedArea(used.aid(), used.x(), used.z(), used.stairwells(), used.salt())
+                .map(area -> {
+                    mapOf(crawler, floor).paint(area);
+                    return List.<Effect>of(new Effect.PaintMapArea(crawler, floor, area));
+                })
+                .orElse(List.of());
     }
 
     private Achievements achievements;

@@ -58,7 +58,11 @@ public final class CrawlAdapter {
 
     public static void register(IEventBus modBus, ModContainer container) {
         FloorMapAdapter.register(modBus, container);
-        AidAdapter.register(modBus);
+        AidAdapter.register(modBus, e -> {
+            if (engine != null) {
+                apply(engine.handle(e));
+            }
+        });
         LootBoxAdapter.register(modBus, e -> {
             if (engine != null) {
                 apply(engine.handle(e));
@@ -258,6 +262,7 @@ public final class CrawlAdapter {
                 case Effect.StartSafeRoomRegeneration start -> SafeRoomAdapter.startRegeneration(server, start);
                 case Effect.StopSafeRoomRegeneration stop -> SafeRoomAdapter.stopRegeneration(server, stop);
                 case Effect.RevealMapCells reveal -> FloorMapAdapter.reveal(server, reveal);
+                case Effect.PaintMapArea paint -> FloorMapAdapter.paint(server, paint);
                 case Effect.ServeBuffet buffet -> LootBoxAdapter.handItems(server, buffet.crawler(), buffet.items());
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());

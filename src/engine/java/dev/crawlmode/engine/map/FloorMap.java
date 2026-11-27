@@ -1,5 +1,6 @@
 package dev.crawlmode.engine.map;
 
+import dev.crawlmode.engine.aids.Area;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Set;
 public final class FloorMap {
     private final int floor;
     private final Set<MapCell> revealed = new HashSet<>();
+    private final List<Area> painted = new ArrayList<>();
     private MapCell lastCentre;
 
     public FloorMap(int floor) {
@@ -20,6 +22,14 @@ public final class FloorMap {
 
     public Set<MapCell> revealed() {
         return Set.copyOf(revealed);
+    }
+
+    public List<Area> painted() {
+        return List.copyOf(painted);
+    }
+
+    public void paint(Area area) {
+        painted.add(area);
     }
 
     public List<MapSpan> revealAround(int x, int z, int radius) {
