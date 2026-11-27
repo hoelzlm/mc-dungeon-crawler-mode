@@ -40,6 +40,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -309,12 +310,16 @@ final class SafeRoomAdapter {
             inside.teleport(new TeleportTransition(overworld, Vec3.atBottomCenterOf(spawn), Vec3.ZERO, 0f, 0f,
                     TeleportTransition.DO_NOTHING));
         }
+        server.schedule(new TickTask(server.getTickCount(), () -> removeLevel(server, delete.crawler(), room)));
+    }
+
+    private static void removeLevel(MinecraftServer server, UUID crawler, ServerLevel room) {
         try {
             levelsOf(server).remove(room.dimension());
             room.close();
             deleteRecursively(storageOf(server).getDimensionPath(room.dimension()));
         } catch (ReflectiveOperationException | IOException | RuntimeException e) {
-            LOGGER.error("Could not delete Safe Room of {}", delete.crawler(), e);
+            LOGGER.error("Could not delete Safe Room of {}", crawler, e);
         }
     }
 
