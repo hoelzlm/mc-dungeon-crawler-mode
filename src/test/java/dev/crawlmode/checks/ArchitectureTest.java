@@ -56,6 +56,10 @@ class ArchitectureTest {
             "dev.crawlmode.adapter.AidAdapter.ACTIVE",
             "dev.crawlmode.adapter.AidAdapter.BY_ID");
 
+    private static final String MAP_RECT = "dev.crawlmode.engine.map.MapRect";
+
+    private static final Set<String> MAP_RECT_BASELINE = Set.of("BossAdapter");
+
     private static JavaClasses classesIn(String property) {
         List<Path> paths = new ArrayList<>();
         for (String dir : System.getProperty(property).split(File.pathSeparator)) {
@@ -162,6 +166,26 @@ class ArchitectureTest {
             }
         }
         assertTrue(violations.isEmpty(), "Reflection in adapters outside the allowlist (ADR 0006):\n"
+                + String.join("\n", violations));
+    }
+
+    @Test
+    void adaptersDoNotConstructMapRect() {
+        Set<String> found = new TreeSet<>();
+        for (JavaClass type : classesIn("crawl.main.classes")) {
+            if (!type.getPackageName().equals(ADAPTER_PACKAGE)) {
+                continue;
+            }
+            boolean constructs = type.getConstructorCallsFromSelf().stream()
+                    .anyMatch(call -> call.getTargetOwner().getName().equals(MAP_RECT));
+            if (constructs) {
+                found.add(topLevel(type));
+            }
+        }
+        List<String> violations = new ArrayList<>();
+        found.stream().filter(name -> !MAP_RECT_BASELINE.contains(name)).forEach(name -> violations.add("new: " + name));
+        MAP_RECT_BASELINE.stream().filter(name -> !found.contains(name)).forEach(name -> violations.add("gone, remove from baseline: " + name));
+        assertTrue(violations.isEmpty(), "Adapters constructing MapRect (CODING_STANDARDS: The engine decides, adapters translate; the baseline only shrinks):\n"
                 + String.join("\n", violations));
     }
 }
