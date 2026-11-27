@@ -4,10 +4,10 @@
 
 **Blocked by:** 01, 04
 
-**Status:** ready-for-agent
+**Status:** in-review
 
-- [ ] A Boss kill reveals the whole area it died in
-- [ ] At least a disc of the configured radius around the Boss is revealed (default 64)
+- [x] A Boss kill reveals the whole area it died in
+- [x] At least a disc of the configured radius around the Boss is revealed (default 64)
 - [ ] Parts of the area not yet generated are revealed when they generate
-- [ ] Safe Room Doors in the revealed region appear on the map
-- [ ] Engine tests cover the reveal through the Crawl engine seam
+- [x] Safe Room Doors in the revealed region appear on the map
+- [x] Engine tests cover the reveal through the Crawl engine seam
