@@ -2,10 +2,12 @@ package dev.crawlmode.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.crawlmode.CrawlMode;
+import dev.crawlmode.engine.aids.Area;
 import dev.crawlmode.engine.map.MapCell;
 import dev.crawlmode.engine.map.MapDot;
 import dev.crawlmode.network.MapDoorsPayload;
 import dev.crawlmode.network.MapDotsPayload;
+import dev.crawlmode.network.PaintMapAreaPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import dev.crawlmode.network.ShowFloorMapPayload;
 import net.minecraft.client.DeltaTracker;
@@ -37,6 +39,7 @@ public final class FloorMapClient {
     private static final int UNREVEALED = 0xB0000000;
     private static final int FRAME = 0xFFFFFFFF;
     private static final int SELF = 0xFFFFFFFF;
+    private static final int PAINTED = 0x6040C0FF;
     private static final int DOOR = 0xFFFFC832;
     private static final int DOOR_OUTLINE = 0xFF000000;
     private static final int DOOR_RADIUS = 3;
@@ -61,6 +64,13 @@ public final class FloorMapClient {
         ClientLevel level = Minecraft.getInstance().level;
         if (level != null) {
             VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
+        }
+    }
+
+    public static void receive(PaintMapAreaPayload payload) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) {
+            VIEW.paint(payload.floor(), level.dimension(), payload.area());
         }
     }
 
@@ -141,6 +151,16 @@ public final class FloorMapClient {
                     runStart = column;
                     runColour = colour;
                 }
+            }
+        }
+        for (Area area : VIEW.painted()) {
+            int fromX = Math.max(area.minX(), west);
+            int toX = Math.min(area.maxX(), west + blocksWide - 1);
+            int fromZ = Math.max(area.minZ(), north);
+            int toZ = Math.min(area.maxZ(), north + blocksHigh - 1);
+            if (fromX <= toX && fromZ <= toZ) {
+                graphics.fill(left + (fromX - west) * pixelsPerBlock, top + (fromZ - north) * pixelsPerBlock,
+                        left + (toX - west + 1) * pixelsPerBlock, top + (toZ - north + 1) * pixelsPerBlock, PAINTED);
             }
         }
         for (MapCell door : VIEW.doors()) {

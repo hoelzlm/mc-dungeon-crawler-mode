@@ -1,5 +1,6 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.aids.Area;
 import dev.crawlmode.engine.map.MapCell;
 import dev.crawlmode.engine.map.MapDot;
 import dev.crawlmode.engine.map.MapSpan;
@@ -48,6 +49,8 @@ public sealed interface Effect {
     record DeleteSafeRoom(UUID crawler) implements Effect {}
 
     record RevealMapCells(UUID crawler, int floor, List<MapSpan> spans) implements Effect {}
+
+    record PaintMapArea(UUID crawler, int floor, Area area) implements Effect {}
 
     record ShowMapDoors(UUID crawler, int floor, List<MapCell> doors) implements Effect {}
 

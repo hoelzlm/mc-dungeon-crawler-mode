@@ -9,6 +9,7 @@ import dev.crawlmode.engine.map.FloorMapConfig;
 import dev.crawlmode.engine.map.Sighting;
 import dev.crawlmode.network.MapDoorsPayload;
 import dev.crawlmode.network.MapDotsPayload;
+import dev.crawlmode.network.PaintMapAreaPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import dev.crawlmode.network.ShowFloorMapPayload;
 import java.util.ArrayList;
@@ -84,6 +85,13 @@ final class FloorMapAdapter {
         }
     }
 
+    static void paint(MinecraftServer server, Effect.PaintMapArea paint) {
+        ServerPlayer player = server.getPlayerList().getPlayer(paint.crawler());
+        if (player != null) {
+            PacketDistributor.sendToPlayer(player, new PaintMapAreaPayload(paint.floor(), paint.area()));
+        }
+    }
+
     static void showDoors(MinecraftServer server, Effect.ShowMapDoors show) {
         send(server, show.crawler(), new MapDoorsPayload(show.floor(), show.doors()));
     }
@@ -113,6 +121,8 @@ final class FloorMapAdapter {
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar(PROTOCOL_VERSION);
         registrar.playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
+                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
+        registrar.playToClient(PaintMapAreaPayload.TYPE, PaintMapAreaPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
         registrar.playToClient(MapDoorsPayload.TYPE, MapDoorsPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));

@@ -1,9 +1,11 @@
 package dev.crawlmode.client;
 
+import dev.crawlmode.engine.aids.Area;
 import dev.crawlmode.engine.map.MapCell;
 import dev.crawlmode.engine.map.MapDot;
 import dev.crawlmode.engine.map.MapSpan;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +16,7 @@ final class FloorMapView {
     static final int UNSAMPLED = 0;
 
     private final Long2IntOpenHashMap colours = new Long2IntOpenHashMap();
+    private final List<Area> painted = new ArrayList<>();
     private final Set<MapCell> doors = new HashSet<>();
     private List<MapDot> dots = List.of();
     private int floor = -1;
@@ -32,17 +35,31 @@ final class FloorMapView {
     }
 
     void reveal(int floor, ResourceKey<Level> dimension, List<MapSpan> spans) {
-        if (floor != this.floor || !dimension.equals(this.dimension)) {
-            colours.clear();
-            doors.clear();
-            dots = List.of();
-            this.floor = floor;
-            this.dimension = dimension;
-        }
+        switchTo(floor, dimension);
         for (MapSpan span : spans) {
             for (int x = span.fromX(); x <= span.toX(); x++) {
                 colours.putIfAbsent(pack(x, span.z()), UNSAMPLED);
             }
+        }
+    }
+
+    void paint(int floor, ResourceKey<Level> dimension, Area area) {
+        switchTo(floor, dimension);
+        painted.add(area);
+    }
+
+    List<Area> painted() {
+        return painted;
+    }
+
+    private void switchTo(int floor, ResourceKey<Level> dimension) {
+        if (floor != this.floor || !dimension.equals(this.dimension)) {
+            colours.clear();
+            painted.clear();
+            doors.clear();
+            dots = List.of();
+            this.floor = floor;
+            this.dimension = dimension;
         }
     }
 
@@ -80,6 +97,7 @@ final class FloorMapView {
 
     void clear() {
         colours.clear();
+        painted.clear();
         doors.clear();
         dots = List.of();
         floor = -1;

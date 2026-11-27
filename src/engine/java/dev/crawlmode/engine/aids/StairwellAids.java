@@ -19,7 +19,9 @@ public final class StairwellAids {
     public static final int MAP_SIZE = 64;
     public static final int LANTERN_RADIUS = 8;
     public static final int LANTERN_REVEAL_TICKS = 20 * 30;
-    private static final int MAP_MARGIN = 8;
+    public static final int DRAUGHT_AREA_SIZE = 128;
+    public static final int CHIME_AREA_SIZE = 96;
+    public static final int LANTERN_AREA_SIZE = 40;
 
     public record Pos(int x, int y, int z) {}
 
@@ -38,12 +40,31 @@ public final class StairwellAids {
     }
 
     public static Optional<Area> fragmentMap(int x, int z, List<Stairwell> wells, long salt) {
+        return areaAround(x, z, wells, salt, MAP_SIZE);
+    }
+
+    public static int areaSize(String aid) {
+        return switch (aid) {
+            case SEEKERS_DRAUGHT -> DRAUGHT_AREA_SIZE;
+            case ECHO_CHIME -> CHIME_AREA_SIZE;
+            case REVEALING_LANTERN -> LANTERN_AREA_SIZE;
+            case FRAGMENT_MAP -> MAP_SIZE;
+            default -> throw new IllegalArgumentException("Not a Stairwell Aid: " + aid);
+        };
+    }
+
+    public static Optional<Area> paintedArea(String aid, int x, int z, List<Stairwell> wells, long salt) {
+        return areaAround(x, z, wells, salt, areaSize(aid));
+    }
+
+    private static Optional<Area> areaAround(int x, int z, List<Stairwell> wells, long salt, int size) {
         return nearest(x, z, wells).map(w -> {
             SplittableRandom rnd = new SplittableRandom(salt ^ (w.x() * 73856093L) ^ (w.z() * 19349663L));
-            int span = MAP_SIZE - 2 * MAP_MARGIN;
-            int minX = w.x() - MAP_MARGIN - rnd.nextInt(span);
-            int minZ = w.z() - MAP_MARGIN - rnd.nextInt(span);
-            return new Area(minX, minZ, minX + MAP_SIZE - 1, minZ + MAP_SIZE - 1);
+            int margin = size / 8;
+            int span = size - 2 * margin;
+            int minX = w.x() - margin - rnd.nextInt(span);
+            int minZ = w.z() - margin - rnd.nextInt(span);
+            return new Area(minX, minZ, minX + size - 1, minZ + size - 1);
         });
     }
 
