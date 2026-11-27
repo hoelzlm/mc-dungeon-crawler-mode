@@ -9,6 +9,7 @@ public final class FloorMap {
     private final int floor;
     private final Set<MapCell> revealed = new HashSet<>();
     private MapCell lastCentre;
+    private List<MapDot> shownDots = List.of();
 
     public FloorMap(int floor) {
         this.floor = floor;
@@ -20,6 +21,18 @@ public final class FloorMap {
 
     public Set<MapCell> revealed() {
         return Set.copyOf(revealed);
+    }
+
+    public boolean isRevealed(int x, int z) {
+        return revealed.contains(new MapCell(x, z));
+    }
+
+    public boolean showDots(List<MapDot> dots) {
+        if (dots.equals(shownDots)) {
+            return false;
+        }
+        shownDots = List.copyOf(dots);
+        return true;
     }
 
     public List<MapSpan> revealAround(int x, int z, int radius) {

@@ -1,6 +1,8 @@
 package dev.crawlmode.client;
 
 import dev.crawlmode.CrawlMode;
+import dev.crawlmode.engine.map.MapDot;
+import dev.crawlmode.network.MapDotsPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -28,6 +30,9 @@ public final class FloorMapClient {
     private static final int UNREVEALED = 0xB0000000;
     private static final int FRAME = 0xFFFFFFFF;
     private static final int SELF = 0xFFFFFFFF;
+    private static final int MONSTER_DOT = 0xFFFF2020;
+    private static final int CRAWLER_DOT = 0xFF3060FF;
+    private static final int NPC_DOT = 0xFFFFFFFF;
 
     private FloorMapClient() {}
 
@@ -36,6 +41,10 @@ public final class FloorMapClient {
         if (level != null) {
             VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
         }
+    }
+
+    public static void receive(MapDotsPayload payload) {
+        VIEW.showDots(payload.floor(), payload.dots());
     }
 
     @SubscribeEvent
@@ -86,8 +95,23 @@ public final class FloorMapClient {
                 }
             }
         }
+        for (MapDot dot : VIEW.dots()) {
+            int dotX = (dot.x() - west) * PIXELS_PER_BLOCK;
+            int dotZ = (dot.z() - north) * PIXELS_PER_BLOCK;
+            if (dotX >= 0 && dotZ >= 0 && dotX + 3 <= size && dotZ + 3 <= size) {
+                graphics.fill(left + dotX, top + dotZ, left + dotX + 3, top + dotZ + 3, colourOf(dot));
+            }
+        }
         int middle = size / 2;
         graphics.fill(left + middle - 1, top + middle - 1, left + middle + 2, top + middle + 2, SELF);
+    }
+
+    private static int colourOf(MapDot dot) {
+        return switch (dot.kind()) {
+            case MONSTER -> MONSTER_DOT;
+            case CRAWLER -> CRAWLER_DOT;
+            case NPC -> NPC_DOT;
+        };
     }
 
     private static int colourOf(ClientLevel level, int x, int z, int surfaceY) {

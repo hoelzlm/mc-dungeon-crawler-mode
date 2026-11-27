@@ -3,7 +3,9 @@ package dev.crawlmode.engine;
 import dev.crawlmode.engine.map.FloorMap;
 import dev.crawlmode.engine.map.FloorMapConfig;
 import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.engine.map.MapDot;
 import dev.crawlmode.engine.map.MapSpan;
+import dev.crawlmode.engine.map.Sighting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -112,6 +114,7 @@ public final class CrawlEngine {
             case Event.SafeRoomExited exited -> leaveSafeRoom(exited.crawler());
             case Event.BuffetUsed used -> useBuffet(used.crawler());
             case Event.CrawlerMoved moved -> reveal(moved);
+            case Event.EntitiesScanned scanned -> showDots(scanned);
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
@@ -135,6 +138,25 @@ public final class CrawlEngine {
     public Set<MapCell> revealedCells(UUID crawler) {
         FloorMap map = floorMaps.get(crawler);
         return map == null ? Set.of() : map.revealed();
+    }
+
+    private List<Effect> showDots(Event.EntitiesScanned scanned) {
+        UUID crawler = scanned.crawler();
+        Integer floor = floorOf.get(crawler);
+        FloorMap map = floorMaps.get(crawler);
+        if (floor == null || map == null || map.floor() != floor || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        long reach = (long) floorMapConfig.dotRadius() * floorMapConfig.dotRadius();
+        List<MapDot> dots = new ArrayList<>();
+        for (Sighting sighting : scanned.sightings()) {
+            long dx = (long) sighting.x() - scanned.x();
+            long dz = (long) sighting.z() - scanned.z();
+            if (dx * dx + dz * dz <= reach && map.isRevealed(sighting.x(), sighting.z())) {
+                dots.add(new MapDot(sighting.kind(), sighting.x(), sighting.z()));
+            }
+        }
+        return map.showDots(dots) ? List.of(new Effect.UpdateMapDots(crawler, floor, dots)) : List.of();
     }
 
     private List<Effect> reveal(Event.CrawlerMoved moved) {

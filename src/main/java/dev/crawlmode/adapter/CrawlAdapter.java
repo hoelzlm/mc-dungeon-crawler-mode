@@ -258,6 +258,7 @@ public final class CrawlAdapter {
                 case Effect.StartSafeRoomRegeneration start -> SafeRoomAdapter.startRegeneration(server, start);
                 case Effect.StopSafeRoomRegeneration stop -> SafeRoomAdapter.stopRegeneration(server, stop);
                 case Effect.RevealMapCells reveal -> FloorMapAdapter.reveal(server, reveal);
+                case Effect.UpdateMapDots dots -> FloorMapAdapter.showDots(server, dots);
                 case Effect.ServeBuffet buffet -> LootBoxAdapter.handItems(server, buffet.crawler(), buffet.items());
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
