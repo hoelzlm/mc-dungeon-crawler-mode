@@ -158,7 +158,10 @@ public final class CrawlAdapter {
                 SafeRoomAdapter.loadRules())
                 .withAchievements(AchievementAdapter.load())
                 .withFloorMap(FloorMapAdapter.config());
-        SafeRoomAdapter.plannedDoors().forEach((floor, doors) -> engine.handle(new Event.SafeRoomDoorsPlanned(floor, doors)));
+        SafeRoomAdapter.plannedDoors().forEach((floor, doors) -> {
+            engine.handle(new Event.SafeRoomDoorsPlanned(floor, doors));
+            LOGGER.info("Safe Room Doors reached the engine: floor {} count {}", floor, doors.size());
+        });
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
         LOGGER.info("Crawl engine ready");

@@ -15,3 +15,5 @@ Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/ag
 ## Standards and checks
 
 Read `CODING_STANDARDS.md` before reviewing or finishing a change. `./gradlew build` (and `check`) enforce it; Gradle runs on any JDK 17+ and provisions Java 25 itself, so never export `JAVA_HOME` by hand. `./gradlew smokeTest` boots the server and writes `build/smoke/server.log`; the user must accept the Mojang EULA once (`run/eula.txt`, `eula=true`), agents never write it.
+
+`./gradlew runClient` starts the game for a playtest; `run/` is per checkout and gitignored, so a git worktree has no `run/eula.txt` of its own (see `CODING_STANDARDS.md` Checks).

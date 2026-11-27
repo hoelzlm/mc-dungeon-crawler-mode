@@ -57,7 +57,7 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 ### 4. Spawn both sub-agents in parallel
 
-Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
+Issue both sub-agent calls together, in the foreground, and aggregate the reports they return. Tell each sub-agent to run the repo's check command first and to read every changed file in full, since a claim it has not checked against the code is a guess. For each hunk it calls unrelated or scope creep, it checks `git log` and `git blame` for who authored it and reports that, because the user's own edits sit in a branch's history too.
 
 **Standards sub-agent prompt** should include:
 
