@@ -72,6 +72,10 @@ public final class FloorMap {
             return List.of();
         }
         lastCentre = centre;
+        return revealDisc(x, z, radius);
+    }
+
+    public List<MapSpan> revealDisc(int x, int z, int radius) {
         List<MapSpan> spans = new ArrayList<>();
         for (int row = z - radius; row <= z + radius; row++) {
             int dz = row - z;
@@ -90,6 +94,28 @@ public final class FloorMap {
             }
             if (open) {
                 spans.add(new MapSpan(row, start, x + reach));
+            }
+        }
+        return spans;
+    }
+
+    public List<MapSpan> revealRect(MapRect rect) {
+        List<MapSpan> spans = new ArrayList<>();
+        for (int row = rect.fromZ(); row <= rect.toZ(); row++) {
+            boolean open = false;
+            int start = 0;
+            for (int column = rect.fromX(); column <= rect.toX(); column++) {
+                boolean added = revealed.add(new MapCell(column, row));
+                if (added && !open) {
+                    open = true;
+                    start = column;
+                } else if (!added && open) {
+                    spans.add(new MapSpan(row, start, column - 1));
+                    open = false;
+                }
+            }
+            if (open) {
+                spans.add(new MapSpan(row, start, rect.toX()));
             }
         }
         return spans;

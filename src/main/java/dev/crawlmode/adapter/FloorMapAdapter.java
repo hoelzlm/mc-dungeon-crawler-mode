@@ -38,6 +38,9 @@ final class FloorMapAdapter {
             .comment("Blocks around a Crawler within which the Floor Map shows monsters, Crawlers and NPCs")
             .defineInRange("dotRadius", FloorMapConfig.DEFAULT_DOT_RADIUS, 1, 128);
     private static final int SCAN_INTERVAL_TICKS = 5;
+    private static final ModConfigSpec.IntValue BOSS_REVEAL_RADIUS = BUILDER
+            .comment("Minimum blocks around a defeated Boss that the Floor Map reveals")
+            .defineInRange("bossRevealRadius", FloorMapConfig.DEFAULT_BOSS_REVEAL_RADIUS, 1, 256);
     private static final ModConfigSpec SPEC = BUILDER.build();
 
     private FloorMapAdapter() {}
@@ -49,7 +52,8 @@ final class FloorMapAdapter {
     }
 
     static FloorMapConfig config() {
-        return new FloorMapConfig(REVEAL_RADIUS.getAsInt(), DOT_RADIUS.getAsInt());
+        return new FloorMapConfig(
+                REVEAL_RADIUS.getAsInt(), DOT_RADIUS.getAsInt(), BOSS_REVEAL_RADIUS.getAsInt());
     }
 
     static void tick(MinecraftServer server, Consumer<Event> handle) {

@@ -6,6 +6,7 @@ import dev.crawlmode.engine.map.FloorMap;
 import dev.crawlmode.engine.map.FloorMapConfig;
 import dev.crawlmode.engine.map.MapCell;
 import dev.crawlmode.engine.map.MapDot;
+import dev.crawlmode.engine.map.MapRect;
 import dev.crawlmode.engine.map.MapSpan;
 import dev.crawlmode.engine.map.Sighting;
 import java.util.ArrayList;
@@ -127,6 +128,7 @@ public final class CrawlEngine {
             case Event.CrawlerMoved moved -> reveal(moved);
             case Event.EntitiesScanned scanned -> showDots(scanned);
             case Event.StairwellAidUsed used -> paintAid(used);
+            case Event.BossKilled killed -> revealBossArea(killed);
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
@@ -202,7 +204,24 @@ public final class CrawlEngine {
             return List.of();
         }
         FloorMap map = mapOf(crawler, floor);
-        List<MapSpan> spans = map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius());
+        return mapEffects(crawler, floor, map, map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius()));
+    }
+
+    private List<Effect> revealBossArea(Event.BossKilled killed) {
+        UUID crawler = killed.crawler();
+        Integer floor = floorOf.get(crawler);
+        if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        FloorMap map = mapOf(crawler, floor);
+        List<MapSpan> spans = new ArrayList<>(map.revealDisc(killed.x(), killed.z(), floorMapConfig.bossRevealRadius()));
+        for (MapRect rect : killed.area()) {
+            spans.addAll(map.revealRect(rect));
+        }
+        return mapEffects(crawler, floor, map, spans);
+    }
+
+    private List<Effect> mapEffects(UUID crawler, int floor, FloorMap map, List<MapSpan> spans) {
         List<Effect> effects = new ArrayList<>();
         if (!spans.isEmpty()) {
             effects.add(new Effect.RevealMapCells(crawler, floor, spans));
