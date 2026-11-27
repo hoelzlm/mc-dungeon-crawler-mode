@@ -1,10 +1,13 @@
 package dev.crawlmode.client;
 
 import dev.crawlmode.engine.aids.Area;
+import dev.crawlmode.engine.map.MapCell;
 import dev.crawlmode.engine.map.MapSpan;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
@@ -13,6 +16,7 @@ final class FloorMapView {
 
     private final Long2IntOpenHashMap colours = new Long2IntOpenHashMap();
     private final List<Area> painted = new ArrayList<>();
+    private final Set<MapCell> doors = new HashSet<>();
     private int floor = -1;
     private ResourceKey<Level> dimension = Level.OVERWORLD;
 
@@ -50,9 +54,21 @@ final class FloorMapView {
         if (floor != this.floor || !dimension.equals(this.dimension)) {
             colours.clear();
             painted.clear();
+            doors.clear();
             this.floor = floor;
             this.dimension = dimension;
         }
+    }
+
+
+    void showDoors(int floor, List<MapCell> shown) {
+        if (floor == this.floor) {
+            doors.addAll(shown);
+        }
+    }
+
+    Set<MapCell> doors() {
+        return doors;
     }
 
     boolean isRevealed(int x, int z) {
@@ -70,6 +86,7 @@ final class FloorMapView {
     void clear() {
         colours.clear();
         painted.clear();
+        doors.clear();
         floor = -1;
         dimension = Level.OVERWORLD;
     }

@@ -158,6 +158,7 @@ public final class CrawlAdapter {
                 SafeRoomAdapter.loadRules())
                 .withAchievements(AchievementAdapter.load())
                 .withFloorMap(FloorMapAdapter.config());
+        SafeRoomAdapter.plannedDoors().forEach((floor, doors) -> engine.handle(new Event.SafeRoomDoorsPlanned(floor, doors)));
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
         LOGGER.info("Crawl engine ready");
@@ -263,6 +264,7 @@ public final class CrawlAdapter {
                 case Effect.StopSafeRoomRegeneration stop -> SafeRoomAdapter.stopRegeneration(server, stop);
                 case Effect.RevealMapCells reveal -> FloorMapAdapter.reveal(server, reveal);
                 case Effect.PaintMapArea paint -> FloorMapAdapter.paint(server, paint);
+                case Effect.ShowMapDoors show -> FloorMapAdapter.showDoors(server, show);
                 case Effect.ServeBuffet buffet -> LootBoxAdapter.handItems(server, buffet.crawler(), buffet.items());
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());

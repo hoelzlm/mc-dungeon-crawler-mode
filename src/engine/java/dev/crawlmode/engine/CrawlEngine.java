@@ -39,6 +39,7 @@ public final class CrawlEngine {
     private final Map<UUID, Long> buffetServedAt = new HashMap<>();
     private final SafeRoomRules safeRoomRules;
     private final Map<UUID, FloorMap> floorMaps = new HashMap<>();
+    private final Map<Integer, List<MapCell>> safeRoomDoorCells = new HashMap<>();
     private FloorMapConfig floorMapConfig = FloorMapConfig.DEFAULT;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
@@ -113,6 +114,11 @@ public final class CrawlEngine {
             case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
             case Event.SafeRoomExited exited -> leaveSafeRoom(exited.crawler());
             case Event.BuffetUsed used -> useBuffet(used.crawler());
+            case Event.SafeRoomDoorsPlanned planned -> {
+                safeRoomDoorCells.put(planned.floor(),
+                        planned.doors().stream().map(d -> new MapCell(d.x(), d.z())).toList());
+                yield List.of();
+            }
             case Event.CrawlerMoved moved -> reveal(moved);
             case Event.StairwellAidUsed used -> paintAid(used);
             case Event.LootBoxGranted granted -> giveLootBox(granted);
@@ -148,7 +154,15 @@ public final class CrawlEngine {
         }
         FloorMap map = mapOf(crawler, floor);
         List<MapSpan> spans = map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius());
-        return spans.isEmpty() ? List.of() : List.of(new Effect.RevealMapCells(crawler, floor, spans));
+        List<Effect> effects = new ArrayList<>();
+        if (!spans.isEmpty()) {
+            effects.add(new Effect.RevealMapCells(crawler, floor, spans));
+        }
+        List<MapCell> doors = map.newlyVisibleDoors(safeRoomDoorCells.getOrDefault(floor, List.of()));
+        if (!doors.isEmpty()) {
+            effects.add(new Effect.ShowMapDoors(crawler, floor, doors));
+        }
+        return effects;
     }
 
     public List<Area> paintedAreas(UUID crawler) {

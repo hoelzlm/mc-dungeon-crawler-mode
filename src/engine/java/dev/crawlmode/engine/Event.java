@@ -32,6 +32,8 @@ public sealed interface Event {
 
     record SafeRoomExited(UUID crawler) implements Event {}
 
+    record SafeRoomDoorsPlanned(int floor, List<DoorPos> doors) implements Event {}
+
     record CrawlerMoved(UUID crawler, int x, int z) implements Event {}
 
     record StairwellAidUsed(UUID crawler, String aid, int x, int z, List<Stairwell> stairwells, long salt)
