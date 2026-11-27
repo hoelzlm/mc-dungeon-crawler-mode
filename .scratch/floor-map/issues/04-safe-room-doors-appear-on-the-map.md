@@ -6,6 +6,6 @@
 
 **Status:** in-review
 
-- [ ] A door in a revealed cell shows as a large icon on both maps (minimap drawn, needs live playtest; full-screen map arrives with ticket 05)
+- [ ] A door in a revealed cell shows as a large icon on both maps (drawn in the shared map drawing; needs live playtest)
 - [x] A door in an unrevealed cell is not shown, and nothing about it is sent to the client
 - [x] Engine tests cover door visibility through the Crawl engine seam
