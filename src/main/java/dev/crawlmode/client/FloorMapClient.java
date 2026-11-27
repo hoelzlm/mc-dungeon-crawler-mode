@@ -43,6 +43,7 @@ public final class FloorMapClient {
     private static final int DOOR = 0xFFFFC832;
     private static final int DOOR_OUTLINE = 0xFF000000;
     private static final int DOOR_RADIUS = 3;
+    private static final int DOT_SIZE = 3;
     private static final int MONSTER_DOT = 0xFFFF2020;
     private static final int CRAWLER_DOT = 0xFF3060FF;
     private static final int NPC_DOT = 0xFFFFFFFF;
@@ -93,10 +94,10 @@ public final class FloorMapClient {
     @SubscribeEvent
     static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.HOTBAR, Identifier.fromNamespaceAndPath(CrawlMode.MOD_ID, "floor_map"),
-                FloorMapClient::drawMinimap);
+                FloorMapClient::drawFloorMap);
     }
 
-    private static void drawMinimap(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
+    private static void drawFloorMap(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         if (!mapVisible(minecraft)) {
             return;
@@ -105,12 +106,12 @@ public final class FloorMapClient {
             drawMap(graphics, minecraft, 0, 0, graphics.guiWidth(), graphics.guiHeight(), FULL_SCREEN_PIXELS_PER_BLOCK);
             return;
         }
-        int size = MinimapSettings.SIZE.getAsInt();
-        int left = switch (MinimapSettings.CORNER.get()) {
+        int size = FloorMapSettings.SIZE.getAsInt();
+        int left = switch (FloorMapSettings.CORNER.get()) {
             case TOP_LEFT, BOTTOM_LEFT -> MARGIN;
             case TOP_RIGHT, BOTTOM_RIGHT -> graphics.guiWidth() - size - MARGIN;
         };
-        int top = switch (MinimapSettings.CORNER.get()) {
+        int top = switch (FloorMapSettings.CORNER.get()) {
             case TOP_LEFT, TOP_RIGHT -> MARGIN;
             case BOTTOM_LEFT, BOTTOM_RIGHT -> graphics.guiHeight() - size - MARGIN;
         };
@@ -176,8 +177,8 @@ public final class FloorMapClient {
         for (MapDot dot : VIEW.dots()) {
             int dotX = (dot.x() - west) * pixelsPerBlock;
             int dotZ = (dot.z() - north) * pixelsPerBlock;
-            if (dotX >= 0 && dotZ >= 0 && dotX + 3 <= width && dotZ + 3 <= height) {
-                graphics.fill(left + dotX, top + dotZ, left + dotX + 3, top + dotZ + 3, colourOf(dot));
+            if (dotX >= 0 && dotZ >= 0 && dotX + DOT_SIZE <= width && dotZ + DOT_SIZE <= height) {
+                graphics.fill(left + dotX, top + dotZ, left + dotX + DOT_SIZE, top + dotZ + DOT_SIZE, colourOf(dot));
             }
         }
         int middleX = width / 2;

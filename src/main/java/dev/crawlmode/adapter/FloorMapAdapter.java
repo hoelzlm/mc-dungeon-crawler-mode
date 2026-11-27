@@ -1,7 +1,7 @@
 package dev.crawlmode.adapter;
 
 import dev.crawlmode.client.FloorMapClient;
-import dev.crawlmode.client.MinimapSettings;
+import dev.crawlmode.client.FloorMapSettings;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.map.DotKind;
@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,6 +29,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 final class FloorMapAdapter {
     private static final String PROTOCOL_VERSION = "1";
@@ -47,7 +50,7 @@ final class FloorMapAdapter {
 
     static void register(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.LOCAL, SPEC);
-        container.registerConfig(ModConfig.Type.CLIENT, MinimapSettings.SPEC);
+        container.registerConfig(ModConfig.Type.CLIENT, FloorMapSettings.SPEC);
         modBus.addListener(FloorMapAdapter::onRegisterPayloads);
     }
 
@@ -83,17 +86,11 @@ final class FloorMapAdapter {
     }
 
     static void reveal(MinecraftServer server, Effect.RevealMapCells reveal) {
-        ServerPlayer player = server.getPlayerList().getPlayer(reveal.crawler());
-        if (player != null) {
-            PacketDistributor.sendToPlayer(player, new RevealMapPayload(reveal.floor(), reveal.spans()));
-        }
+        send(server, reveal.crawler(), new RevealMapPayload(reveal.floor(), reveal.spans()));
     }
 
     static void paint(MinecraftServer server, Effect.PaintMapArea paint) {
-        ServerPlayer player = server.getPlayerList().getPlayer(paint.crawler());
-        if (player != null) {
-            PacketDistributor.sendToPlayer(player, new PaintMapAreaPayload(paint.floor(), paint.area()));
-        }
+        send(server, paint.crawler(), new PaintMapAreaPayload(paint.floor(), paint.area()));
     }
 
     static void showDoors(MinecraftServer server, Effect.ShowMapDoors show) {
@@ -116,23 +113,21 @@ final class FloorMapAdapter {
     }
 
     static void showDots(MinecraftServer server, Effect.UpdateMapDots update) {
-        ServerPlayer player = server.getPlayerList().getPlayer(update.crawler());
-        if (player != null) {
-            PacketDistributor.sendToPlayer(player, new MapDotsPayload(update.floor(), update.dots()));
-        }
+        send(server, update.crawler(), new MapDotsPayload(update.floor(), update.dots()));
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar(PROTOCOL_VERSION);
-        registrar.playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
-                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
-        registrar.playToClient(PaintMapAreaPayload.TYPE, PaintMapAreaPayload.CODEC,
-                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
-        registrar.playToClient(MapDoorsPayload.TYPE, MapDoorsPayload.CODEC,
-                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
-        registrar.playToClient(ShowFloorMapPayload.TYPE, ShowFloorMapPayload.CODEC,
-                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
-        registrar.playToClient(MapDotsPayload.TYPE, MapDotsPayload.CODEC,
-                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
+        PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
+        toClient(registrar, RevealMapPayload.TYPE, RevealMapPayload.CODEC, FloorMapClient::receive);
+        toClient(registrar, PaintMapAreaPayload.TYPE, PaintMapAreaPayload.CODEC, FloorMapClient::receive);
+        toClient(registrar, MapDoorsPayload.TYPE, MapDoorsPayload.CODEC, FloorMapClient::receive);
+        toClient(registrar, ShowFloorMapPayload.TYPE, ShowFloorMapPayload.CODEC, FloorMapClient::receive);
+        toClient(registrar, MapDotsPayload.TYPE, MapDotsPayload.CODEC, FloorMapClient::receive);
+    }
+
+    private static <T extends CustomPacketPayload> void toClient(PayloadRegistrar registrar,
+            CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
+            Consumer<T> receive) {
+        registrar.playToClient(type, codec, (payload, context) -> context.enqueueWork(() -> receive.accept(payload)));
     }
 }

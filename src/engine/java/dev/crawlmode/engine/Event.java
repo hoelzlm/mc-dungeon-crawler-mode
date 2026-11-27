@@ -42,6 +42,7 @@ public sealed interface Event {
 
     record StairwellAidUsed(UUID crawler, String aid, int x, int z, List<Stairwell> stairwells, long salt)
             implements Event {}
+
     record BossKilled(UUID crawler, int x, int z, List<MapRect> area) implements Event {}
 
     record BuffetUsed(UUID crawler) implements Event {}
