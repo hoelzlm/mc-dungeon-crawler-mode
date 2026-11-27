@@ -1,5 +1,6 @@
 package dev.crawlmode.engine.floorgen;
 
+import dev.crawlmode.engine.DoorFacing;
 import dev.crawlmode.engine.DoorPos;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,36 +8,63 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.ToIntBiFunction;
+import java.util.stream.Stream;
 
 public final class SafeRoomDoorPlanner {
     public static final int DOORS_PER_FLOOR = 4;
     public static final int MIN_SPACING_CELLS = 2;
     public static final int BOSS_CLEARANCE_CELLS = 1;
-    private static final int[] CORNER_OFFSETS = {2, 3, 12, 13};
+    public static final int BORROWED_SPACING_BLOCKS = 8;
+    private static final int SPOT_MIN = 1;
+    private static final int SPOT_MAX = 14;
 
     private SafeRoomDoorPlanner() {}
 
     public static List<DoorPos> plan(int floor, FloorLayout layout, Set<CellPos> bossCells) {
-        List<DoorPos> candidates = new ArrayList<>();
-        for (Cell cell : layout.cells()) {
-            if (!nearBoss(cell.pos(), bossCells)) {
-                spot(floor, layout, cell).ifPresent(candidates::add);
-            }
+        List<CellPos> cells = layout.cells().stream().map(Cell::pos).toList();
+        return plan(floor, terrainOf(layout), cells, bossCells);
+    }
+
+    public static List<DoorPos> plan(int floor, DoorTerrain terrain, List<CellPos> cells, Set<CellPos> bossCells) {
+        List<CellPos> eligible = cells.stream().filter(c -> !nearBoss(c, bossCells)).toList();
+        List<DoorPos> own = new ArrayList<>();
+        List<CellPos> bare = new ArrayList<>();
+        for (CellPos cell : eligible) {
+            Optional<DoorPos> spot = spots(floor, terrain, cell).findFirst();
+            spot.ifPresentOrElse(own::add, () -> bare.add(cell));
         }
         for (int spacing = MIN_SPACING_CELLS; spacing >= 1; spacing--) {
-            List<DoorPos> chosen = choose(candidates, spacing);
+            List<DoorPos> chosen = choose(own, (a, b) -> distance(a.cell(), b.cell()), spacing);
             if (chosen.size() >= DOORS_PER_FLOOR) {
                 return List.copyOf(chosen);
             }
         }
+        List<DoorPos> widened = new ArrayList<>(own);
+        for (CellPos cell : bare) {
+            for (CellPos neighbour : eligible) {
+                if (distance(cell, neighbour) == 1) {
+                    widened.addAll(spots(floor, terrain, neighbour).toList());
+                }
+            }
+        }
+        List<DoorPos> chosen = choose(widened, SafeRoomDoorPlanner::blockDistance, BORROWED_SPACING_BLOCKS);
+        if (chosen.size() >= DOORS_PER_FLOOR) {
+            return List.copyOf(chosen);
+        }
         throw new IllegalStateException("Floor " + floor + " has no room for " + DOORS_PER_FLOOR + " Safe Room Doors");
     }
 
-    private static List<DoorPos> choose(List<DoorPos> candidates, int spacing) {
+    public static List<DoorPos> candidates(int floor, DoorTerrain terrain, CellPos cell) {
+        return spots(floor, terrain, cell).toList();
+    }
+
+    private static List<DoorPos> choose(List<DoorPos> candidates, ToIntBiFunction<DoorPos, DoorPos> distance,
+            int minimum) {
         List<DoorPos> remaining = new ArrayList<>(candidates);
         List<DoorPos> chosen = new ArrayList<>();
         while (chosen.size() < DOORS_PER_FLOOR) {
-            Optional<DoorPos> next = farthestFromChosen(remaining, chosen, spacing);
+            Optional<DoorPos> next = farthestFromChosen(remaining, chosen, distance, minimum);
             if (next.isEmpty()) {
                 break;
             }
@@ -46,16 +74,17 @@ public final class SafeRoomDoorPlanner {
         return chosen;
     }
 
-    private static Optional<DoorPos> farthestFromChosen(List<DoorPos> candidates, List<DoorPos> chosen, int spacing) {
+    private static Optional<DoorPos> farthestFromChosen(List<DoorPos> candidates, List<DoorPos> chosen,
+            ToIntBiFunction<DoorPos, DoorPos> distance, int minimum) {
         if (chosen.isEmpty()) {
             return candidates.stream().findFirst();
         }
         DoorPos best = null;
-        int bestGap = spacing - 1;
+        int bestGap = minimum - 1;
         for (DoorPos c : candidates) {
             int gap = Integer.MAX_VALUE;
             for (DoorPos d : chosen) {
-                gap = Math.min(gap, distance(c.cell(), d.cell()));
+                gap = Math.min(gap, distance.applyAsInt(c, d));
             }
             if (gap > bestGap) {
                 best = c;
@@ -73,24 +102,54 @@ public final class SafeRoomDoorPlanner {
         return Math.max(Math.abs(a.x() - b.x()), Math.abs(a.z() - b.z()));
     }
 
-    private static Optional<DoorPos> spot(int floor, FloorLayout layout, Cell cell) {
-        List<int[]> offsets = new ArrayList<>();
-        for (int x : CORNER_OFFSETS) {
-            for (int z : CORNER_OFFSETS) {
-                offsets.add(new int[] {x, z});
-            }
-        }
-        Collections.shuffle(offsets, new Random(cell.pos().x() * 31L + cell.pos().z()));
+    private static int blockDistance(DoorPos a, DoorPos b) {
+        return Math.max(Math.abs(a.x() - b.x()), Math.abs(a.z() - b.z()));
+    }
+
+    private static Stream<DoorPos> spots(int floor, DoorTerrain terrain, CellPos cell) {
+        List<DoorPos> all = new ArrayList<>();
         int y = FloorLayout.FLOOR_Y + 1;
-        for (int[] o : offsets) {
-            int x = cell.pos().originX() + o[0];
-            int z = cell.pos().originZ() + o[1];
-            boolean solidUnder = layout.blockAt(x, y - 1, z).isPresent();
-            boolean headroom = layout.blockAt(x, y, z).isEmpty() && layout.blockAt(x, y + 1, z).isEmpty();
-            if (solidUnder && headroom && !layout.isStairwell(x, y, z)) {
-                return Optional.of(new DoorPos(floor, x, y, z));
+        for (int x = SPOT_MIN; x <= SPOT_MAX; x++) {
+            for (int z = SPOT_MIN; z <= SPOT_MAX; z++) {
+                for (DoorFacing facing : DoorFacing.values()) {
+                    all.add(new DoorPos(floor, cell.originX() + x, y, cell.originZ() + z, facing));
+                }
             }
         }
-        return Optional.empty();
+        Collections.shuffle(all, new Random(cell.x() * 31L + cell.z()));
+        return all.stream().filter(d -> fits(terrain, d));
+    }
+
+    private static boolean fits(DoorTerrain t, DoorPos d) {
+        int behindX = d.x() - d.facing().dx();
+        int behindZ = d.z() - d.facing().dz();
+        return t.solid(d.x(), d.y() - 1, d.z())
+                && !t.solid(d.x(), d.y(), d.z())
+                && !t.solid(d.x(), d.y() + 1, d.z())
+                && !t.stairwell(d.x(), d.y(), d.z())
+                && t.wall(behindX, d.y(), behindZ)
+                && t.wall(behindX, d.y() + 1, behindZ)
+                && t.solid(d.frontX(), d.y() - 1, d.frontZ())
+                && !t.solid(d.frontX(), d.y(), d.frontZ())
+                && !t.solid(d.frontX(), d.y() + 1, d.frontZ());
+    }
+
+    private static DoorTerrain terrainOf(FloorLayout layout) {
+        return new DoorTerrain() {
+            @Override
+            public boolean solid(int x, int y, int z) {
+                return layout.blockAt(x, y, z).isPresent();
+            }
+
+            @Override
+            public boolean wall(int x, int y, int z) {
+                return layout.isProtected(x, y, z);
+            }
+
+            @Override
+            public boolean stairwell(int x, int y, int z) {
+                return layout.isStairwell(x, y, z);
+            }
+        };
     }
 }
