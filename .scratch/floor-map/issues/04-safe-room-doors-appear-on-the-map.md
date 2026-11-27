@@ -4,8 +4,8 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** in-review
 
-- [ ] A door in a revealed cell shows as a large icon on both maps
-- [ ] A door in an unrevealed cell is not shown, and nothing about it is sent to the client
-- [ ] Engine tests cover door visibility through the Crawl engine seam
+- [ ] A door in a revealed cell shows as a large icon on both maps (minimap drawn, needs live playtest; full-screen map arrives with ticket 05)
+- [x] A door in an unrevealed cell is not shown, and nothing about it is sent to the client
+- [x] Engine tests cover door visibility through the Crawl engine seam

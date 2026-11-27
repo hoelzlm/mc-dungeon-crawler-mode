@@ -5,6 +5,7 @@ import dev.crawlmode.client.MinimapSettings;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.map.FloorMapConfig;
+import dev.crawlmode.network.MapDoorsPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
@@ -49,8 +50,18 @@ final class FloorMapAdapter {
         }
     }
 
+    static void showDoors(MinecraftServer server, Effect.ShowMapDoors show) {
+        ServerPlayer player = server.getPlayerList().getPlayer(show.crawler());
+        if (player != null) {
+            PacketDistributor.sendToPlayer(player, new MapDoorsPayload(show.floor(), show.doors()));
+        }
+    }
+
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar(PROTOCOL_VERSION).playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
+        var registrar = event.registrar(PROTOCOL_VERSION);
+        registrar.playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
+                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
+        registrar.playToClient(MapDoorsPayload.TYPE, MapDoorsPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
     }
 }

@@ -1,6 +1,8 @@
 package dev.crawlmode.client;
 
 import dev.crawlmode.CrawlMode;
+import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.network.MapDoorsPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -28,6 +30,9 @@ public final class FloorMapClient {
     private static final int UNREVEALED = 0xB0000000;
     private static final int FRAME = 0xFFFFFFFF;
     private static final int SELF = 0xFFFFFFFF;
+    private static final int DOOR = 0xFFFFC832;
+    private static final int DOOR_OUTLINE = 0xFF000000;
+    private static final int DOOR_RADIUS = 3;
 
     private FloorMapClient() {}
 
@@ -36,6 +41,10 @@ public final class FloorMapClient {
         if (level != null) {
             VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
         }
+    }
+
+    public static void receive(MapDoorsPayload payload) {
+        VIEW.showDoors(payload.floor(), payload.doors());
     }
 
     @SubscribeEvent
@@ -84,6 +93,16 @@ public final class FloorMapClient {
                     runStart = column;
                     runColour = colour;
                 }
+            }
+        }
+        for (MapCell door : VIEW.doors()) {
+            int doorX = left + (door.x() - west) * PIXELS_PER_BLOCK;
+            int doorY = top + (door.z() - north) * PIXELS_PER_BLOCK;
+            if (doorX >= left && doorX < left + size && doorY >= top && doorY < top + size) {
+                graphics.fill(doorX - DOOR_RADIUS - 1, doorY - DOOR_RADIUS - 1, doorX + DOOR_RADIUS + 2,
+                        doorY + DOOR_RADIUS + 2, DOOR_OUTLINE);
+                graphics.fill(doorX - DOOR_RADIUS, doorY - DOOR_RADIUS, doorX + DOOR_RADIUS + 1,
+                        doorY + DOOR_RADIUS + 1, DOOR);
             }
         }
         int middle = size / 2;

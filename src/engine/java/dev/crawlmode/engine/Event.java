@@ -1,6 +1,7 @@
 package dev.crawlmode.engine;
 
 import dev.crawlmode.engine.faction.Rank;
+import java.util.List;
 import java.util.UUID;
 
 public sealed interface Event {
@@ -29,6 +30,8 @@ public sealed interface Event {
     record SafeRoomDoorUsed(UUID crawler, DoorPos door) implements Event {}
 
     record SafeRoomExited(UUID crawler) implements Event {}
+
+    record SafeRoomDoorsPlanned(int floor, List<DoorPos> doors) implements Event {}
 
     record CrawlerMoved(UUID crawler, int x, int z) implements Event {}
 
