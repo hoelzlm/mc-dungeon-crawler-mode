@@ -4,13 +4,13 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** in-review
 
-- [ ] A monster in range and in a revealed cell shows red
-- [ ] A monster in range but in an unrevealed cell shows nothing
-- [ ] A monster out of range shows nothing
-- [ ] Other Crawlers follow the same rules and show blue; the rule accepts NPCs as white
-- [ ] The server never sends positions of entities that do not qualify
-- [ ] The dot radius is configurable
-- [ ] No X markers, loot markers or waypoints exist
-- [ ] Engine tests cover the dot rules through the Crawl engine seam
+- [x] A monster in range and in a revealed cell shows red
+- [x] A monster in range but in an unrevealed cell shows nothing
+- [x] A monster out of range shows nothing
+- [x] Other Crawlers follow the same rules and show blue; the rule accepts NPCs as white
+- [x] The server never sends positions of entities that do not qualify
+- [x] The dot radius is configurable
+- [x] No X markers, loot markers or waypoints exist
+- [x] Engine tests cover the dot rules through the Crawl engine seam

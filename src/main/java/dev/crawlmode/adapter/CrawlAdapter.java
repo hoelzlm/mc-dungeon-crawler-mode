@@ -262,6 +262,7 @@ public final class CrawlAdapter {
                 case Effect.ShowMapDoors show -> FloorMapAdapter.showDoors(server, show);
                 case Effect.ShowFloorMap show -> FloorMapAdapter.show(server, show);
                 case Effect.HideFloorMap hide -> FloorMapAdapter.hide(server, hide);
+                case Effect.UpdateMapDots dots -> FloorMapAdapter.showDots(server, dots);
                 case Effect.ServeBuffet buffet -> LootBoxAdapter.handItems(server, buffet.crawler(), buffet.items());
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());

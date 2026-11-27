@@ -3,7 +3,9 @@ package dev.crawlmode.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.engine.map.MapDot;
 import dev.crawlmode.network.MapDoorsPayload;
+import dev.crawlmode.network.MapDotsPayload;
 import dev.crawlmode.network.RevealMapPayload;
 import dev.crawlmode.network.ShowFloorMapPayload;
 import net.minecraft.client.DeltaTracker;
@@ -38,6 +40,9 @@ public final class FloorMapClient {
     private static final int DOOR = 0xFFFFC832;
     private static final int DOOR_OUTLINE = 0xFF000000;
     private static final int DOOR_RADIUS = 3;
+    private static final int MONSTER_DOT = 0xFFFF2020;
+    private static final int CRAWLER_DOT = 0xFF3060FF;
+    private static final int NPC_DOT = 0xFFFFFFFF;
 
     private static final int FULL_SCREEN_PIXELS_PER_BLOCK = 3;
     private static final KeyMapping.Category CATEGORY =
@@ -69,6 +74,10 @@ public final class FloorMapClient {
         if (payload.visible() && level != null) {
             VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
         }
+    }
+
+    public static void receive(MapDotsPayload payload) {
+        VIEW.showDots(payload.floor(), payload.dots());
     }
 
     @SubscribeEvent
@@ -144,9 +153,24 @@ public final class FloorMapClient {
                         doorY + DOOR_RADIUS + 1, DOOR);
             }
         }
+        for (MapDot dot : VIEW.dots()) {
+            int dotX = (dot.x() - west) * pixelsPerBlock;
+            int dotZ = (dot.z() - north) * pixelsPerBlock;
+            if (dotX >= 0 && dotZ >= 0 && dotX + 3 <= width && dotZ + 3 <= height) {
+                graphics.fill(left + dotX, top + dotZ, left + dotX + 3, top + dotZ + 3, colourOf(dot));
+            }
+        }
         int middleX = width / 2;
         int middleY = height / 2;
         graphics.fill(left + middleX - 1, top + middleY - 1, left + middleX + 2, top + middleY + 2, SELF);
+    }
+
+    private static int colourOf(MapDot dot) {
+        return switch (dot.kind()) {
+            case MONSTER -> MONSTER_DOT;
+            case CRAWLER -> CRAWLER_DOT;
+            case NPC -> NPC_DOT;
+        };
     }
 
     private static int colourOf(ClientLevel level, int x, int z, int surfaceY) {

@@ -1,6 +1,7 @@
 package dev.crawlmode.engine;
 
 import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.engine.map.MapDot;
 import dev.crawlmode.engine.map.MapSpan;
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +54,7 @@ public sealed interface Effect {
     record ShowFloorMap(UUID crawler, int floor, List<MapSpan> spans) implements Effect {}
 
     record HideFloorMap(UUID crawler) implements Effect {}
+    record UpdateMapDots(UUID crawler, int floor, List<MapDot> dots) implements Effect {}
 
     record ServeBuffet(UUID crawler, List<LootItem> items) implements Effect {}
 }
