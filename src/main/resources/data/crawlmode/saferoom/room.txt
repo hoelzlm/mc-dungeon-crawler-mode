@@ -1,4 +1,4 @@
-// Safe Room farmhouse, Floor template format. Markers: c chest (3), f food pot, d exit door (lower half, in the wall), a arrival spot.
+// Safe Room farmhouse, Floor template format. Markers: c chest (3), f food pot, d exit door (lower half, in the wall), a arrival spot, y pantry barrel (2).
 // Template cell (0,0) is placed at world x=-8, z=-8; layer 0 is y=64. Interior is x 1..14, z 2..12; rows 0 and 14 are the black backdrop behind the windows.
 name safe_room
 role safe_room
@@ -15,7 +15,6 @@ palette W minecraft:glass_pane[east=true,west=true]
 palette R minecraft:stone_bricks
 palette I minecraft:iron_bars[north=true,south=true]
 palette m minecraft:campfire[lit=true]
-palette Q minecraft:barrel[facing=up]
 palette S minecraft:spruce_slab[type=top]
 palette h minecraft:spruce_stairs[facing=south]
 palette A minecraft:hay_block
@@ -56,7 +55,7 @@ GGGGGGGGGGGGGGGG
 layer 1
 OOOOOOOOOOOOOOOO
 TPPPPTPPPPTPPPPT
-P.1N3N5......QQP
+P.1N3N5......yyP
 PK2.4.6...SS..fP
 PKrrrrr...hh...P
 PKrrrrr........P

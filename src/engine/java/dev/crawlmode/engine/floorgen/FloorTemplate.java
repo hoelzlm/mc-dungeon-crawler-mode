@@ -23,7 +23,8 @@ public final class FloorTemplate {
         CHEST('c', 3),
         FOOD_POT('f', 1),
         EXIT_DOOR('d', 1),
-        ARRIVAL('a', 1);
+        ARRIVAL('a', 1),
+        PANTRY_BARREL('y', 2);
 
         private final char symbol;
         private final int required;

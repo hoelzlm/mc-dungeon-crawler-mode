@@ -60,5 +60,7 @@ public sealed interface Effect {
 
     record UpdateMapDots(UUID crawler, int floor, List<MapDot> dots) implements Effect {}
 
+    record StockPantry(UUID crawler, List<LootItem> items) implements Effect {}
+
     record ServeBuffet(UUID crawler, List<LootItem> items) implements Effect {}
 }

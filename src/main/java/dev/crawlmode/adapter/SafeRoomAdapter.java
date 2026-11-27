@@ -6,6 +6,7 @@ import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.DoorPos;
 import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
+import dev.crawlmode.engine.LootItem;
 import dev.crawlmode.engine.SafeRoomRules;
 import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorTemplate;
@@ -46,6 +47,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -82,6 +84,7 @@ final class SafeRoomAdapter {
     private static final Map<UUID, ServerLevel> ROOMS = new HashMap<>();
     private static final Map<Integer, List<DoorPos>> DOORS = new HashMap<>();
     private static final List<UUID> PENDING_ENTRIES = new ArrayList<>();
+    private static final Map<UUID, List<LootItem>> PENDING_PANTRIES = new HashMap<>();
 
     private SafeRoomAdapter() {}
 
@@ -165,6 +168,7 @@ final class SafeRoomAdapter {
         ROOMS.clear();
         DOORS.clear();
         PENDING_ENTRIES.clear();
+        PENDING_PANTRIES.clear();
     }
 
     static void tick(MinecraftServer server) {
@@ -176,7 +180,30 @@ final class SafeRoomAdapter {
             ServerPlayer player = server.getPlayerList().getPlayer(crawler);
             ServerLevel room = player == null ? null : create(server, crawler);
             if (room != null) {
+                stockPantry(room, PENDING_PANTRIES.remove(crawler));
                 teleport(player, room, ROOM_SPAWN, 0f);
+            }
+        }
+    }
+
+    static void queuePantry(Effect.StockPantry stock) {
+        PENDING_PANTRIES.put(stock.crawler(), stock.items());
+    }
+
+    private static void stockPantry(ServerLevel room, List<LootItem> items) {
+        if (items == null) {
+            return;
+        }
+        for (BlockPos at : roomPositions(FloorTemplate.Furniture.PANTRY_BARREL)) {
+            if (room.getBlockEntity(at) instanceof Container barrel) {
+                int slot = 0;
+                for (LootItem item : items) {
+                    var holder = BuiltInRegistries.ITEM.get(Identifier.parse(item.id()));
+                    if (holder.isPresent() && slot < barrel.getContainerSize()) {
+                        barrel.setItem(slot++, new ItemStack(holder.get(), item.count()));
+                    }
+                }
+                barrel.setChanged();
             }
         }
     }
@@ -262,6 +289,7 @@ final class SafeRoomAdapter {
 
     static void delete(MinecraftServer server, Effect.DeleteSafeRoom delete) {
         PENDING_ENTRIES.remove(delete.crawler());
+        PENDING_PANTRIES.remove(delete.crawler());
         ServerLevel room = ROOMS.remove(delete.crawler());
         if (room == null) {
             return;
@@ -343,6 +371,8 @@ final class SafeRoomAdapter {
         room.setBlockAndUpdate(ROOM_BUFFET, Blocks.CAULDRON.defaultBlockState());
         BlockState chest = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH);
         roomPositions(FloorTemplate.Furniture.CHEST).forEach(at -> room.setBlockAndUpdate(at, chest));
+        BlockState barrel = Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP);
+        roomPositions(FloorTemplate.Furniture.PANTRY_BARREL).forEach(at -> room.setBlockAndUpdate(at, barrel));
     }
 
     private static BlockState parse(String spec) {

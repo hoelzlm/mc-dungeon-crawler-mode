@@ -6,3 +6,8 @@ buffet-cooldown-ticks | 1200
 food | minecraft:bread | 4
 food | minecraft:baked_potato | 4
 food | minecraft:cooked_beef | 2
+# pantry | item id | count: put into each pantry barrel once, on the Crawler's first entry, never refilled.
+pantry | minecraft:bread | 8
+pantry | minecraft:baked_potato | 8
+pantry | minecraft:apple | 6
+pantry | minecraft:carrot | 8

@@ -42,7 +42,7 @@ class SafeRoomTemplateTest {
     }
 
     private static String valid() {
-        return room("cccfda", "");
+        return room("cccfdayy", "");
     }
 
     @Test
@@ -54,6 +54,14 @@ class SafeRoomTemplateTest {
         assertEquals(List.of(new FloorTemplate.Marker(3, 1, 0)), t.markers(FloorTemplate.Furniture.FOOD_POT));
         assertEquals(List.of(new FloorTemplate.Marker(4, 1, 0)), t.markers(FloorTemplate.Furniture.EXIT_DOOR));
         assertEquals(List.of(new FloorTemplate.Marker(5, 1, 0)), t.markers(FloorTemplate.Furniture.ARRIVAL));
+        assertEquals(List.of(new FloorTemplate.Marker(6, 1, 0), new FloorTemplate.Marker(7, 1, 0)),
+                t.markers(FloorTemplate.Furniture.PANTRY_BARREL));
+    }
+
+    @Test
+    void roomWithoutTwoPantryBarrelsIsRejected() {
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfday", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfdayyy", "")));
     }
 
     @Test
@@ -72,37 +80,38 @@ class SafeRoomTemplateTest {
         assertEquals(1, t.markers(FloorTemplate.Furniture.FOOD_POT).size());
         assertEquals(1, t.markers(FloorTemplate.Furniture.EXIT_DOOR).size());
         assertEquals(1, t.markers(FloorTemplate.Furniture.ARRIVAL).size());
+        assertEquals(2, t.markers(FloorTemplate.Furniture.PANTRY_BARREL).size());
     }
 
     @Test
     void roomWithTwoExitsIsRejected() {
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfdda", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfddayy", "")));
     }
 
     @Test
     void roomWithoutAnExitIsRejected() {
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfa", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfayy", "")));
     }
 
     @Test
     void roomWithTwoPotsIsRejected() {
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccffda", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccffdayy", "")));
     }
 
     @Test
     void roomWithoutAPotIsRejected() {
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccda", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccdayy", "")));
     }
 
     @Test
     void roomWithoutThreeChestsIsRejected() {
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("ccfda", "")));
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("ccccfda", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("ccfdayy", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("ccccfdayy", "")));
     }
 
     @Test
     void roomWithoutAnArrivalSpotIsRejected() {
-        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfd", "")));
+        assertThrows(FloorTemplateFormatException.class, () -> FloorTemplate.parse(room("cccfdyy", "")));
     }
 
     @Test
