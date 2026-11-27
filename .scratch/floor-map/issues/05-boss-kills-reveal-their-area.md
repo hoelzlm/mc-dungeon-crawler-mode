@@ -8,6 +8,6 @@
 
 - [x] A Boss kill reveals the whole area it died in
 - [x] At least a disc of the configured radius around the Boss is revealed (default 64)
-- [ ] Parts of the area not yet generated are revealed when they generate
+- [x] Parts of the area not yet generated are revealed when they generate (the engine marks the whole area revealed at once; the client colours each cell on draw and shows unloaded chunks as dark until they load)
 - [x] Safe Room Doors in the revealed region appear on the map
 - [x] Engine tests cover the reveal through the Crawl engine seam

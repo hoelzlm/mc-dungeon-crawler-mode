@@ -107,7 +107,7 @@ public final class CrawlEngine {
                     floorOf.put(joined.crawler(), floor);
                     List<Effect> effects = new ArrayList<>();
                     effects.add(new Effect.PullToFloor(joined.crawler(), floor));
-                    effects.addAll(showMap(joined.crawler()));
+                    effects.addAll(resendMap(joined.crawler()));
                     yield effects;
                 }
                 yield said("apocalypse-start", joined.crawler());
@@ -154,11 +154,11 @@ public final class CrawlEngine {
         return map == null ? Set.of() : map.revealed();
     }
 
-    private List<Effect> dropMap(UUID crawler) {
+    private List<Effect> deleteMap(UUID crawler) {
         return floorMaps.remove(crawler) == null ? List.of() : List.of(new Effect.HideFloorMap(crawler));
     }
 
-    private List<Effect> showMap(UUID crawler) {
+    private List<Effect> resendMap(UUID crawler) {
         FloorMap map = floorMaps.get(crawler);
         if (map == null || safeRoomOrigin.containsKey(crawler)) {
             return List.of();
@@ -172,9 +172,7 @@ public final class CrawlEngine {
         for (Area area : map.painted()) {
             effects.add(new Effect.PaintMapArea(crawler, map.floor(), area));
         }
-        if (!map.shownDots().isEmpty()) {
-            effects.add(new Effect.UpdateMapDots(crawler, map.floor(), map.shownDots()));
-        }
+        map.forgetDots();
         return effects;
     }
 
@@ -197,23 +195,27 @@ public final class CrawlEngine {
         return map.showDots(dots) ? List.of(new Effect.UpdateMapDots(crawler, floor, dots)) : List.of();
     }
 
+    private boolean canMap(UUID crawler, Integer floor) {
+        return floor != null && crawlers.contains(crawler) && !safeRoomOrigin.containsKey(crawler);
+    }
+
     private List<Effect> reveal(Event.CrawlerMoved moved) {
         UUID crawler = moved.crawler();
         Integer floor = floorOf.get(crawler);
-        if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+        if (!canMap(crawler, floor)) {
             return List.of();
         }
-        FloorMap map = mapOf(crawler, floor);
+        FloorMap map = mapFor(crawler, floor);
         return mapEffects(crawler, floor, map, map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius()));
     }
 
     private List<Effect> revealBossArea(Event.BossKilled killed) {
         UUID crawler = killed.crawler();
         Integer floor = floorOf.get(crawler);
-        if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+        if (!canMap(crawler, floor)) {
             return List.of();
         }
-        FloorMap map = mapOf(crawler, floor);
+        FloorMap map = mapFor(crawler, floor);
         List<MapSpan> spans = new ArrayList<>(map.revealDisc(killed.x(), killed.z(), floorMapConfig.bossRevealRadius()));
         for (MapRect rect : killed.area()) {
             spans.addAll(map.revealRect(rect));
@@ -238,7 +240,7 @@ public final class CrawlEngine {
         return map == null ? List.of() : map.painted();
     }
 
-    private FloorMap mapOf(UUID crawler, int floor) {
+    private FloorMap mapFor(UUID crawler, int floor) {
         FloorMap map = floorMaps.get(crawler);
         if (map == null || map.floor() != floor) {
             map = new FloorMap(floor);
@@ -250,12 +252,12 @@ public final class CrawlEngine {
     private List<Effect> paintAid(Event.StairwellAidUsed used) {
         UUID crawler = used.crawler();
         Integer floor = floorOf.get(crawler);
-        if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+        if (!canMap(crawler, floor)) {
             return List.of();
         }
         return StairwellAids.paintedArea(used.aid(), used.x(), used.z(), used.stairwells(), used.salt())
                 .map(area -> {
-                    mapOf(crawler, floor).paint(area);
+                    mapFor(crawler, floor).paint(area);
                     return List.<Effect>of(new Effect.PaintMapArea(crawler, floor, area));
                 })
                 .orElse(List.of());
@@ -302,7 +304,7 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
-        List<Effect> effects = new ArrayList<>(dropMap(crawler));
+        List<Effect> effects = new ArrayList<>(deleteMap(crawler));
         effects.addAll(leaveSafeRoom(crawler));
         effects.add(new Effect.Spectate(crawler));
         if (safeRoomsCreated.remove(crawler)) {
@@ -346,7 +348,7 @@ public final class CrawlEngine {
         }
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.ExitSafeRoom(crawler, door));
-        effects.addAll(showMap(crawler));
+        effects.addAll(resendMap(crawler));
         if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StopSafeRoomRegeneration(crawler));
         }
@@ -389,7 +391,7 @@ public final class CrawlEngine {
         timerFloor = 1;
         floorOf.clear();
         for (UUID mapped : List.copyOf(floorMaps.keySet())) {
-            effects.addAll(dropMap(mapped));
+            effects.addAll(deleteMap(mapped));
         }
         safeRoomOrigin.clear();
         safeRoomsCreated.clear();
@@ -505,7 +507,7 @@ public final class CrawlEngine {
         if (floor == FINAL_FLOOR) {
             winners.add(crawler);
             floorOf.remove(crawler);
-            List<Effect> effects = new ArrayList<>(dropMap(crawler));
+            List<Effect> effects = new ArrayList<>(deleteMap(crawler));
             effects.addAll(leaveSafeRoom(crawler));
             effects.addAll(said("win", crawler));
             if (safeRoomsCreated.remove(crawler)) {
@@ -517,7 +519,7 @@ public final class CrawlEngine {
             return effects;
         }
         floorOf.put(crawler, floor + 1);
-        List<Effect> effects = new ArrayList<>(dropMap(crawler));
+        List<Effect> effects = new ArrayList<>(deleteMap(crawler));
         effects.add(new Effect.PullToFloor(crawler, floor + 1));
         return effects;
     }

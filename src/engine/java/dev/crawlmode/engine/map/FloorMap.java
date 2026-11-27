@@ -58,6 +58,10 @@ public final class FloorMap {
         return revealed.contains(new MapCell(x, z));
     }
 
+    public void forgetDots() {
+        shownDots = List.of();
+    }
+
     public boolean showDots(List<MapDot> dots) {
         if (dots.equals(shownDots)) {
             return false;

@@ -14,3 +14,5 @@
 - [x] The dot radius is configurable
 - [x] No X markers, loot markers or waypoints exist
 - [x] Engine tests cover the dot rules through the Crawl engine seam
+
+**Note (review):** Dots go out as the full qualifying list, not per-dot deltas. This is deliberate: the engine scans every 5 ticks and sends nothing when the list is unchanged (`FloorMap.showDots` dedupes), the list is capped by the dot radius, and a full list lets vanished dots clear without extra effect types. Dots are not replayed after leaving the Safe Room or rejoining; the next scan sends fresh ones.

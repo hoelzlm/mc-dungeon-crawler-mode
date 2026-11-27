@@ -118,7 +118,7 @@ class MapDotsTest {
     }
 
     @Test
-    void leavingTheSafeRoomResendsTheShownDotsAfterTheMap() {
+    void leavingTheSafeRoomReplaysNoStaleDotsButTheNextScanSendsFreshOnes() {
         CrawlEngine engine = crawl(10, 10);
         scan(engine, new Sighting(DotKind.MONSTER, 3, 0));
         engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
@@ -126,16 +126,19 @@ class MapDotsTest {
         List<Effect> effects = engine.handle(new Event.SafeRoomExited(CARL));
 
         assertEquals(true, effects.stream().anyMatch(e -> e instanceof Effect.ShowFloorMap));
-        assertEquals(true, effects.containsAll(dots(DotKind.MONSTER, 3, 0)));
+        assertEquals(false, effects.stream().anyMatch(e -> e instanceof Effect.UpdateMapDots));
+        assertEquals(dots(DotKind.MONSTER, 3, 0), scan(engine, new Sighting(DotKind.MONSTER, 3, 0)));
     }
 
     @Test
-    void rejoiningResendsTheShownDots() {
+    void rejoiningReplaysNoStaleDotsButTheNextScanSendsFreshOnes() {
         CrawlEngine engine = crawl(10, 10);
         scan(engine, new Sighting(DotKind.MONSTER, 3, 0));
         engine.handle(new Event.CrawlerLeft(CARL));
 
-        assertEquals(true, engine.handle(new Event.CrawlerJoined(CARL)).containsAll(dots(DotKind.MONSTER, 3, 0)));
+        assertEquals(false, engine.handle(new Event.CrawlerJoined(CARL)).stream()
+                .anyMatch(e -> e instanceof Effect.UpdateMapDots));
+        assertEquals(dots(DotKind.MONSTER, 3, 0), scan(engine, new Sighting(DotKind.MONSTER, 3, 0)));
     }
 
     @Test

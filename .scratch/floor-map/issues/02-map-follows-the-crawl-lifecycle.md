@@ -12,3 +12,5 @@
 - [x] A collapsed Floor's maps are deleted with it, and a fresh Crawl starts with none
 - [ ] An eliminated Crawler sees no map overlay
 - [x] Engine tests cover each rule through the Crawl engine seam
+
+**Note (review):** Maps live in `CrawlEngine` memory. Rejoining within a server session keeps them; a server restart loses them, as does every other piece of Crawl state today (no persistence mechanism exists yet, eliminated/winners/Floor of each Crawler are also in memory only). Persisting the Crawl is a separate feature and the maps should join it then.
