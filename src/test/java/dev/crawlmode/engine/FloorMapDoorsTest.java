@@ -73,4 +73,33 @@ class FloorMapDoorsTest {
 
         assertEquals(List.of(), doorEffects(engine.handle(new Event.CrawlerMoved(DONUT, 100, 100))));
     }
+
+    @Test
+    void leavingTheSafeRoomResendsTheDoorsAlreadyShown() {
+        CrawlEngine engine = crawl(1, new DoorPos(1, 2, 70, 0));
+        engine.handle(new Event.CrawlerMoved(CARL, 0, 0));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 2, 70, 0)));
+
+        assertEquals(List.of(new Effect.ShowMapDoors(CARL, 1, List.of(new MapCell(2, 0)))),
+                doorEffects(engine.handle(new Event.SafeRoomExited(CARL))));
+    }
+
+    @Test
+    void rejoiningResendsTheDoorsAlreadyShown() {
+        CrawlEngine engine = crawl(1, new DoorPos(1, 2, 70, 0));
+        engine.handle(new Event.CrawlerMoved(CARL, 0, 0));
+        engine.handle(new Event.CrawlerLeft(CARL));
+
+        assertEquals(List.of(new Effect.ShowMapDoors(CARL, 1, List.of(new MapCell(2, 0)))),
+                doorEffects(engine.handle(new Event.CrawlerJoined(CARL))));
+    }
+
+    @Test
+    void reShowingAMapWithNoDoorsSendsNoDoorEffect() {
+        CrawlEngine engine = crawl(1, new DoorPos(1, 9, 70, 0));
+        engine.handle(new Event.CrawlerMoved(CARL, 0, 0));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 9, 70, 0)));
+
+        assertEquals(List.of(), doorEffects(engine.handle(new Event.SafeRoomExited(CARL))));
+    }
 }

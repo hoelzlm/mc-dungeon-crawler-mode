@@ -7,7 +7,10 @@ import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.map.FloorMapConfig;
 import dev.crawlmode.network.MapDoorsPayload;
 import dev.crawlmode.network.RevealMapPayload;
+import dev.crawlmode.network.ShowFloorMapPayload;
+import java.util.UUID;
 import java.util.function.Consumer;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
@@ -54,9 +57,21 @@ final class FloorMapAdapter {
     }
 
     static void showDoors(MinecraftServer server, Effect.ShowMapDoors show) {
-        ServerPlayer player = server.getPlayerList().getPlayer(show.crawler());
+        send(server, show.crawler(), new MapDoorsPayload(show.floor(), show.doors()));
+    }
+
+    static void show(MinecraftServer server, Effect.ShowFloorMap show) {
+        send(server, show.crawler(), new ShowFloorMapPayload(true, show.floor(), show.spans()));
+    }
+
+    static void hide(MinecraftServer server, Effect.HideFloorMap hide) {
+        send(server, hide.crawler(), ShowFloorMapPayload.hidden());
+    }
+
+    private static void send(MinecraftServer server, UUID crawler, CustomPacketPayload payload) {
+        ServerPlayer player = server.getPlayerList().getPlayer(crawler);
         if (player != null) {
-            PacketDistributor.sendToPlayer(player, new MapDoorsPayload(show.floor(), show.doors()));
+            PacketDistributor.sendToPlayer(player, payload);
         }
     }
 
@@ -65,6 +80,8 @@ final class FloorMapAdapter {
         registrar.playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
         registrar.playToClient(MapDoorsPayload.TYPE, MapDoorsPayload.CODEC,
+                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
+        registrar.playToClient(ShowFloorMapPayload.TYPE, ShowFloorMapPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
     }
 }
