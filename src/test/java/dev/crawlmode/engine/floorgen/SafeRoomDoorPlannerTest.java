@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.crawlmode.engine.DoorFacing;
 import dev.crawlmode.engine.DoorPos;
 import dev.crawlmode.engine.boss.BossPlacement;
 import dev.crawlmode.engine.boss.BossPlan;
@@ -12,9 +13,11 @@ import dev.crawlmode.engine.boss.Bosses;
 import dev.crawlmode.engine.faction.FactionAreas;
 import dev.crawlmode.engine.faction.Factions;
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class SafeRoomDoorPlannerTest {
@@ -101,6 +104,109 @@ class SafeRoomDoorPlannerTest {
                 }
             }
         }
+    }
+
+    @Test
+    void everyDoorStandsAgainstAWallWithAFreeTwoHighSpot() {
+        for (FloorSpec spec : FloorSpec.ALL) {
+            for (long seed = 0; seed < 20; seed++) {
+                Floor f = floor(spec, seed);
+                for (DoorPos d : doors(f)) {
+                    int behindX = d.x() - d.facing().dx();
+                    int behindZ = d.z() - d.facing().dz();
+                    assertTrue(f.layout().isProtected(behindX, d.y(), behindZ), "wall behind door");
+                    assertTrue(f.layout().isProtected(behindX, d.y() + 1, behindZ), "wall behind upper door");
+                    assertFalse(f.layout().blockAt(d.x(), d.y(), d.z()).isPresent(), "door cell free");
+                    assertFalse(f.layout().blockAt(d.x(), d.y() + 1, d.z()).isPresent(), "door upper cell free");
+                }
+            }
+        }
+    }
+
+    @Test
+    void everyDoorsFrontSpotIsFreeOnSolidGround() {
+        for (FloorSpec spec : FloorSpec.ALL) {
+            for (long seed = 0; seed < 20; seed++) {
+                Floor f = floor(spec, seed);
+                for (DoorPos d : doors(f)) {
+                    int frontX = d.x() + d.facing().dx();
+                    int frontZ = d.z() + d.facing().dz();
+                    assertTrue(f.layout().blockAt(frontX, d.y() - 1, frontZ).isPresent(), "ground in front");
+                    assertFalse(f.layout().blockAt(frontX, d.y(), frontZ).isPresent(), "front free");
+                    assertFalse(f.layout().blockAt(frontX, d.y() + 1, frontZ).isPresent(), "front headroom");
+                }
+            }
+        }
+    }
+
+    @Test
+    void facingsPointTheWayAnObserverWouldLookAwayFromTheDoor() {
+        assertEquals(0, DoorFacing.SOUTH.yawDegrees());
+        assertEquals(90, DoorFacing.WEST.yawDegrees());
+        assertEquals(180, DoorFacing.NORTH.yawDegrees());
+        assertEquals(270, DoorFacing.EAST.yawDegrees());
+        assertEquals(1, DoorFacing.SOUTH.dz());
+        assertEquals(-1, DoorFacing.WEST.dx());
+    }
+
+    private record Flat(Set<List<Integer>> wallColumns) implements DoorTerrain {
+        @Override
+        public boolean solid(int x, int y, int z) {
+            return y <= FloorLayout.FLOOR_Y || wall(x, y, z);
+        }
+
+        @Override
+        public boolean wall(int x, int y, int z) {
+            return y > FloorLayout.FLOOR_Y && y <= FloorLayout.FLOOR_Y + 2 && wallColumns.contains(List.of(x, z));
+        }
+
+        @Override
+        public boolean stairwell(int x, int y, int z) {
+            return false;
+        }
+    }
+
+    private static List<CellPos> row(int length) {
+        return IntStream.range(0, length).mapToObj(x -> new CellPos(x, 0)).toList();
+    }
+
+    private static Set<List<Integer>> columns(int[]... xz) {
+        Set<List<Integer>> all = new HashSet<>();
+        for (int[] c : xz) {
+            all.add(List.of(c[0], c[1]));
+        }
+        return all;
+    }
+
+    @Test
+    void aSingleWallColumnOffersADoorFacingAwayFromIt() {
+        Flat terrain = new Flat(columns(new int[] {8, 8}));
+
+        List<DoorPos> doors = SafeRoomDoorPlanner.candidates(1, terrain, new CellPos(0, 0));
+
+        assertTrue(doors.contains(new DoorPos(1, 9, 61, 8, DoorFacing.EAST)));
+        assertTrue(doors.contains(new DoorPos(1, 7, 61, 8, DoorFacing.WEST)));
+        assertTrue(doors.contains(new DoorPos(1, 8, 61, 9, DoorFacing.SOUTH)));
+        assertTrue(doors.contains(new DoorPos(1, 8, 61, 7, DoorFacing.NORTH)));
+        assertEquals(4, doors.size());
+    }
+
+    @Test
+    void aCellWithoutAWallSpotBorrowsOneFromANeighbouringCell() {
+        Flat terrain = new Flat(columns(
+                new int[] {8, 8}, new int[] {19, 8}, new int[] {29, 8}, new int[] {56, 8}));
+
+        List<DoorPos> doors = SafeRoomDoorPlanner.plan(1, terrain, row(4), Set.of());
+
+        assertEquals(4, doors.size());
+        assertEquals(2, doors.stream().filter(d -> d.cell().equals(new CellPos(1, 0))).count());
+    }
+
+    @Test
+    void aFloorWithoutAnyWallSpotFailsLoudly() {
+        Flat terrain = new Flat(columns());
+
+        assertThrows(IllegalStateException.class, () -> SafeRoomDoorPlanner.plan(1, terrain, row(6), Set.of()));
     }
 
     @Test

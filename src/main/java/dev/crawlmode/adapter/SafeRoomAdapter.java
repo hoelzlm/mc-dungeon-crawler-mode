@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -105,14 +106,17 @@ final class SafeRoomAdapter {
                 events.accept(new Event.SafeRoomExited(crawler));
                 return;
             }
-            Floors.numberOf(event.getLevel()).ifPresent(floor -> {
-                DoorPos door = new DoorPos(floor, p.getX(), p.getY(), p.getZ());
-                if (DOORS.getOrDefault(floor, List.of()).contains(door)) {
-                    event.setCanceled(true);
-                    events.accept(new Event.SafeRoomDoorUsed(crawler, door));
-                }
+            Floors.numberOf(event.getLevel()).stream().mapToObj(floor -> doorAt(floor, p)).flatMap(Optional::stream).findFirst().ifPresent(door -> {
+                event.setCanceled(true);
+                events.accept(new Event.SafeRoomDoorUsed(crawler, door));
             });
         });
+    }
+
+    private static Optional<DoorPos> doorAt(int floor, BlockPos p) {
+        return DOORS.getOrDefault(floor, List.of()).stream()
+                .filter(d -> d.x() == p.getX() && d.z() == p.getZ() && (d.y() == p.getY() || d.y() + 1 == p.getY()))
+                .findFirst();
     }
 
     static void registerRules(Predicate<UUID> inSafeRoom) {
@@ -172,7 +176,7 @@ final class SafeRoomAdapter {
             ServerPlayer player = server.getPlayerList().getPlayer(crawler);
             ServerLevel room = player == null ? null : create(server, crawler);
             if (room != null) {
-                teleport(player, room, ROOM_SPAWN);
+                teleport(player, room, ROOM_SPAWN, 0f);
             }
         }
     }
@@ -188,10 +192,28 @@ final class SafeRoomAdapter {
     static void onCellBuilt(ServerLevel level, int floor, CellPos cell) {
         for (DoorPos door : DOORS.getOrDefault(floor, List.of())) {
             if (door.cell().equals(cell)) {
-                level.setBlockAndUpdate(new BlockPos(door.x(), door.y(), door.z()),
-                        Blocks.CRYING_OBSIDIAN.defaultBlockState());
+                buildDoor(level, door);
             }
         }
+    }
+
+    private static void buildDoor(ServerLevel level, DoorPos door) {
+        BlockPos lower = new BlockPos(door.x(), door.y(), door.z());
+        BlockState frame = Blocks.STRIPPED_OAK_LOG.defaultBlockState();
+        Direction facing = Direction.valueOf(door.facing().name());
+        BlockState base = Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING, facing);
+        level.setBlock(lower, base.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), Block.UPDATE_CLIENTS);
+        level.setBlock(lower.above(), base.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), Block.UPDATE_CLIENTS);
+        Direction side = facing.getClockWise();
+        for (BlockPos beside : List.of(lower.relative(side), lower.relative(side.getOpposite()))) {
+            for (BlockPos at : List.of(beside, beside.above())) {
+                if (level.getBlockState(at).isAir()) {
+                    level.setBlock(at, frame, Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+        level.setBlock(lower.above(2), frame, Block.UPDATE_CLIENTS);
+        level.setBlock(lower.above(3), Blocks.LANTERN.defaultBlockState(), Block.UPDATE_CLIENTS);
     }
 
     static void enter(MinecraftServer server, Effect.EnterSafeRoom enter) {
@@ -205,7 +227,7 @@ final class SafeRoomAdapter {
         }
         ServerLevel room = ROOMS.get(enter.crawler());
         if (room != null) {
-            teleport(player, room, ROOM_SPAWN);
+            teleport(player, room, ROOM_SPAWN, 0f);
         }
     }
 
@@ -215,8 +237,9 @@ final class SafeRoomAdapter {
         if (player == null || level == null) {
             return;
         }
-        BlockPos door = new BlockPos(exit.door().x(), exit.door().y(), exit.door().z());
-        teleport(player, level, door.above());
+        DoorPos door = exit.door();
+        BlockPos front = new BlockPos(door.frontX(), door.y(), door.frontZ());
+        teleport(player, level, front, door.facing().yawDegrees());
     }
 
     static void handOver(MinecraftServer server, Effect.HandOverSafeRoomContents handOver) {
@@ -273,8 +296,8 @@ final class SafeRoomAdapter {
         return ROOMS.get(crawler) == level;
     }
 
-    private static void teleport(ServerPlayer player, ServerLevel level, BlockPos at) {
-        player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(at), Vec3.ZERO, 0f, 0f,
+    private static void teleport(ServerPlayer player, ServerLevel level, BlockPos at, float yaw) {
+        player.teleport(new TeleportTransition(level, Vec3.atBottomCenterOf(at), Vec3.ZERO, yaw, 0f,
                 TeleportTransition.DO_NOTHING));
     }
 
