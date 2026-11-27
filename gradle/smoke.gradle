@@ -73,7 +73,23 @@ class SmokeOutput extends OutputStream {
 var smokeLog = layout.buildDirectory.file('smoke/server.log').get().asFile
 var eulaFile = file('run/eula.txt')
 
+var smokeEulaSync = tasks.register('smokeEulaSync') {
+    doLast {
+        var accepted = { File f -> f.exists() && f.readLines().any { it.trim() == 'eula=true' } }
+        if (!accepted(eulaFile)) {
+            var gitCommon = providers.exec { commandLine 'git', 'rev-parse', '--path-format=absolute', '--git-common-dir' }
+                    .standardOutput.asText.get().trim()
+            var mainEula = new File(new File(gitCommon).parentFile, 'run/eula.txt')
+            if (mainEula.canonicalPath != eulaFile.canonicalPath && accepted(mainEula)) {
+                eulaFile.parentFile.mkdirs()
+                java.nio.file.Files.copy(mainEula.toPath(), eulaFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+    }
+}
+
 var smokeEulaCheck = tasks.register('smokeEulaCheck') {
+    dependsOn smokeEulaSync
     doLast {
         var accepted = eulaFile.exists() && eulaFile.readLines().any { it.trim() == 'eula=true' }
         if (!accepted) {
@@ -96,6 +112,10 @@ tasks.register('smokeTest') {
         }
         if (!text.contains('Apocalypse triggered')) {
             failures << 'no "Apocalypse triggered" line after "crawl apocalypse"'
+        }
+        var doorCounts = (text =~ /Safe Room Doors reached the engine: floor \d+ count (\d+)/).collect { it[1] as int }
+        if (!doorCounts.any { it > 0 }) {
+            failures << 'no "Safe Room Doors reached the engine: floor N count M" line with M > 0: planned doors never reached the engine'
         }
         text.readLines().eachWithIndex { l, i ->
             if (l.contains('/ERROR]') || l.contains('Exception')) {

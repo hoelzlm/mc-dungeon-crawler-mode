@@ -57,7 +57,7 @@ The top rank of a **Faction**, optional and not guarding a **Stairwell**. Defeat
 _Avoid_: Guardian, miniboss
 
 **Stairwell Aid**:
-An item that helps find a hidden **Stairwell** without giving its exact position: Seeker's Draught, Echo Chime, Revealing Lantern or Fragment Map.
+An item that helps find a hidden **Stairwell** without giving its exact position: Seeker's Draught, Echo Chime, Revealing Lantern or Fragment Map. Using one paints a rough area containing a **Stairwell** on the user's **Floor Map**, never an exact spot.
 _Avoid_: Compass, hint item
 
 **System**:
@@ -74,9 +74,29 @@ A tiered container of rewards handed out by the **System**, kept unopened in a *
 _Avoid_: Chest, crate, drop
 
 **Safe Room**:
-A **Crawler**'s own private refuge, the same one across every **Floor** of the **Crawl**, holding their stored items, a food supply and the only place **Loot Boxes** can be opened. Nothing can hurt a **Crawler** inside, but the **Floor Timer** keeps running and a collapse of the **Floor** they entered from still kills them. A light regeneration soothes them while inside.
+A **Crawler**'s own private refuge, the same one across every **Floor** of the **Crawl**, furnished as a cosy old farmhouse with no view of the outside, holding their stored items, a food supply and the only place **Loot Boxes** can be opened. Nothing can hurt a **Crawler** inside, but the **Floor Timer** keeps running and a collapse of the **Floor** they entered from still kills them. A light regeneration soothes them while inside.
 _Avoid_: Lobby, hub, bunker
 
 **Safe Room Door**:
-A visible entrance to the **Safe Room** found on a **Floor**, at least four per **Floor**. Every door leads to the same **Safe Room** of the **Crawler** using it, and leaving returns them to the door they came through.
+A visible entrance to the **Safe Room** found on a **Floor**, at least four per **Floor**, looking like a small farmhouse door in a wooden frame. Every door leads to the same **Safe Room** of the **Crawler** using it, and leaving returns them to the door they came through.
 _Avoid_: Portal, entrance
+
+**Floor Map**:
+A **Crawler**'s own map of the **Floor** they are on, part of the game's interface and shown as a corner minimap or held open full-screen. It starts empty on every **Floor** and fills in as the **Crawler** explores, with **Safe Room Doors** shown prominently once revealed, and a **Boss** defeat revealing a larger area. It marks monsters in red, **NPCs** in white and other **Crawlers** in blue. It is hidden inside the **Safe Room** and for an eliminated **Crawler**.
+_Avoid_: Minimap (for the whole concept), radar, waypoint map
+
+**Reveal**:
+Marking cells of the **Floor Map** as explored, by walking near them or by a **Boss** defeat. Revealed cells stay on the map for the rest of that **Floor**.
+_Avoid_: Uncover, fog clearing
+
+**Painted Area**:
+A rough rectangle a **Stairwell Aid** draws on the **Floor Map**, known to contain a **Stairwell** but never marking its exact spot.
+_Avoid_: Hint zone, marker
+
+**Sighting**:
+A monster, **Crawler** or **NPC** seen near a **Crawler**, reported to the **Floor Map** which shows each as a coloured dot (red monster, blue **Crawler**, white **NPC**) only on revealed cells within a set radius.
+_Avoid_: Ping, blip
+
+**NPC**:
+A non-hostile character of the **Crawl** that a **Crawler** can trade with, get items from, learn from, or keep as a pet. Not yet designed.
+_Avoid_: Villager, vendor

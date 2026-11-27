@@ -16,7 +16,9 @@ import dev.crawlmode.engine.floorgen.Cell;
 import dev.crawlmode.engine.floorgen.CellPos;
 import dev.crawlmode.engine.floorgen.FloorLayout;
 import dev.crawlmode.engine.floorgen.FloorSpec;
+import dev.crawlmode.engine.floorgen.FloorTemplate;
 import dev.crawlmode.engine.floorgen.Gate;
+import dev.crawlmode.engine.map.MapRect;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +58,12 @@ final class BossAdapter {
             }
             for (String tag : mob.entityTags()) {
                 if (tag.startsWith(TAG_BOSS)) {
-                    floor.encounter().onBossKilled(tag.substring(TAG_BOSS.length()), killer.getUUID())
-                            .ifPresent(kill -> applyKill(level, floor, killer, kill, lootGranted));
+                    String factionId = tag.substring(TAG_BOSS.length());
+                    floor.encounter().onBossKilled(factionId, killer.getUUID())
+                            .ifPresent(kill -> {
+                                applyKill(level, floor, killer, kill, lootGranted);
+                                revealArea(floor, factionId, mob, killer, lootGranted);
+                            });
                 }
             }
         });
@@ -118,6 +124,17 @@ final class BossAdapter {
         if (spawned != null) {
             spawned.addTag(TAG_BOSS + def.factionId());
         }
+    }
+
+    private static void revealArea(FloorBosses floor, String factionId, Mob mob, ServerPlayer killer, Consumer<Event> handle) {
+        floor.plan().of(factionId).ifPresent(placement -> {
+            List<MapRect> area = floor.layout().cells().stream()
+                    .filter(cell -> cell.area() == placement.area())
+                    .map(cell -> new MapRect(cell.pos().originX(), cell.pos().originZ(),
+                            cell.pos().originX() + FloorTemplate.SIZE - 1, cell.pos().originZ() + FloorTemplate.SIZE - 1))
+                    .toList();
+            handle.accept(new Event.BossKilled(killer.getUUID(), mob.getBlockX(), mob.getBlockZ(), area));
+        });
     }
 
     private static void applyKill(ServerLevel level, FloorBosses floor, ServerPlayer killer, BossKill kill, Consumer<Event> lootGranted) {

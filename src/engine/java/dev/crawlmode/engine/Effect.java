@@ -1,5 +1,9 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.aids.Area;
+import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.engine.map.MapDot;
+import dev.crawlmode.engine.map.MapSpan;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +47,18 @@ public sealed interface Effect {
     record HandOverSafeRoomContents(UUID crawler) implements Effect {}
 
     record DeleteSafeRoom(UUID crawler) implements Effect {}
+
+    record RevealMapCells(UUID crawler, int floor, List<MapSpan> spans) implements Effect {}
+
+    record PaintMapArea(UUID crawler, int floor, Area area) implements Effect {}
+
+    record ShowMapDoors(UUID crawler, int floor, List<MapCell> doors) implements Effect {}
+
+    record ShowFloorMap(UUID crawler, int floor, List<MapSpan> spans) implements Effect {}
+
+    record HideFloorMap(UUID crawler) implements Effect {}
+
+    record UpdateMapDots(UUID crawler, int floor, List<MapDot> dots) implements Effect {}
 
     record ServeBuffet(UUID crawler, List<LootItem> items) implements Effect {}
 }

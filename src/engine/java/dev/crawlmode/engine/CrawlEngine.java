@@ -1,5 +1,14 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.aids.Area;
+import dev.crawlmode.engine.aids.StairwellAids;
+import dev.crawlmode.engine.map.FloorMap;
+import dev.crawlmode.engine.map.FloorMapConfig;
+import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.engine.map.MapDot;
+import dev.crawlmode.engine.map.MapRect;
+import dev.crawlmode.engine.map.MapSpan;
+import dev.crawlmode.engine.map.Sighting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -32,6 +41,9 @@ public final class CrawlEngine {
     private final Set<UUID> toldBoxRule = new LinkedHashSet<>();
     private final Map<UUID, Long> buffetServedAt = new HashMap<>();
     private final SafeRoomRules safeRoomRules;
+    private final Map<UUID, FloorMap> floorMaps = new HashMap<>();
+    private final Map<Integer, List<MapCell>> safeRoomDoorCells = new HashMap<>();
+    private FloorMapConfig floorMapConfig = FloorMapConfig.DEFAULT;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -93,7 +105,10 @@ public final class CrawlEngine {
                 if (apocalypseHappened) {
                     int floor = Math.max(timerFloor, floorOf.getOrDefault(joined.crawler(), timerFloor));
                     floorOf.put(joined.crawler(), floor);
-                    yield List.of(new Effect.PullToFloor(joined.crawler(), floor));
+                    List<Effect> effects = new ArrayList<>();
+                    effects.add(new Effect.PullToFloor(joined.crawler(), floor));
+                    effects.addAll(resendMap(joined.crawler()));
+                    yield effects;
                 }
                 yield said("apocalypse-start", joined.crawler());
             }
@@ -105,6 +120,15 @@ public final class CrawlEngine {
             case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
             case Event.SafeRoomExited exited -> leaveSafeRoom(exited.crawler());
             case Event.BuffetUsed used -> useBuffet(used.crawler());
+            case Event.SafeRoomDoorsPlanned planned -> {
+                safeRoomDoorCells.put(planned.floor(),
+                        planned.doors().stream().map(d -> new MapCell(d.x(), d.z())).toList());
+                yield List.of();
+            }
+            case Event.CrawlerMoved moved -> reveal(moved);
+            case Event.EntitiesScanned scanned -> showDots(scanned);
+            case Event.StairwellAidUsed used -> paintAid(used);
+            case Event.BossKilled killed -> revealBossArea(killed);
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
@@ -118,6 +142,125 @@ public final class CrawlEngine {
             case Event.MobKilled killed -> unlock(killed.crawler(), "kill." + killed.rank().key());
             case Event.Triggered triggered -> unlock(triggered.crawler(), triggered.trigger());
         };
+    }
+
+    public CrawlEngine withFloorMap(FloorMapConfig floorMapConfig) {
+        this.floorMapConfig = floorMapConfig;
+        return this;
+    }
+
+    public Set<MapCell> revealedCells(UUID crawler) {
+        FloorMap map = floorMaps.get(crawler);
+        return map == null ? Set.of() : map.revealed();
+    }
+
+    private List<Effect> deleteMap(UUID crawler) {
+        return floorMaps.remove(crawler) == null ? List.of() : List.of(new Effect.HideFloorMap(crawler));
+    }
+
+    private List<Effect> resendMap(UUID crawler) {
+        FloorMap map = floorMaps.get(crawler);
+        if (map == null || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        List<Effect> effects = new ArrayList<>();
+        effects.add(new Effect.ShowFloorMap(crawler, map.floor(), map.spans()));
+        List<MapCell> doors = map.shownDoors();
+        if (!doors.isEmpty()) {
+            effects.add(new Effect.ShowMapDoors(crawler, map.floor(), doors));
+        }
+        for (Area area : map.painted()) {
+            effects.add(new Effect.PaintMapArea(crawler, map.floor(), area));
+        }
+        map.forgetDots();
+        return effects;
+    }
+
+    private List<Effect> showDots(Event.EntitiesScanned scanned) {
+        UUID crawler = scanned.crawler();
+        Integer floor = floorOf.get(crawler);
+        FloorMap map = floorMaps.get(crawler);
+        if (floor == null || map == null || map.floor() != floor || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        long reach = (long) floorMapConfig.dotRadius() * floorMapConfig.dotRadius();
+        List<MapDot> dots = new ArrayList<>();
+        for (Sighting sighting : scanned.sightings()) {
+            long dx = (long) sighting.x() - scanned.x();
+            long dz = (long) sighting.z() - scanned.z();
+            if (dx * dx + dz * dz <= reach && map.isRevealed(sighting.x(), sighting.z())) {
+                dots.add(new MapDot(sighting.kind(), sighting.x(), sighting.z()));
+            }
+        }
+        return map.showDots(dots) ? List.of(new Effect.UpdateMapDots(crawler, floor, dots)) : List.of();
+    }
+
+    private boolean canMap(UUID crawler, Integer floor) {
+        return floor != null && crawlers.contains(crawler) && !safeRoomOrigin.containsKey(crawler);
+    }
+
+    private List<Effect> reveal(Event.CrawlerMoved moved) {
+        UUID crawler = moved.crawler();
+        Integer floor = floorOf.get(crawler);
+        if (!canMap(crawler, floor)) {
+            return List.of();
+        }
+        FloorMap map = mapFor(crawler, floor);
+        return mapEffects(crawler, floor, map, map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius()));
+    }
+
+    private List<Effect> revealBossArea(Event.BossKilled killed) {
+        UUID crawler = killed.crawler();
+        Integer floor = floorOf.get(crawler);
+        if (!canMap(crawler, floor)) {
+            return List.of();
+        }
+        FloorMap map = mapFor(crawler, floor);
+        List<MapSpan> spans = new ArrayList<>(map.revealDisc(killed.x(), killed.z(), floorMapConfig.bossRevealRadius()));
+        for (MapRect rect : killed.area()) {
+            spans.addAll(map.revealRect(rect));
+        }
+        return mapEffects(crawler, floor, map, spans);
+    }
+
+    private List<Effect> mapEffects(UUID crawler, int floor, FloorMap map, List<MapSpan> spans) {
+        List<Effect> effects = new ArrayList<>();
+        if (!spans.isEmpty()) {
+            effects.add(new Effect.RevealMapCells(crawler, floor, spans));
+        }
+        List<MapCell> doors = map.newlyVisibleDoors(safeRoomDoorCells.getOrDefault(floor, List.of()));
+        if (!doors.isEmpty()) {
+            effects.add(new Effect.ShowMapDoors(crawler, floor, doors));
+        }
+        return effects;
+    }
+
+    public List<Area> paintedAreas(UUID crawler) {
+        FloorMap map = floorMaps.get(crawler);
+        return map == null ? List.of() : map.painted();
+    }
+
+    private FloorMap mapFor(UUID crawler, int floor) {
+        FloorMap map = floorMaps.get(crawler);
+        if (map == null || map.floor() != floor) {
+            map = new FloorMap(floor);
+            floorMaps.put(crawler, map);
+        }
+        return map;
+    }
+
+    private List<Effect> paintAid(Event.StairwellAidUsed used) {
+        UUID crawler = used.crawler();
+        Integer floor = floorOf.get(crawler);
+        if (!canMap(crawler, floor)) {
+            return List.of();
+        }
+        return StairwellAids.paintedArea(used.aid(), used.x(), used.z(), used.stairwells(), used.salt())
+                .map(area -> {
+                    mapFor(crawler, floor).paint(area);
+                    return List.<Effect>of(new Effect.PaintMapArea(crawler, floor, area));
+                })
+                .orElse(List.of());
     }
 
     private Achievements achievements;
@@ -161,7 +304,8 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
-        List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
+        List<Effect> effects = new ArrayList<>(deleteMap(crawler));
+        effects.addAll(leaveSafeRoom(crawler));
         effects.add(new Effect.Spectate(crawler));
         if (safeRoomsCreated.remove(crawler)) {
             effects.add(new Effect.DeleteSafeRoom(crawler));
@@ -185,6 +329,9 @@ public final class CrawlEngine {
         boolean first = safeRoomsCreated.add(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.EnterSafeRoom(crawler, first));
+        if (floorMaps.containsKey(crawler)) {
+            effects.add(new Effect.HideFloorMap(crawler));
+        }
         if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StartSafeRoomRegeneration(crawler, safeRoomRules.regenerationAmplifier()));
         }
@@ -201,6 +348,7 @@ public final class CrawlEngine {
         }
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.ExitSafeRoom(crawler, door));
+        effects.addAll(resendMap(crawler));
         if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StopSafeRoomRegeneration(crawler));
         }
@@ -242,6 +390,9 @@ public final class CrawlEngine {
         floorTimer.reset();
         timerFloor = 1;
         floorOf.clear();
+        for (UUID mapped : List.copyOf(floorMaps.keySet())) {
+            effects.addAll(deleteMap(mapped));
+        }
         safeRoomOrigin.clear();
         safeRoomsCreated.clear();
         toldBoxRule.clear();
@@ -330,6 +481,7 @@ public final class CrawlEngine {
             effects.add(new Effect.Collapse(crawler, timerFloor));
             effects.addAll(eliminate(crawler));
         }
+        floorMaps.values().removeIf(map -> map.floor() == timerFloor);
         timerFloor++;
         long collapsedAt = clock.nowTicks() - floorTimer.overshoot();
         floorTimer = new FloorTimer(config.floorTimerTicks());
@@ -355,7 +507,8 @@ public final class CrawlEngine {
         if (floor == FINAL_FLOOR) {
             winners.add(crawler);
             floorOf.remove(crawler);
-            List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
+            List<Effect> effects = new ArrayList<>(deleteMap(crawler));
+            effects.addAll(leaveSafeRoom(crawler));
             effects.addAll(said("win", crawler));
             if (safeRoomsCreated.remove(crawler)) {
                 effects.add(new Effect.HandOverSafeRoomContents(crawler));
@@ -366,7 +519,9 @@ public final class CrawlEngine {
             return effects;
         }
         floorOf.put(crawler, floor + 1);
-        return List.of(new Effect.PullToFloor(crawler, floor + 1));
+        List<Effect> effects = new ArrayList<>(deleteMap(crawler));
+        effects.add(new Effect.PullToFloor(crawler, floor + 1));
+        return effects;
     }
 
     private List<Effect> apocalypseTick() {

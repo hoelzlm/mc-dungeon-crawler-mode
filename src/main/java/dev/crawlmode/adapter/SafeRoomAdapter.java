@@ -161,6 +161,10 @@ final class SafeRoomAdapter {
         }
     }
 
+    static Map<Integer, List<DoorPos>> plannedDoors() {
+        return Map.copyOf(DOORS);
+    }
+
     static void plan(int floor, List<DoorPos> doors) {
         DOORS.put(floor, doors);
     }
