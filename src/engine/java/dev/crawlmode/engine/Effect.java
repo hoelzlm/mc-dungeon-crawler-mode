@@ -36,7 +36,7 @@ public sealed interface Effect {
 
     record ShowWinScreen(UUID crawler) implements Effect {}
 
-    record EnterSafeRoom(UUID crawler, boolean firstEntry) implements Effect {}
+    record EnterSafeRoom(UUID crawler, boolean firstEntry, List<LootItem> pantry) implements Effect {}
 
     record ExitSafeRoom(UUID crawler, DoorPos door) implements Effect {}
 
@@ -59,8 +59,6 @@ public sealed interface Effect {
     record HideFloorMap(UUID crawler) implements Effect {}
 
     record UpdateMapDots(UUID crawler, int floor, List<MapDot> dots) implements Effect {}
-
-    record StockPantry(UUID crawler, List<LootItem> items) implements Effect {}
 
     record ServeBuffet(UUID crawler, List<LootItem> items) implements Effect {}
 }

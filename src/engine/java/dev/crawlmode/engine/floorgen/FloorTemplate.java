@@ -34,13 +34,13 @@ public final class FloorTemplate {
             this.required = required;
         }
 
-        static Furniture of(char symbol) {
+        static Optional<Furniture> of(char symbol) {
             for (Furniture f : values()) {
                 if (f.symbol == symbol) {
-                    return f;
+                    return Optional.of(f);
                 }
             }
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -87,12 +87,19 @@ public final class FloorTemplate {
         return furniture.getOrDefault(kind, List.of());
     }
 
+    public boolean isGate(int x, int y, int z) {
+        if (x < 0 || x >= SIZE || z < 0 || z >= SIZE || y < 0 || y >= height) {
+            return false;
+        }
+        return "news".indexOf(grid[y][z][x]) >= 0;
+    }
+
     public Optional<TemplateBlock> blockAt(int x, int y, int z, Set<Side> open) {
         if (x < 0 || x >= SIZE || z < 0 || z >= SIZE || y < 0 || y >= height) {
             return Optional.empty();
         }
         char c = grid[y][z][x];
-        if (c == 0 || c == '.' || role == Role.SAFE_ROOM && Furniture.of(c) != null) {
+        if (c == 0 || c == '.' || role == Role.SAFE_ROOM && Furniture.of(c).isPresent()) {
             return Optional.empty();
         }
         switch (c) {
@@ -167,13 +174,15 @@ public final class FloorTemplate {
                         }
                         for (int x = 0; x < SIZE; x++) {
                             char c = row.charAt(x);
+                            int px = x;
+                            int pz = z;
                             for (int y = from; y <= to; y++) {
                                 grid[y][z][x] = c;
                             }
-                            if (Furniture.of(c) != null) {
-                                kinds.add(Furniture.of(c));
-                                cells.add(new Marker(x, from, z));
-                            }
+                            Furniture.of(c).ifPresent(kind -> {
+                                kinds.add(kind);
+                                cells.add(new Marker(px, from, pz));
+                            });
                             if (c == 'X') {
                                 if (marker != null) {
                                     throw new FloorTemplateFormatException("More than one Stairwell marker in " + name);
@@ -196,7 +205,7 @@ public final class FloorTemplate {
         for (char[][] layer : grid) {
             for (char[] row : layer) {
                 for (char c : row) {
-                    boolean furnished = role == Role.SAFE_ROOM && Furniture.of(c) != null;
+                    boolean furnished = role == Role.SAFE_ROOM && Furniture.of(c).isPresent();
                     if (c != 0 && RESERVED.indexOf(c) < 0 && !furnished && !palette.containsKey(c)) {
                         throw new FloorTemplateFormatException("Template " + name + " uses '" + c + "' with no palette entry");
                     }
@@ -212,7 +221,7 @@ public final class FloorTemplate {
         Map<Furniture, List<Marker>> furniture = new EnumMap<>(Furniture.class);
         if (role == Role.SAFE_ROOM) {
             for (char reserved : palette.keySet()) {
-                if (Furniture.of(reserved) != null) {
+                if (Furniture.of(reserved).isPresent()) {
                     throw new FloorTemplateFormatException("Marker character '" + reserved + "' cannot be a palette entry in " + name);
                 }
             }

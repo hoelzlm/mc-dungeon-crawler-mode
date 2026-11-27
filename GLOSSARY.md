@@ -74,7 +74,7 @@ A tiered container of rewards handed out by the **System**, kept unopened in a *
 _Avoid_: Chest, crate, drop
 
 **Safe Room**:
-A **Crawler**'s own private refuge, the same one across every **Floor** of the **Crawl**, furnished as a cosy old farmhouse with no view of the outside, holding their stored items, a food supply (a refilling pot plus a starter pantry of two barrels, stocked once on first entry) and the only place **Loot Boxes** can be opened. Nothing can hurt a **Crawler** inside, but the **Floor Timer** keeps running and a collapse of the **Floor** they entered from still kills them. A light regeneration soothes them while inside.
+A **Crawler**'s own private refuge, the same one across every **Floor** of the **Crawl**, furnished as a cosy old farmhouse with no view of the outside, holding their stored items, a food supply (a refilling pot plus a starter pantry stocked once on first entry) and the only place **Loot Boxes** can be opened. Nothing can hurt a **Crawler** inside, but the **Floor Timer** keeps running and a collapse of the **Floor** they entered from still kills them. A light regeneration soothes them while inside.
 _Avoid_: Lobby, hub, bunker
 
 **Safe Room Door**:

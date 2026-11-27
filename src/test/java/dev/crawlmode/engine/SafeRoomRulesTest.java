@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class SafeRoomRulesTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DONUT = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20);
+    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
     private static final String RULES = """
             # comment
             regeneration | 1
@@ -83,7 +83,7 @@ class SafeRoomRulesTest {
     void enteringStartsRegenerationAndLeavingStopsIt() {
         CrawlEngine engine = crawl(CARL);
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true), new Effect.StartSafeRoomRegeneration(CARL, 1)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true, List.of()), new Effect.StartSafeRoomRegeneration(CARL, 1)),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR)));
         assertEquals(List.of(new Effect.ExitSafeRoom(CARL, DOOR), new Effect.StopSafeRoomRegeneration(CARL)),
                 engine.handle(new Event.SafeRoomExited(CARL)));
@@ -254,29 +254,30 @@ class SafeRoomRulesTest {
     }
 
     @Test
-    void firstEntryStocksThePantry() {
+    void firstEntryCarriesThePantryToStock() {
         CrawlEngine engine = stockedCrawl(CARL);
 
         List<Effect> effects = engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
 
-        assertTrue(effects.contains(new Effect.StockPantry(CARL, SafeRoomRules.load(new StringReader(PANTRY_RULES)).pantry())));
+        assertEquals(new Effect.EnterSafeRoom(CARL, true, SafeRoomRules.load(new StringReader(PANTRY_RULES)).pantry()),
+                effects.getFirst());
     }
 
     @Test
-    void reenteringNeverRestocksThePantry() {
+    void reenteringNeverCarriesThePantryAgain() {
         CrawlEngine engine = stockedCrawl(CARL);
         engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
         engine.handle(new Event.SafeRoomExited(CARL));
 
         List<Effect> effects = engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
 
-        assertTrue(effects.stream().noneMatch(e -> e instanceof Effect.StockPantry));
+        assertEquals(new Effect.EnterSafeRoom(CARL, false, List.of()), effects.getFirst());
     }
 
     @Test
-    void anEmptyPantryStocksNothing() {
+    void anEmptyPantryCarriesNothingOnFirstEntry() {
         List<Effect> effects = crawl(CARL).handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
 
-        assertTrue(effects.stream().noneMatch(e -> e instanceof Effect.StockPantry));
+        assertEquals(new Effect.EnterSafeRoom(CARL, true, List.of()), effects.getFirst());
     }
 }

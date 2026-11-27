@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class SafeRoomLessonsTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DONUT = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20);
+    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
     private static final HostLine FIRST_BOX = new HostLine("lootbox.first", "Only in a Safe Room!");
     private static final HostLine WELCOME = new HostLine("saferoom.welcome", "Chests, food, boxes!");
 
@@ -60,11 +60,11 @@ class SafeRoomLessonsTest {
         CrawlEngine engine = crawl(CARL);
 
         assertEquals(
-                List.of(new Effect.EnterSafeRoom(CARL, true), new Effect.HostSays(CARL, WELCOME)),
+                List.of(new Effect.EnterSafeRoom(CARL, true, List.of()), new Effect.HostSays(CARL, WELCOME)),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR)));
         engine.handle(new Event.SafeRoomExited(CARL));
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, false)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, false, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR)));
     }
 

@@ -81,7 +81,7 @@ class FloorMapBossTest {
 
     @Test
     void aDoorInTheBossRevealedAreaAppearsOnTheMap() {
-        CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1), new DoorPos(1, 105, 70, 101));
+        CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1), new DoorPos(1, 105, 70, 101, DoorFacing.NORTH));
 
         assertEquals(List.of(new Effect.ShowMapDoors(CARL, 1, List.of(new MapCell(105, 101)))),
                 doorEffects(engine.handle(new Event.BossKilled(CARL, 0, 0, List.of(new MapRect(100, 100, 115, 103))))));
@@ -89,7 +89,7 @@ class FloorMapBossTest {
 
     @Test
     void aDoorOutsideTheBossRevealedAreaStaysHidden() {
-        CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1), new DoorPos(1, 200, 70, 200));
+        CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1), new DoorPos(1, 200, 70, 200, DoorFacing.NORTH));
 
         assertEquals(List.of(),
                 doorEffects(engine.handle(new Event.BossKilled(CARL, 0, 0, List.of(new MapRect(100, 100, 115, 103))))));
@@ -115,7 +115,7 @@ class FloorMapBossTest {
     @Test
     void aCrawlerInTheSafeRoomGetsNoBossReveal() {
         CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1));
-        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 10, 64, 20)));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 10, 64, 20, DoorFacing.NORTH)));
 
         assertEquals(List.of(), engine.handle(new Event.BossKilled(CARL, 0, 0, List.of(new MapRect(1, 1, 5, 5)))));
         assertEquals(Set.of(), engine.revealedCells(CARL));
@@ -123,9 +123,9 @@ class FloorMapBossTest {
 
     @Test
     void aDoorRevealedByABossKillIsShownAgainWhenTheMapIsReShown() {
-        CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1), new DoorPos(1, 105, 70, 101));
+        CrawlEngine engine = crawl(new FloorMapConfig(2, 1, 1), new DoorPos(1, 105, 70, 101, DoorFacing.NORTH));
         engine.handle(new Event.BossKilled(CARL, 0, 0, List.of(new MapRect(100, 100, 115, 103))));
-        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 10, 64, 20)));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 10, 64, 20, DoorFacing.NORTH)));
 
         assertTrue(engine.handle(new Event.SafeRoomExited(CARL))
                 .contains(new Effect.ShowMapDoors(CARL, 1, List.of(new MapCell(105, 101)))));

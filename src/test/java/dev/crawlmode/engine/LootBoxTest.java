@@ -40,7 +40,7 @@ class LootBoxTest {
         CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables, bound -> Math.min(pick, bound - 1));
         engine.handle(new Event.CrawlerJoined(CARL));
         engine.handle(new Event.ApocalypseCommanded());
-        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0, DoorFacing.NORTH)));
         return engine;
     }
 
@@ -51,7 +51,7 @@ class LootBoxTest {
         CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), host, tables, bound -> Math.min(pick, bound - 1));
         engine.handle(new Event.CrawlerJoined(CARL));
         engine.handle(new Event.ApocalypseCommanded());
-        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0, DoorFacing.NORTH)));
         return engine;
     }
 
@@ -147,7 +147,7 @@ class LootBoxTest {
         CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000));
         engine.handle(new Event.CrawlerJoined(CARL));
         engine.handle(new Event.ApocalypseCommanded());
-        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0, DoorFacing.NORTH)));
 
         assertEquals(List.of(), engine.handle(new Event.LootBoxOpened(CARL, LootTier.COPPER)));
     }

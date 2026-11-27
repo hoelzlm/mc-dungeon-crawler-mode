@@ -16,8 +16,7 @@ public final class SafeRoomDoorPlanner {
     public static final int MIN_SPACING_CELLS = 2;
     public static final int BOSS_CLEARANCE_CELLS = 1;
     public static final int BORROWED_SPACING_BLOCKS = 8;
-    private static final int SPOT_MIN = 1;
-    private static final int SPOT_MAX = 14;
+    private static final int FRAME_HEIGHT = 3;
 
     private SafeRoomDoorPlanner() {}
 
@@ -109,29 +108,42 @@ public final class SafeRoomDoorPlanner {
     private static Stream<DoorPos> spots(int floor, DoorTerrain terrain, CellPos cell) {
         List<DoorPos> all = new ArrayList<>();
         int y = FloorLayout.FLOOR_Y + 1;
-        for (int x = SPOT_MIN; x <= SPOT_MAX; x++) {
-            for (int z = SPOT_MIN; z <= SPOT_MAX; z++) {
+        for (int x = 0; x < FloorTemplate.SIZE; x++) {
+            for (int z = 0; z < FloorTemplate.SIZE; z++) {
                 for (DoorFacing facing : DoorFacing.values()) {
                     all.add(new DoorPos(floor, cell.originX() + x, y, cell.originZ() + z, facing));
                 }
             }
         }
         Collections.shuffle(all, new Random(cell.x() * 31L + cell.z()));
-        return all.stream().filter(d -> fits(terrain, d));
+        return all.stream().filter(d -> fits(terrain, cell, d));
     }
 
-    private static boolean fits(DoorTerrain t, DoorPos d) {
-        int behindX = d.x() - d.facing().dx();
-        int behindZ = d.z() - d.facing().dz();
-        return t.solid(d.x(), d.y() - 1, d.z())
-                && !t.solid(d.x(), d.y(), d.z())
-                && !t.solid(d.x(), d.y() + 1, d.z())
-                && !t.stairwell(d.x(), d.y(), d.z())
-                && t.wall(behindX, d.y(), behindZ)
-                && t.wall(behindX, d.y() + 1, behindZ)
+    private static boolean fits(DoorTerrain t, CellPos cell, DoorPos d) {
+        for (int up = 0; up <= FRAME_HEIGHT; up++) {
+            if (!framed(t, d.x(), d.y() + up, d.z())) {
+                return false;
+            }
+        }
+        for (int side = -1; side <= 1; side += 2) {
+            for (int up = 0; up < FRAME_HEIGHT; up++) {
+                if (!framed(t, d.sideX(side), d.y() + up, d.sideZ(side))) {
+                    return false;
+                }
+            }
+            if (!CellPos.containing(d.sideX(side), d.sideZ(side)).equals(cell)) {
+                return false;
+            }
+        }
+        return !t.stairwell(d.x(), d.y(), d.z())
+                && !t.stairwell(d.frontX(), d.y(), d.frontZ())
                 && t.solid(d.frontX(), d.y() - 1, d.frontZ())
                 && !t.solid(d.frontX(), d.y(), d.frontZ())
                 && !t.solid(d.frontX(), d.y() + 1, d.frontZ());
+    }
+
+    private static boolean framed(DoorTerrain t, int x, int y, int z) {
+        return t.wall(x, y, z) && !t.gate(x, y, z);
     }
 
     private static DoorTerrain terrainOf(FloorLayout layout) {
@@ -144,6 +156,11 @@ public final class SafeRoomDoorPlanner {
             @Override
             public boolean wall(int x, int y, int z) {
                 return layout.isProtected(x, y, z);
+            }
+
+            @Override
+            public boolean gate(int x, int y, int z) {
+                return layout.isGate(x, y, z);
             }
 
             @Override

@@ -5,5 +5,7 @@ public interface DoorTerrain {
 
     boolean wall(int x, int y, int z);
 
+    boolean gate(int x, int y, int z);
+
     boolean stairwell(int x, int y, int z);
 }

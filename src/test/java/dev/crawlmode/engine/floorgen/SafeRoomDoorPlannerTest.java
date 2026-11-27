@@ -92,32 +92,23 @@ class SafeRoomDoorPlannerTest {
     }
 
     @Test
-    void doorsStandOnSolidFloorWithRoomToWalkIn() {
+    void everyDoorIsSetIntoAProtectedWallBetweenTwoPillarsNeverInAGate() {
         for (FloorSpec spec : FloorSpec.ALL) {
             for (long seed = 0; seed < 20; seed++) {
                 Floor f = floor(spec, seed);
                 for (DoorPos d : doors(f)) {
-                    assertTrue(f.layout().blockAt(d.x(), d.y() - 1, d.z()).isPresent(), "floor under door");
-                    assertFalse(f.layout().blockAt(d.x(), d.y(), d.z()).isPresent(), "door cell free");
-                    assertFalse(f.layout().blockAt(d.x(), d.y() + 1, d.z()).isPresent(), "headroom above door");
                     assertEquals(FloorLayout.FLOOR_Y + 1, d.y());
-                }
-            }
-        }
-    }
-
-    @Test
-    void everyDoorStandsAgainstAWallWithAFreeTwoHighSpot() {
-        for (FloorSpec spec : FloorSpec.ALL) {
-            for (long seed = 0; seed < 20; seed++) {
-                Floor f = floor(spec, seed);
-                for (DoorPos d : doors(f)) {
-                    int behindX = d.x() - d.facing().dx();
-                    int behindZ = d.z() - d.facing().dz();
-                    assertTrue(f.layout().isProtected(behindX, d.y(), behindZ), "wall behind door");
-                    assertTrue(f.layout().isProtected(behindX, d.y() + 1, behindZ), "wall behind upper door");
-                    assertFalse(f.layout().blockAt(d.x(), d.y(), d.z()).isPresent(), "door cell free");
-                    assertFalse(f.layout().blockAt(d.x(), d.y() + 1, d.z()).isPresent(), "door upper cell free");
+                    for (int up = 0; up <= 3; up++) {
+                        assertTrue(f.layout().isProtected(d.x(), d.y() + up, d.z()), "wall at door column " + up);
+                        assertFalse(f.layout().isGate(d.x(), d.y() + up, d.z()), "no gate at door column " + up);
+                    }
+                    for (int side = -1; side <= 1; side += 2) {
+                        for (int up = 0; up < 3; up++) {
+                            assertTrue(f.layout().isProtected(d.sideX(side), d.y() + up, d.sideZ(side)), "pillar wall");
+                            assertFalse(f.layout().isGate(d.sideX(side), d.y() + up, d.sideZ(side)), "pillar not a gate");
+                        }
+                        assertEquals(d.cell(), CellPos.containing(d.sideX(side), d.sideZ(side)), "pillar in own cell");
+                    }
                 }
             }
         }
@@ -157,7 +148,12 @@ class SafeRoomDoorPlannerTest {
 
         @Override
         public boolean wall(int x, int y, int z) {
-            return y > FloorLayout.FLOOR_Y && y <= FloorLayout.FLOOR_Y + 2 && wallColumns.contains(List.of(x, z));
+            return y > FloorLayout.FLOOR_Y && y <= FloorLayout.FLOOR_Y + 4 && wallColumns.contains(List.of(x, z));
+        }
+
+        @Override
+        public boolean gate(int x, int y, int z) {
+            return false;
         }
 
         @Override
@@ -178,28 +174,60 @@ class SafeRoomDoorPlannerTest {
         return all;
     }
 
+    private static Set<List<Integer>> wallAlongX(int[]... segments) {
+        Set<List<Integer>> all = new HashSet<>();
+        for (int[] segment : segments) {
+            for (int x = segment[0]; x <= segment[1]; x++) {
+                all.add(List.of(x, segment[2]));
+            }
+        }
+        return all;
+    }
+
     @Test
-    void aSingleWallColumnOffersADoorFacingAwayFromIt() {
-        Flat terrain = new Flat(columns(new int[] {8, 8}));
+    void aWallSegmentOffersADoorOnEachSideWithPillarsInTheWallPlane() {
+        Flat terrain = new Flat(wallAlongX(new int[] {7, 9, 8}));
 
         List<DoorPos> doors = SafeRoomDoorPlanner.candidates(1, terrain, new CellPos(0, 0));
 
-        assertTrue(doors.contains(new DoorPos(1, 9, 61, 8, DoorFacing.EAST)));
-        assertTrue(doors.contains(new DoorPos(1, 7, 61, 8, DoorFacing.WEST)));
-        assertTrue(doors.contains(new DoorPos(1, 8, 61, 9, DoorFacing.SOUTH)));
-        assertTrue(doors.contains(new DoorPos(1, 8, 61, 7, DoorFacing.NORTH)));
-        assertEquals(4, doors.size());
+        assertTrue(doors.contains(new DoorPos(1, 8, 61, 8, DoorFacing.SOUTH)));
+        assertTrue(doors.contains(new DoorPos(1, 8, 61, 8, DoorFacing.NORTH)));
+        assertEquals(2, doors.size());
+    }
+
+    @Test
+    void aWallTooNarrowForTwoPillarsOffersNoDoor() {
+        Flat terrain = new Flat(wallAlongX(new int[] {7, 8, 8}));
+
+        assertEquals(List.of(), SafeRoomDoorPlanner.candidates(1, terrain, new CellPos(0, 0)));
+    }
+
+    @Test
+    void aDoorsPillarsStayInsideItsOwnCell() {
+        Flat terrain = new Flat(wallAlongX(new int[] {14, 16, 8}));
+
+        assertEquals(List.of(), SafeRoomDoorPlanner.candidates(1, terrain, new CellPos(0, 0)));
     }
 
     @Test
     void aCellWithoutAWallSpotBorrowsOneFromANeighbouringCell() {
-        Flat terrain = new Flat(columns(
-                new int[] {8, 8}, new int[] {19, 8}, new int[] {29, 8}, new int[] {56, 8}));
+        Flat terrain = new Flat(wallAlongX(new int[] {7, 9, 8}, new int[] {18, 20, 8}, new int[] {28, 30, 8}, new int[] {55, 57, 8}));
 
         List<DoorPos> doors = SafeRoomDoorPlanner.plan(1, terrain, row(4), Set.of());
 
         assertEquals(4, doors.size());
         assertEquals(2, doors.stream().filter(d -> d.cell().equals(new CellPos(1, 0))).count());
+    }
+
+    @Test
+    void borrowedSpotsMayShareACellButStayEightBlocksApart() {
+        Flat terrain = new Flat(wallAlongX(new int[] {7, 9, 8}, new int[] {18, 20, 8}, new int[] {28, 30, 8}, new int[] {55, 57, 8}));
+
+        List<DoorPos> shared = SafeRoomDoorPlanner.plan(1, terrain, row(4), Set.of()).stream()
+                .filter(d -> d.cell().equals(new CellPos(1, 0))).toList();
+
+        assertEquals(2, shared.size());
+        assertTrue(Math.abs(shared.get(0).x() - shared.get(1).x()) >= SafeRoomDoorPlanner.BORROWED_SPACING_BLOCKS);
     }
 
     @Test
@@ -237,6 +265,6 @@ class SafeRoomDoorPlannerTest {
 
     @Test
     void doorCellsAreTheCellsContainingThem() {
-        assertEquals(new CellPos(-1, 1), new DoorPos(1, -1, 65, 16).cell());
+        assertEquals(new CellPos(-1, 1), new DoorPos(1, -1, 65, 16, DoorFacing.NORTH).cell());
     }
 }

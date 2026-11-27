@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 class FloorMapLifecycleTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20);
+    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
     private static final EliminationConfig SINGLE_PLAYER =
