@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [ ] Holding the key shows the full-screen map with the same data as the minimap
 - [ ] Releasing it returns to the corner minimap
