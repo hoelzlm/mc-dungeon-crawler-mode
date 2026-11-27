@@ -20,22 +20,25 @@ Communication to and from subagents should be sparse. Communicate primarily thro
 
 ## Steps
 
-1. Read the spec and tickets to understand the task graph.
+1. Read the spec and tickets to understand the task graph. If the spec is not in the working tree, do not report it missing until you have searched every branch (`git grep -il <term> $(git for-each-ref --format='%(refname)' refs/heads)`) for the term and for each `_Avoid_` synonym of its `GLOSSARY.md` entry, since specs are often renamed and sit on an unmerged branch.
+
+   Note which tickets edit the same files. Run those one after another, or require each to re-merge the integration tip immediately before it reports done.
 
 2. (optional) Use an **exploration subagent** to conduct any exploration required by the tickets - relevant codebase files or external documentation. Ensure the exploration subagent can save files - it should save its markdown notes in a directory outside the repo, accessible by all future subagents. This lets **implementer subagents** focus on implementation rather than exploration.
 
-3. Create the integration branch. If the issue tracker closes work through PRs, or the user asks for one, open a draft PR after the first merge in step 5 (a branch with no commits ahead of main can't open one), marked as closing the spec and tickets.
+3. Create the integration branch in its own worktree outside the user's primary checkout. All merges happen there, so the user's uncommitted work is never swept into a commit. If the issue tracker closes work through PRs, or the user asks for one, open a draft PR after the first merge in step 5 (a branch with no commits ahead of main can't open one), marked as closing the spec and tickets.
 
 4. Use a fresh **implementer subagent** for each ticket, each in its own worktree on its own branch. Each implementer subagent:
    - confirms its worktree is based on the integration branch before starting, and resets onto it if not;
    - calls the Skill tool with `tdd` to build the ticket;
-   - merges the integration branch tip into its own branch before reporting done
+   - merges the integration branch tip into its own branch immediately before reporting done;
+   - keeps scratch files in its own subdirectory of the scratchpad, since parallel implementers share it.
 
 5. Once an **implementer subagent** completes, merge its work to the integration branch with a **merger subagent**.
 
 6. If this changes the **frontier** of available tickets, kick off more **implementer subagents** to work on the new tickets. This allows for maximum concurrency.
 
-7. Once all tickets are complete, call the Skill tool with `code-review` on the integration branch. Fix all issues raised by the code review in a single fresh **implementer subagent**.
+7. Once all tickets are complete, call the Skill tool with `code-review` on the integration branch. Fix the code review's findings in a single fresh **implementer subagent**. Done means every finding is fixed, or disproved with evidence from running the code, and the report says which. Deferring a finding is the user's call, so list it for them. Leave content the change did not author (the user's own edits, other features) untouched, and ask before reverting it.
 
 8. If a draft PR exists, mark it ready for review. Otherwise, resolve each ticket the way the issue tracker closes work, and report the integration branch.
 
