@@ -1,4 +1,6 @@
 {
+  "key.categories.crawlmode.crawl": "Crawl Mode",
+  "key.crawlmode.floor_map": "Hold for full-screen Floor Map",
   "item.crawlmode.seekers_draught": "Seeker's Draught",
   "item.crawlmode.echo_chime": "Echo Chime",
   "item.crawlmode.revealing_lantern": "Revealing Lantern",
