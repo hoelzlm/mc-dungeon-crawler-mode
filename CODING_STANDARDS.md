@@ -26,8 +26,9 @@ Run `./gradlew check` (also part of `./gradlew build` and the pre-commit hook). 
 - No comments in Java or `*.gradle` files: Checkstyle `TodoComment` plus `checkGradleComments` (ADR 0003). Reasons that must last go into an ADR.
 - Unused imports: Checkstyle `UnusedImports`. Config in `config/checkstyle/checkstyle.xml`.
 - Engine stays Minecraft-free, adapters keep to the allowlist, no console output: `ArchitectureTest` (ArchUnit).
+- Map geometry stays in the engine: adapters do not construct `MapRect`, with a shrinking baseline in `ArchitectureTest`.
 - No string constant declared twice, mod id and Host prefix defined once: `ConstantsTest`.
-- Smoke run: `./gradlew smokeTest` boots the dedicated server, runs `crawl apocalypse`, and checks `build/smoke/server.log`. It needs the EULA accepted once in `run/eula.txt`.
+- Smoke run: `./gradlew smokeTest` boots the dedicated server, runs `crawl apocalypse`, and checks `build/smoke/server.log`, including a `Safe Room Doors reached the engine` line with a door count above 0. It needs the EULA accepted once in `run/eula.txt`; in a git worktree it copies that file from the main checkout only if the main checkout already accepted.
 - Enable the hook once per clone: `git config core.hooksPath .githooks`.
 - Gradle itself needs any JDK 17 or newer on `PATH` or `JAVA_HOME`; it provisions Java 25 through the foojay toolchain resolver. Never export `JAVA_HOME` to a JDK 25 by hand.
 
