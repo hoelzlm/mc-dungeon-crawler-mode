@@ -30,5 +30,7 @@ public sealed interface Event {
 
     record SafeRoomExited(UUID crawler) implements Event {}
 
+    record CrawlerMoved(UUID crawler, int x, int z) implements Event {}
+
     record BuffetUsed(UUID crawler) implements Event {}
 }

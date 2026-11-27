@@ -1,5 +1,9 @@
 package dev.crawlmode.engine;
 
+import dev.crawlmode.engine.map.FloorMap;
+import dev.crawlmode.engine.map.FloorMapConfig;
+import dev.crawlmode.engine.map.MapCell;
+import dev.crawlmode.engine.map.MapSpan;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -32,6 +36,8 @@ public final class CrawlEngine {
     private final Set<UUID> toldBoxRule = new LinkedHashSet<>();
     private final Map<UUID, Long> buffetServedAt = new HashMap<>();
     private final SafeRoomRules safeRoomRules;
+    private final Map<UUID, FloorMap> floorMaps = new HashMap<>();
+    private FloorMapConfig floorMapConfig = FloorMapConfig.DEFAULT;
 
     public CrawlEngine(Clock clock, CrawlConfig config) {
         this(clock, config, HostLineSource.SILENT);
@@ -105,6 +111,7 @@ public final class CrawlEngine {
             case Event.SafeRoomDoorUsed used -> enterSafeRoom(used.crawler(), used.door());
             case Event.SafeRoomExited exited -> leaveSafeRoom(exited.crawler());
             case Event.BuffetUsed used -> useBuffet(used.crawler());
+            case Event.CrawlerMoved moved -> reveal(moved);
             case Event.LootBoxGranted granted -> giveLootBox(granted);
             case Event.LootBoxOpened opened -> openLootBox(opened);
             case Event.StairwellUsed used -> {
@@ -118,6 +125,31 @@ public final class CrawlEngine {
             case Event.MobKilled killed -> unlock(killed.crawler(), "kill." + killed.rank().key());
             case Event.Triggered triggered -> unlock(triggered.crawler(), triggered.trigger());
         };
+    }
+
+    public CrawlEngine withFloorMap(FloorMapConfig floorMapConfig) {
+        this.floorMapConfig = floorMapConfig;
+        return this;
+    }
+
+    public Set<MapCell> revealedCells(UUID crawler) {
+        FloorMap map = floorMaps.get(crawler);
+        return map == null ? Set.of() : map.revealed();
+    }
+
+    private List<Effect> reveal(Event.CrawlerMoved moved) {
+        UUID crawler = moved.crawler();
+        Integer floor = floorOf.get(crawler);
+        if (floor == null || !crawlers.contains(crawler) || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        FloorMap map = floorMaps.get(crawler);
+        if (map == null || map.floor() != floor) {
+            map = new FloorMap(floor);
+            floorMaps.put(crawler, map);
+        }
+        List<MapSpan> spans = map.revealAround(moved.x(), moved.z(), floorMapConfig.revealRadius());
+        return spans.isEmpty() ? List.of() : List.of(new Effect.RevealMapCells(crawler, floor, spans));
     }
 
     private Achievements achievements;
@@ -161,6 +193,7 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
+        floorMaps.remove(crawler);
         List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
         effects.add(new Effect.Spectate(crawler));
         if (safeRoomsCreated.remove(crawler)) {
@@ -242,6 +275,7 @@ public final class CrawlEngine {
         floorTimer.reset();
         timerFloor = 1;
         floorOf.clear();
+        floorMaps.clear();
         safeRoomOrigin.clear();
         safeRoomsCreated.clear();
         toldBoxRule.clear();

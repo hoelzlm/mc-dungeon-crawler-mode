@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** in-review
 
-- [ ] Walking reveals cells within the reveal radius and no others
-- [ ] The reveal radius, minimap corner and size are configurable
-- [ ] The server owns the map and sends only changes; the client only draws
+- [x] Walking reveals cells within the reveal radius and no others
+- [x] The reveal radius, minimap corner and size are configurable
+- [x] The server owns the map and sends only changes; the client only draws
 - [ ] The minimap shows top-right, north up and centred, and hides behind open screens
-- [ ] The map is the Crawler's own; another Crawler cannot see it
-- [ ] Engine tests cover revealing through the Crawl engine seam; `./gradlew build` passes
+- [x] The map is the Crawler's own; another Crawler cannot see it
+- [x] Engine tests cover revealing through the Crawl engine seam; `./gradlew build` passes

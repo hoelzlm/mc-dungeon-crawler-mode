@@ -34,6 +34,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
@@ -55,7 +56,8 @@ public final class CrawlAdapter {
 
     private CrawlAdapter() {}
 
-    public static void register(IEventBus modBus) {
+    public static void register(IEventBus modBus, ModContainer container) {
+        FloorMapAdapter.register(modBus, container);
         AidAdapter.register(modBus);
         LootBoxAdapter.register(modBus, e -> {
             if (engine != null) {
@@ -150,7 +152,8 @@ public final class CrawlAdapter {
         engine = new CrawlEngine(clock, config, loadHostLines(),
                 LootBoxAdapter.loadTables(), new Random()::nextInt, EliminationBridge.configFor(server),
                 SafeRoomAdapter.loadRules())
-                .withAchievements(AchievementAdapter.load());
+                .withAchievements(AchievementAdapter.load())
+                .withFloorMap(FloorMapAdapter.config());
         timerHud = new TimerHud(config.floorTimerTicks());
         elimination = new EliminationBridge(() -> server, e -> engine.handle(e), CrawlAdapter::apply);
         LOGGER.info("Crawl engine ready");
@@ -198,6 +201,7 @@ public final class CrawlAdapter {
             apply(engine.tick());
             TemplateFloorAdapter.tick(server);
             SafeRoomAdapter.tick(server);
+            FloorMapAdapter.tick(server, e -> apply(engine.handle(e)));
         }
     }
 
@@ -253,6 +257,7 @@ public final class CrawlAdapter {
                 case Effect.ExitSafeRoom exit -> SafeRoomAdapter.exit(server, exit);
                 case Effect.StartSafeRoomRegeneration start -> SafeRoomAdapter.startRegeneration(server, start);
                 case Effect.StopSafeRoomRegeneration stop -> SafeRoomAdapter.stopRegeneration(server, stop);
+                case Effect.RevealMapCells reveal -> FloorMapAdapter.reveal(server, reveal);
                 case Effect.ServeBuffet buffet -> LootBoxAdapter.handItems(server, buffet.crawler(), buffet.items());
                 case Effect.PullToFloor pull -> {
                     ServerPlayer player = server.getPlayerList().getPlayer(pull.crawler());
