@@ -1,5 +1,6 @@
 package dev.crawlmode.adapter;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import dev.crawlmode.CrawlMode;
 import dev.crawlmode.engine.DoorPos;
@@ -28,6 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -43,6 +45,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -88,6 +91,10 @@ final class SafeRoomAdapter {
             }
             BlockPos p = event.getPos();
             UUID crawler = event.getEntity().getUUID();
+            if (isRoomOf(event.getLevel(), crawler) && event.getLevel().getBlockState(p).getBlock() instanceof BedBlock) {
+                event.setCanceled(true);
+                return;
+            }
             if (isRoomOf(event.getLevel(), crawler) && p.equals(ROOM_BUFFET)) {
                 event.setCanceled(true);
                 events.accept(new Event.BuffetUsed(crawler));
@@ -301,9 +308,9 @@ final class SafeRoomAdapter {
                     int px = x;
                     int py = y;
                     int pz = z;
-                    ROOM.blockAt(x, y, z, Set.<Side>of()).ifPresent(block -> room.setBlockAndUpdate(
+                    ROOM.blockAt(x, y, z, Set.<Side>of()).ifPresent(block -> room.setBlock(
                             new BlockPos(ROOM_ORIGIN_X + px, ROOM_ORIGIN_Y + py, ROOM_ORIGIN_Z + pz),
-                            BuiltInRegistries.BLOCK.getValue(Identifier.parse(block.blockId())).defaultBlockState()));
+                            parse(block.blockId()), Block.UPDATE_CLIENTS));
                 }
             }
         }
@@ -311,8 +318,16 @@ final class SafeRoomAdapter {
         room.setBlock(ROOM_EXIT, door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), Block.UPDATE_ALL);
         room.setBlock(ROOM_EXIT.above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), Block.UPDATE_ALL);
         room.setBlockAndUpdate(ROOM_BUFFET, Blocks.CAULDRON.defaultBlockState());
-        BlockState chest = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
+        BlockState chest = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH);
         roomPositions(FloorTemplate.Furniture.CHEST).forEach(at -> room.setBlockAndUpdate(at, chest));
+    }
+
+    private static BlockState parse(String spec) {
+        try {
+            return BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK, spec, false).blockState();
+        } catch (CommandSyntaxException e) {
+            throw new IllegalStateException("Bad block in " + ROOM_RESOURCE + ": " + spec, e);
+        }
     }
 
     private static List<BlockPos> roomPositions(FloorTemplate.Furniture kind) {

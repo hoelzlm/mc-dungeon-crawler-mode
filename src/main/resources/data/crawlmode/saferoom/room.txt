@@ -1,76 +1,139 @@
-// Safe Room template, Floor template format. Markers: c chest (3), f food pot, d exit door (lower half, in the wall), a arrival spot.
-// Template cell (0,0) is placed at world x=-8, z=-8; layer 0 is y=64.
+// Safe Room farmhouse, Floor template format. Markers: c chest (3), f food pot, d exit door (lower half, in the wall), a arrival spot.
+// Template cell (0,0) is placed at world x=-8, z=-8; layer 0 is y=64. Interior is x 1..14, z 2..12; rows 0 and 14 are the black backdrop behind the windows.
 name safe_room
 role safe_room
-height 5
-palette # minecraft:stone_bricks
-palette F minecraft:stone_bricks
-palette L minecraft:shroomlight
+height 6
+palette # minecraft:dark_oak_planks
+palette P minecraft:white_terracotta
+palette T minecraft:dark_oak_log
+palette B minecraft:dark_oak_log[axis=x]
+palette F minecraft:spruce_planks
+palette G minecraft:oak_planks
 palette C minecraft:spruce_planks
+palette O minecraft:black_concrete
+palette W minecraft:glass_pane[east=true,west=true]
+palette R minecraft:stone_bricks
+palette I minecraft:iron_bars[north=true,south=true]
+palette m minecraft:campfire[lit=true]
+palette Q minecraft:barrel[facing=up]
+palette S minecraft:spruce_slab[type=top]
+palette h minecraft:spruce_stairs[facing=south]
+palette A minecraft:hay_block
+palette D minecraft:dark_oak_planks
+palette M minecraft:stripped_dark_oak_log
+palette K minecraft:bookshelf
+palette J minecraft:loom[facing=east]
+palette p minecraft:potted_poppy
+palette q minecraft:potted_cornflower
+palette r minecraft:red_carpet
+palette b minecraft:brown_carpet
+palette N minecraft:spruce_planks
+palette l minecraft:candle[lit=true]
+palette L minecraft:lantern[hanging=true]
+palette 1 minecraft:red_bed[facing=north,part=head]
+palette 2 minecraft:red_bed[facing=north,part=foot]
+palette 3 minecraft:blue_bed[facing=north,part=head]
+palette 4 minecraft:blue_bed[facing=north,part=foot]
+palette 5 minecraft:white_bed[facing=north,part=head]
+palette 6 minecraft:white_bed[facing=north,part=foot]
 layer 0
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
-FFFFFFFFFFFFFFFF
+GGGGGGGGGGGGGGGG
 layer 1
-################
-#..............#
-#..............#
-#..............#
-#..............#
-#....c..c..c...#
-#..............#
-#..............#
-#....f..a......#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-########d#######
-layer 2-3
-################
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-#..............#
-########.#######
+OOOOOOOOOOOOOOOO
+TPPPPTPPPPTPPPPT
+P.1N3N5......QQP
+PK2.4.6...SS..fP
+PKrrrrr...hh...P
+PKrrrrr........P
+P....bbbbbbbrRRP
+T....brrrrrbrImT
+P....bbbbbbbrRRP
+PD.............P
+PM......a......P
+P.............AP
+PJcpcpc...q..AAP
+TPPPPTPPdPTPPPPT
+OOOOOOOOOOOOOOOO
+................
+layer 2
+OOOOOOOOOOOOOOOO
+TPPPPTPPWWTPWWPT
+P..l.l.........P
+PK........lq...P
+PK.............P
+PK.............P
+P............RRP
+T............RRT
+P............RRP
+PD.............P
+PM.............P
+P..............P
+P.............AP
+TPPWWTPP.PTPWWPT
+OOOOOOOOOOOOOOOO
+................
+layer 3
+OOOOOOOOOOOOOOOO
+TPPPPTPPWWTPWWPT
+P..............P
+PK..L......L...P
+PK.............P
+PK.............P
+P............RRP
+T...L...L....RRT
+P............RRP
+PD.............P
+PM.............P
+P...L...L...L..P
+P..............P
+TPPWWTPPTPTPWWPT
+OOOOOOOOOOOOOOOO
+................
 layer 4
+OOOOOOOOOOOOOOOO
+TPPPPTPPPPTPPPPT
+P..............P
+PBBBBBBBBBBBBBBP
+P..............P
+P..............P
+P............RRP
+TBBBBBBBBBBBBRRT
+P............RRP
+P..............P
+P..............P
+PBBBBBBBBBBBBBBP
+P..............P
+TPPPPTPPTPTPPPPT
+OOOOOOOOOOOOOOOO
+................
+layer 5
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
-CCCCLCCCCCCLCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
-CCCCLCCCCCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
