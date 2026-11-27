@@ -2,6 +2,7 @@ package dev.crawlmode.client;
 
 import dev.crawlmode.CrawlMode;
 import dev.crawlmode.network.RevealMapPayload;
+import dev.crawlmode.network.ShowFloorMapPayload;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -34,6 +35,14 @@ public final class FloorMapClient {
     public static void receive(RevealMapPayload payload) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level != null) {
+            VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
+        }
+    }
+
+    public static void receive(ShowFloorMapPayload payload) {
+        VIEW.clear();
+        ClientLevel level = Minecraft.getInstance().level;
+        if (payload.visible() && level != null) {
             VIEW.reveal(payload.floor(), level.dimension(), payload.spans());
         }
     }

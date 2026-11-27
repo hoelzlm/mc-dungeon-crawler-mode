@@ -4,11 +4,11 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** in-review
 
 - [ ] Rejoining keeps the current Floor's map
 - [ ] The overlay is hidden in the Safe Room, and the same map is shown on returning to that Floor
-- [ ] Descending to a new Floor starts an empty map
-- [ ] A collapsed Floor's maps are deleted with it, and a fresh Crawl starts with none
+- [x] Descending to a new Floor starts an empty map
+- [x] A collapsed Floor's maps are deleted with it, and a fresh Crawl starts with none
 - [ ] An eliminated Crawler sees no map overlay
-- [ ] Engine tests cover each rule through the Crawl engine seam
+- [x] Engine tests cover each rule through the Crawl engine seam

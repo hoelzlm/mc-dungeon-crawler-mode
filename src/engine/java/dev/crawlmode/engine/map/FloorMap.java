@@ -1,6 +1,7 @@
 package dev.crawlmode.engine.map;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,24 @@ public final class FloorMap {
             if (open) {
                 spans.add(new MapSpan(row, start, x + reach));
             }
+        }
+        return spans;
+    }
+
+    public List<MapSpan> spans() {
+        List<MapCell> cells = new ArrayList<>(revealed);
+        cells.sort(Comparator.comparingInt(MapCell::z).thenComparingInt(MapCell::x));
+        List<MapSpan> spans = new ArrayList<>();
+        int i = 0;
+        while (i < cells.size()) {
+            MapCell first = cells.get(i);
+            int last = first.x();
+            i++;
+            while (i < cells.size() && cells.get(i).z() == first.z() && cells.get(i).x() == last + 1) {
+                last++;
+                i++;
+            }
+            spans.add(new MapSpan(first.z(), first.x(), last));
         }
         return spans;
     }

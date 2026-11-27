@@ -6,6 +6,8 @@ import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.map.FloorMapConfig;
 import dev.crawlmode.network.RevealMapPayload;
+import dev.crawlmode.network.ShowFloorMapPayload;
+import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -49,8 +51,26 @@ final class FloorMapAdapter {
         }
     }
 
+    static void show(MinecraftServer server, Effect.ShowFloorMap show) {
+        send(server, show.crawler(), new ShowFloorMapPayload(true, show.floor(), show.spans()));
+    }
+
+    static void hide(MinecraftServer server, Effect.HideFloorMap hide) {
+        send(server, hide.crawler(), ShowFloorMapPayload.hidden());
+    }
+
+    private static void send(MinecraftServer server, UUID crawler, ShowFloorMapPayload payload) {
+        ServerPlayer player = server.getPlayerList().getPlayer(crawler);
+        if (player != null) {
+            PacketDistributor.sendToPlayer(player, payload);
+        }
+    }
+
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar(PROTOCOL_VERSION).playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
+        var registrar = event.registrar(PROTOCOL_VERSION);
+        registrar.playToClient(RevealMapPayload.TYPE, RevealMapPayload.CODEC,
+                (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
+        registrar.playToClient(ShowFloorMapPayload.TYPE, ShowFloorMapPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> FloorMapClient.receive(payload)));
     }
 }

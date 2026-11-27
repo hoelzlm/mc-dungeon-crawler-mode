@@ -99,7 +99,10 @@ public final class CrawlEngine {
                 if (apocalypseHappened) {
                     int floor = Math.max(timerFloor, floorOf.getOrDefault(joined.crawler(), timerFloor));
                     floorOf.put(joined.crawler(), floor);
-                    yield List.of(new Effect.PullToFloor(joined.crawler(), floor));
+                    List<Effect> effects = new ArrayList<>();
+                    effects.add(new Effect.PullToFloor(joined.crawler(), floor));
+                    effects.addAll(showMap(joined.crawler()));
+                    yield effects;
                 }
                 yield said("apocalypse-start", joined.crawler());
             }
@@ -135,6 +138,18 @@ public final class CrawlEngine {
     public Set<MapCell> revealedCells(UUID crawler) {
         FloorMap map = floorMaps.get(crawler);
         return map == null ? Set.of() : map.revealed();
+    }
+
+    private List<Effect> dropMap(UUID crawler) {
+        return floorMaps.remove(crawler) == null ? List.of() : List.of(new Effect.HideFloorMap(crawler));
+    }
+
+    private List<Effect> showMap(UUID crawler) {
+        FloorMap map = floorMaps.get(crawler);
+        if (map == null || safeRoomOrigin.containsKey(crawler)) {
+            return List.of();
+        }
+        return List.of(new Effect.ShowFloorMap(crawler, map.floor(), map.spans()));
     }
 
     private List<Effect> reveal(Event.CrawlerMoved moved) {
@@ -193,8 +208,8 @@ public final class CrawlEngine {
     private List<Effect> eliminate(UUID crawler) {
         eliminated.add(crawler);
         floorOf.remove(crawler);
-        floorMaps.remove(crawler);
-        List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
+        List<Effect> effects = new ArrayList<>(dropMap(crawler));
+        effects.addAll(leaveSafeRoom(crawler));
         effects.add(new Effect.Spectate(crawler));
         if (safeRoomsCreated.remove(crawler)) {
             effects.add(new Effect.DeleteSafeRoom(crawler));
@@ -218,6 +233,9 @@ public final class CrawlEngine {
         boolean first = safeRoomsCreated.add(crawler);
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.EnterSafeRoom(crawler, first));
+        if (floorMaps.containsKey(crawler)) {
+            effects.add(new Effect.HideFloorMap(crawler));
+        }
         if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StartSafeRoomRegeneration(crawler, safeRoomRules.regenerationAmplifier()));
         }
@@ -234,6 +252,7 @@ public final class CrawlEngine {
         }
         List<Effect> effects = new ArrayList<>();
         effects.add(new Effect.ExitSafeRoom(crawler, door));
+        effects.addAll(showMap(crawler));
         if (safeRoomRules.regenerates()) {
             effects.add(new Effect.StopSafeRoomRegeneration(crawler));
         }
@@ -275,7 +294,9 @@ public final class CrawlEngine {
         floorTimer.reset();
         timerFloor = 1;
         floorOf.clear();
-        floorMaps.clear();
+        for (UUID mapped : List.copyOf(floorMaps.keySet())) {
+            effects.addAll(dropMap(mapped));
+        }
         safeRoomOrigin.clear();
         safeRoomsCreated.clear();
         toldBoxRule.clear();
@@ -364,6 +385,7 @@ public final class CrawlEngine {
             effects.add(new Effect.Collapse(crawler, timerFloor));
             effects.addAll(eliminate(crawler));
         }
+        floorMaps.values().removeIf(map -> map.floor() == timerFloor);
         timerFloor++;
         long collapsedAt = clock.nowTicks() - floorTimer.overshoot();
         floorTimer = new FloorTimer(config.floorTimerTicks());
@@ -389,7 +411,8 @@ public final class CrawlEngine {
         if (floor == FINAL_FLOOR) {
             winners.add(crawler);
             floorOf.remove(crawler);
-            List<Effect> effects = new ArrayList<>(leaveSafeRoom(crawler));
+            List<Effect> effects = new ArrayList<>(dropMap(crawler));
+            effects.addAll(leaveSafeRoom(crawler));
             effects.addAll(said("win", crawler));
             if (safeRoomsCreated.remove(crawler)) {
                 effects.add(new Effect.HandOverSafeRoomContents(crawler));
@@ -400,7 +423,9 @@ public final class CrawlEngine {
             return effects;
         }
         floorOf.put(crawler, floor + 1);
-        return List.of(new Effect.PullToFloor(crawler, floor + 1));
+        List<Effect> effects = new ArrayList<>(dropMap(crawler));
+        effects.add(new Effect.PullToFloor(crawler, floor + 1));
+        return effects;
     }
 
     private List<Effect> apocalypseTick() {
