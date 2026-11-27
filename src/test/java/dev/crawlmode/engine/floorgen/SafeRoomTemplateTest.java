@@ -244,4 +244,12 @@ class SafeRoomTemplateTest {
         assertTrue(ALLOWED_LIGHT.containsAll(used), "unexpected light source in " + used);
         assertTrue(used.containsAll(ALLOWED_LIGHT));
     }
+
+    @Test
+    void paletteBlocksListsEachBundledBlockOnceIncludingStates() {
+        List<String> blocks = FloorTemplate.parse(bundled()).paletteBlocks();
+
+        assertEquals(blocks.stream().distinct().toList(), blocks);
+        assertTrue(blocks.stream().anyMatch(block -> block.startsWith("minecraft:lantern[")));
+    }
 }

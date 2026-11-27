@@ -83,6 +83,10 @@ public final class FloorTemplate {
         return Optional.ofNullable(marker);
     }
 
+    public List<String> paletteBlocks() {
+        return palette.values().stream().distinct().sorted().toList();
+    }
+
     public List<Marker> markers(Furniture kind) {
         return furniture.getOrDefault(kind, List.of());
     }
