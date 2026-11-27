@@ -1,6 +1,9 @@
 package dev.crawlmode.engine.floorgen;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,7 +15,33 @@ public final class FloorTemplate {
         ROOM,
         CORRIDOR,
         VILLAGE,
-        STAIRWELL_ROOM
+        STAIRWELL_ROOM,
+        SAFE_ROOM
+    }
+
+    public enum Furniture {
+        CHEST('c', 3),
+        FOOD_POT('f', 1),
+        EXIT_DOOR('d', 1),
+        ARRIVAL('a', 1),
+        PANTRY_BARREL('y', 2);
+
+        private final char symbol;
+        private final int required;
+
+        Furniture(char symbol, int required) {
+            this.symbol = symbol;
+            this.required = required;
+        }
+
+        static Optional<Furniture> of(char symbol) {
+            for (Furniture f : values()) {
+                if (f.symbol == symbol) {
+                    return Optional.of(f);
+                }
+            }
+            return Optional.empty();
+        }
     }
 
     public record Marker(int x, int y, int z) {}
@@ -25,14 +54,17 @@ public final class FloorTemplate {
     private final Map<Character, String> palette;
     private final char[][][] grid;
     private final Marker marker;
+    private final Map<Furniture, List<Marker>> furniture;
 
-    private FloorTemplate(String name, Role role, int height, Map<Character, String> palette, char[][][] grid, Marker marker) {
+    private FloorTemplate(String name, Role role, int height, Map<Character, String> palette, char[][][] grid, Marker marker,
+            Map<Furniture, List<Marker>> furniture) {
         this.name = name;
         this.role = role;
         this.height = height;
         this.palette = palette;
         this.grid = grid;
         this.marker = marker;
+        this.furniture = furniture;
     }
 
     public String name() {
@@ -51,12 +83,23 @@ public final class FloorTemplate {
         return Optional.ofNullable(marker);
     }
 
+    public List<Marker> markers(Furniture kind) {
+        return furniture.getOrDefault(kind, List.of());
+    }
+
+    public boolean isGate(int x, int y, int z) {
+        if (x < 0 || x >= SIZE || z < 0 || z >= SIZE || y < 0 || y >= height) {
+            return false;
+        }
+        return "news".indexOf(grid[y][z][x]) >= 0;
+    }
+
     public Optional<TemplateBlock> blockAt(int x, int y, int z, Set<Side> open) {
         if (x < 0 || x >= SIZE || z < 0 || z >= SIZE || y < 0 || y >= height) {
             return Optional.empty();
         }
         char c = grid[y][z][x];
-        if (c == 0 || c == '.') {
+        if (c == 0 || c == '.' || role == Role.SAFE_ROOM && Furniture.of(c).isPresent()) {
             return Optional.empty();
         }
         switch (c) {
@@ -81,6 +124,8 @@ public final class FloorTemplate {
         String[] lines = text.split("\\R");
         char[][][] grid = null;
         Marker marker = null;
+        List<Marker> cells = new ArrayList<>();
+        List<Furniture> kinds = new ArrayList<>();
         int i = 0;
         while (i < lines.length) {
             String line = lines[i].strip();
@@ -129,9 +174,15 @@ public final class FloorTemplate {
                         }
                         for (int x = 0; x < SIZE; x++) {
                             char c = row.charAt(x);
+                            int px = x;
+                            int pz = z;
                             for (int y = from; y <= to; y++) {
                                 grid[y][z][x] = c;
                             }
+                            Furniture.of(c).ifPresent(kind -> {
+                                kinds.add(kind);
+                                cells.add(new Marker(px, from, pz));
+                            });
                             if (c == 'X') {
                                 if (marker != null) {
                                     throw new FloorTemplateFormatException("More than one Stairwell marker in " + name);
@@ -154,7 +205,8 @@ public final class FloorTemplate {
         for (char[][] layer : grid) {
             for (char[] row : layer) {
                 for (char c : row) {
-                    if (c != 0 && RESERVED.indexOf(c) < 0 && !palette.containsKey(c)) {
+                    boolean furnished = role == Role.SAFE_ROOM && Furniture.of(c).isPresent();
+                    if (c != 0 && RESERVED.indexOf(c) < 0 && !furnished && !palette.containsKey(c)) {
                         throw new FloorTemplateFormatException("Template " + name + " uses '" + c + "' with no palette entry");
                     }
                 }
@@ -166,7 +218,25 @@ public final class FloorTemplate {
         if (role != Role.STAIRWELL_ROOM && marker != null) {
             throw new FloorTemplateFormatException("Only stairwell rooms may have an X marker: " + name);
         }
-        return new FloorTemplate(name, role, height, Map.copyOf(palette), grid, marker);
+        Map<Furniture, List<Marker>> furniture = new EnumMap<>(Furniture.class);
+        if (role == Role.SAFE_ROOM) {
+            for (char reserved : palette.keySet()) {
+                if (Furniture.of(reserved).isPresent()) {
+                    throw new FloorTemplateFormatException("Marker character '" + reserved + "' cannot be a palette entry in " + name);
+                }
+            }
+            for (int k = 0; k < kinds.size(); k++) {
+                furniture.computeIfAbsent(kinds.get(k), f -> new ArrayList<>()).add(cells.get(k));
+            }
+            for (Furniture kind : Furniture.values()) {
+                int found = furniture.getOrDefault(kind, List.of()).size();
+                if (found != kind.required) {
+                    throw new FloorTemplateFormatException("Safe room " + name + " needs " + kind.required + " " + kind
+                            + " marker(s), found " + found);
+                }
+            }
+        }
+        return new FloorTemplate(name, role, height, Map.copyOf(palette), grid, marker, Map.copyOf(furniture));
     }
 
     private static String[] need(String[] parts, int count, String line) {
@@ -182,6 +252,7 @@ public final class FloorTemplate {
             case "corridor" -> Role.CORRIDOR;
             case "village" -> Role.VILLAGE;
             case "stairwell_room" -> Role.STAIRWELL_ROOM;
+            case "safe_room" -> Role.SAFE_ROOM;
             default -> throw new FloorTemplateFormatException("Unknown role: " + s);
         };
     }

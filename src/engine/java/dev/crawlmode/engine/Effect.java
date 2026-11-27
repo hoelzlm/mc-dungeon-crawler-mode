@@ -36,7 +36,7 @@ public sealed interface Effect {
 
     record ShowWinScreen(UUID crawler) implements Effect {}
 
-    record EnterSafeRoom(UUID crawler, boolean firstEntry) implements Effect {}
+    record EnterSafeRoom(UUID crawler, boolean firstEntry, List<LootItem> pantry) implements Effect {}
 
     record ExitSafeRoom(UUID crawler, DoorPos door) implements Effect {}
 

@@ -27,7 +27,7 @@ class ArchitectureTest {
     private static final String ADAPTER_PACKAGE = "dev.crawlmode.adapter";
     private static final String HUB = "CrawlAdapter";
 
-    private static final Set<String> SHARED_HELPERS = Set.of("Floors", "HostChat", "Inventories");
+    private static final Set<String> SHARED_HELPERS = Set.of("Floors", "HostChat", "Inventories", "ItemStacks");
 
     private static final Map<String, Set<String>> ALLOWED_ADAPTER_DEPENDENCIES = Map.of(
             "AidAdapter", Set.of("TemplateFloorAdapter"),
@@ -49,7 +49,6 @@ class ArchitectureTest {
             "dev.crawlmode.adapter.LootBoxAdapter.BOXES",
             "dev.crawlmode.adapter.FactionMobs.factions",
             "dev.crawlmode.adapter.SafeRoomAdapter.PENDING_ENTRIES",
-            "dev.crawlmode.adapter.SafeRoomAdapter.ROOM_CHESTS",
             "dev.crawlmode.adapter.SafeRoomAdapter.DOORS",
             "dev.crawlmode.adapter.SafeRoomAdapter.ROOMS",
             "dev.crawlmode.adapter.BossAdapter.FLOORS",

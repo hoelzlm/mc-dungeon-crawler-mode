@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class SafeRoomRulesTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DONUT = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20);
+    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
     private static final String RULES = """
             # comment
             regeneration | 1
@@ -83,7 +83,7 @@ class SafeRoomRulesTest {
     void enteringStartsRegenerationAndLeavingStopsIt() {
         CrawlEngine engine = crawl(CARL);
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true), new Effect.StartSafeRoomRegeneration(CARL, 1)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true, List.of()), new Effect.StartSafeRoomRegeneration(CARL, 1)),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR)));
         assertEquals(List.of(new Effect.ExitSafeRoom(CARL, DOOR), new Effect.StopSafeRoomRegeneration(CARL)),
                 engine.handle(new Event.SafeRoomExited(CARL)));
@@ -199,5 +199,85 @@ class SafeRoomRulesTest {
         int exit = effects.indexOf(new Effect.ExitSafeRoom(CARL, DOOR));
         int delete = effects.indexOf(new Effect.DeleteSafeRoom(CARL));
         assertTrue(stop >= 0 && exit >= 0 && exit < delete);
+    }
+
+    private static final String PANTRY_RULES = RULES + """
+            pantry | minecraft:apple | 6
+            pantry | minecraft:carrot | 8
+            """;
+
+    private static CrawlEngine stockedCrawl(UUID crawler) {
+        CrawlEngine engine = new CrawlEngine(new FakeClock(), new CrawlConfig(72_000), HostLineSource.SILENT,
+                SafeRoomRules.load(new StringReader(PANTRY_RULES)));
+        engine.handle(new Event.CrawlerJoined(crawler));
+        engine.handle(new Event.ApocalypseCommanded());
+        return engine;
+    }
+
+    @Test
+    void pantryLinesLoadFromTheRulesFile() {
+        SafeRoomRules rules = SafeRoomRules.load(new StringReader(PANTRY_RULES));
+
+        assertEquals(List.of(new LootItem(LootItem.Kind.FOOD, "minecraft:apple", 6, Map.of()),
+                new LootItem(LootItem.Kind.FOOD, "minecraft:carrot", 8, Map.of())), rules.pantry());
+    }
+
+    @Test
+    void rulesWithoutPantryLinesHaveAnEmptyPantry() {
+        assertEquals(List.of(), SafeRoomRules.load(new StringReader(RULES)).pantry());
+    }
+
+    @Test
+    void malformedPantryLineFailsWithItsLineNumber() {
+        String bad = RULES + "pantry | minecraft:apple\n";
+
+        SafeRoomRulesFormatException e = assertThrows(SafeRoomRulesFormatException.class,
+                () -> SafeRoomRules.load(new StringReader(bad)));
+
+        assertTrue(e.getMessage().startsWith("line 6:"), e.getMessage());
+    }
+
+    @Test
+    void pantryLineWithZeroCountFails() {
+        String bad = RULES + "pantry | minecraft:apple | 0\n";
+
+        assertThrows(SafeRoomRulesFormatException.class, () -> SafeRoomRules.load(new StringReader(bad)));
+    }
+
+    @Test
+    void theShippedPantryHoldsBreadPotatoesApplesAndCarrots() throws IOException {
+        try (var in = getClass().getResourceAsStream("/data/crawlmode/saferoom/rules.txt")) {
+            List<String> ids = SafeRoomRules.load(new InputStreamReader(in)).pantry().stream().map(LootItem::id).toList();
+
+            assertEquals(List.of("minecraft:bread", "minecraft:baked_potato", "minecraft:apple", "minecraft:carrot"), ids);
+        }
+    }
+
+    @Test
+    void firstEntryCarriesThePantryToStock() {
+        CrawlEngine engine = stockedCrawl(CARL);
+
+        List<Effect> effects = engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+
+        assertEquals(new Effect.EnterSafeRoom(CARL, true, SafeRoomRules.load(new StringReader(PANTRY_RULES)).pantry()),
+                effects.getFirst());
+    }
+
+    @Test
+    void reenteringNeverCarriesThePantryAgain() {
+        CrawlEngine engine = stockedCrawl(CARL);
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+        engine.handle(new Event.SafeRoomExited(CARL));
+
+        List<Effect> effects = engine.handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+
+        assertEquals(new Effect.EnterSafeRoom(CARL, false, List.of()), effects.getFirst());
+    }
+
+    @Test
+    void anEmptyPantryCarriesNothingOnFirstEntry() {
+        List<Effect> effects = crawl(CARL).handle(new Event.SafeRoomDoorUsed(CARL, DOOR));
+
+        assertEquals(new Effect.EnterSafeRoom(CARL, true, List.of()), effects.getFirst());
     }
 }

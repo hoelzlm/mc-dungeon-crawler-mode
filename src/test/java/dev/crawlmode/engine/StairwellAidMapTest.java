@@ -104,7 +104,7 @@ class StairwellAidMapTest {
         assertEquals(List.of(), engine.paintedAreas(CARL));
     }
 
-    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20);
+    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
 
     private CrawlEngine crawlWithMap() {
         CrawlEngine engine = crawl();

@@ -18,7 +18,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -144,12 +143,10 @@ final class LootBoxAdapter {
         if (item.kind() == LootItem.Kind.AID) {
             return AidAdapter.stack(item.id(), item.count());
         }
-        Identifier id = Identifier.parse(item.id());
-        var holder = BuiltInRegistries.ITEM.get(id);
-        if (holder.isEmpty()) {
-            return ItemStack.EMPTY;
+        ItemStack stack = ItemStacks.of(item.id(), item.count()).orElse(ItemStack.EMPTY);
+        if (stack.isEmpty()) {
+            return stack;
         }
-        ItemStack stack = new ItemStack(holder.get(), item.count());
         var enchantments = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         item.enchants().forEach((enchantId, level) ->
                 enchantments.get(ResourceKey.create(

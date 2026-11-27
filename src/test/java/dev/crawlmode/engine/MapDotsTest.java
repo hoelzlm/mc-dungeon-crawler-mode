@@ -90,7 +90,7 @@ class MapDotsTest {
     @Test
     void aCrawlerInTheSafeRoomGetsNoDots() {
         CrawlEngine engine = crawl(10, 10);
-        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0)));
+        engine.handle(new Event.SafeRoomDoorUsed(CARL, new DoorPos(1, 0, 64, 0, DoorFacing.NORTH)));
 
         assertEquals(List.of(), scan(engine, new Sighting(DotKind.MONSTER, 3, 0)));
     }
@@ -105,7 +105,7 @@ class MapDotsTest {
         assertThrows(IllegalArgumentException.class, () -> new FloorMapConfig(24, 0));
     }
 
-    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20);
+    private static final DoorPos DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
 
     @Test
     void enteringTheSafeRoomHidesTheMapAndNoDotsAreSentWhileInside() {

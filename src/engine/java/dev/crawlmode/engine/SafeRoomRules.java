@@ -8,15 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks, List<LootItem> food) {
+public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks, List<LootItem> food,
+        List<LootItem> pantry) {
     public static final int NO_REGENERATION = -1;
-    public static final SafeRoomRules NONE = new SafeRoomRules(NO_REGENERATION, 0, List.of());
+    public static final SafeRoomRules NONE = new SafeRoomRules(NO_REGENERATION, 0, List.of(), List.of());
 
     public SafeRoomRules {
         if (regenerationAmplifier < NO_REGENERATION || buffetCooldownTicks < 0) {
             throw new SafeRoomRulesFormatException("invalid Safe Room rules");
         }
         food = List.copyOf(food);
+        pantry = List.copyOf(pantry);
     }
 
     public boolean regenerates() {
@@ -27,6 +29,7 @@ public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks,
         Integer regeneration = null;
         Long cooldown = null;
         List<LootItem> food = new ArrayList<>();
+        List<LootItem> pantry = new ArrayList<>();
         try (BufferedReader in = new BufferedReader(reader)) {
             String raw;
             int number = 0;
@@ -42,7 +45,8 @@ public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks,
                     switch (key) {
                         case "regeneration" -> regeneration = (int) number(parts, 2);
                         case "buffet-cooldown-ticks" -> cooldown = number(parts, 2);
-                        case "food" -> food.add(foodItem(parts));
+                        case "food" -> food.add(foodItem("food", parts));
+                        case "pantry" -> pantry.add(foodItem("pantry", parts));
                         default -> throw new SafeRoomRulesFormatException("unknown key '" + key + "'");
                     }
                 } catch (SafeRoomRulesFormatException e) {
@@ -58,7 +62,7 @@ public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks,
         if (food.isEmpty()) {
             throw new SafeRoomRulesFormatException("no food entries");
         }
-        return new SafeRoomRules(regeneration, cooldown, food);
+        return new SafeRoomRules(regeneration, cooldown, food, pantry);
     }
 
     private static long number(String[] parts, int expected) {
@@ -76,14 +80,14 @@ public record SafeRoomRules(int regenerationAmplifier, long buffetCooldownTicks,
         }
     }
 
-    private static LootItem foodItem(String[] parts) {
+    private static LootItem foodItem(String key, String[] parts) {
         if (parts.length != 3) {
-            throw new SafeRoomRulesFormatException("expected 'food | id | count'");
+            throw new SafeRoomRulesFormatException("expected '" + key + " | id | count'");
         }
         int count = (int) number(new String[] {parts[0], parts[2]}, 2);
         String id = parts[1].strip();
         if (count < 1 || id.isEmpty()) {
-            throw new SafeRoomRulesFormatException("expected 'food | id | count' with count of at least 1");
+            throw new SafeRoomRulesFormatException("expected '" + key + " | id | count' with count of at least 1");
         }
         return new LootItem(LootItem.Kind.FOOD, id, count, Map.of());
     }

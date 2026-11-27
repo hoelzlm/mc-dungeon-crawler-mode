@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 class SafeRoomTest {
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DONUT = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final DoorPos FLOOR_ONE_DOOR = new DoorPos(1, 10, 64, 20);
-    private static final DoorPos OTHER_FLOOR_ONE_DOOR = new DoorPos(1, -30, 64, 5);
+    private static final DoorPos FLOOR_ONE_DOOR = new DoorPos(1, 10, 64, 20, DoorFacing.NORTH);
+    private static final DoorPos OTHER_FLOOR_ONE_DOOR = new DoorPos(1, -30, 64, 5, DoorFacing.NORTH);
 
     private static final long MIN = 20 * 60;
     private static final long TIMER = 30 * MIN;
@@ -46,11 +46,11 @@ class SafeRoomTest {
     void firstEntryCreatesTheRoomAndLaterEntriesReuseIt() {
         CrawlEngine engine = crawl(CARL);
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR)));
         engine.handle(new Event.SafeRoomExited(CARL));
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, false)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, false, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR)));
     }
 
@@ -92,10 +92,10 @@ class SafeRoomTest {
     void eachCrawlerHasTheirOwnRoomAndOrigin() {
         CrawlEngine engine = crawl(CARL, DONUT);
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(CARL, true, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR)));
         assertEquals(List.of(), engine.handle(new Event.SafeRoomExited(DONUT)));
-        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(DONUT, OTHER_FLOOR_ONE_DOOR)));
         assertEquals(List.of(new Effect.ExitSafeRoom(CARL, FLOOR_ONE_DOOR)),
                 engine.handle(new Event.SafeRoomExited(CARL)));
@@ -179,7 +179,7 @@ class SafeRoomTest {
         engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR));
         engine.handle(new Event.CrawlerJoined(DONUT));
 
-        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(DONUT, OTHER_FLOOR_ONE_DOOR)));
     }
 
@@ -257,7 +257,7 @@ class SafeRoomTest {
         CrawlEngine engine = crawl(CARL, DONUT);
 
         for (Effect e : engine.handle(new Event.SafeRoomDoorUsed(CARL, FLOOR_ONE_DOOR))) {
-            assertEquals(new Effect.EnterSafeRoom(CARL, true), e);
+            assertEquals(new Effect.EnterSafeRoom(CARL, true, List.of()), e);
         }
     }
 
@@ -276,7 +276,7 @@ class SafeRoomTest {
         assertTrue(effects.contains(new Effect.DeleteSafeRoom(DONUT)));
         assertTrue(effects.contains(new Effect.ExitSafeRoom(DONUT, FLOOR_ONE_DOOR)));
         engine.handle(new Event.ApocalypseCommanded());
-        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true)),
+        assertEquals(List.of(new Effect.EnterSafeRoom(DONUT, true, List.of())),
                 engine.handle(new Event.SafeRoomDoorUsed(DONUT, FLOOR_ONE_DOOR)));
     }
 }

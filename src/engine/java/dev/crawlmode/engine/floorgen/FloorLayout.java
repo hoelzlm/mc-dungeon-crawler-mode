@@ -221,6 +221,11 @@ public final class FloorLayout {
         return cell.template().blockAt(Math.floorMod(x, 16), y - FLOOR_Y, Math.floorMod(z, 16), cell.open());
     }
 
+    public boolean isGate(int x, int y, int z) {
+        Cell cell = cells.get(new CellPos(Math.floorDiv(x, 16), Math.floorDiv(z, 16)));
+        return cell != null && cell.template().isGate(Math.floorMod(x, 16), y - FLOOR_Y, Math.floorMod(z, 16));
+    }
+
     public boolean isProtected(int x, int y, int z) {
         return blockAt(x, y, z).map(b -> !b.secret()).orElse(false);
     }

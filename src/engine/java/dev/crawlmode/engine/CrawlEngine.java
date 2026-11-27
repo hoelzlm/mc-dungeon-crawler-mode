@@ -328,7 +328,7 @@ public final class CrawlEngine {
         safeRoomOrigin.put(crawler, door);
         boolean first = safeRoomsCreated.add(crawler);
         List<Effect> effects = new ArrayList<>();
-        effects.add(new Effect.EnterSafeRoom(crawler, first));
+        effects.add(new Effect.EnterSafeRoom(crawler, first, first ? safeRoomRules.pantry() : List.of()));
         if (floorMaps.containsKey(crawler)) {
             effects.add(new Effect.HideFloorMap(crawler));
         }
