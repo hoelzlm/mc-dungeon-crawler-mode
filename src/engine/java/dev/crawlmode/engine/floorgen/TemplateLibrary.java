@@ -20,6 +20,7 @@ public final class TemplateLibrary {
                 case CORRIDOR -> lib.corridors.add(t);
                 case VILLAGE -> lib.villages.add(t);
                 case STAIRWELL_ROOM -> lib.stairwellRooms.add(t);
+                case SAFE_ROOM -> throw new FloorTemplateFormatException("A Safe Room template does not belong in a Floor library: " + t.name());
             }
         }
         return lib;
