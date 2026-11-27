@@ -7,6 +7,8 @@ import dev.crawlmode.engine.Effect;
 import dev.crawlmode.engine.Event;
 import dev.crawlmode.engine.SafeRoomRules;
 import dev.crawlmode.engine.floorgen.CellPos;
+import dev.crawlmode.engine.floorgen.FloorTemplate;
+import dev.crawlmode.engine.floorgen.Side;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,12 +22,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -38,8 +43,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.DerivedLevelData;
@@ -54,17 +63,17 @@ import org.slf4j.Logger;
 final class SafeRoomAdapter {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final String ROOM_PREFIX = "safe_room_";
-    private static final int ROOM_HALF_SIZE = 4;
-    private static final int ROOM_FLOOR_Y = 64;
-    private static final BlockPos ROOM_EXIT = new BlockPos(0, ROOM_FLOOR_Y + 1, 3);
-    private static final BlockPos ROOM_SPAWN = new BlockPos(0, ROOM_FLOOR_Y + 1, 0);
+    private static final int ROOM_ORIGIN_X = -8;
+    private static final int ROOM_ORIGIN_Y = 64;
+    private static final int ROOM_ORIGIN_Z = -8;
     private static final int TEMPLATE_FLOOR = 1;
 
     private static final String RULES_RESOURCE = "/data/crawlmode/saferoom/rules.txt";
-    private static final BlockPos ROOM_BUFFET = new BlockPos(-3, ROOM_FLOOR_Y + 1, 0);
-    private static final List<BlockPos> ROOM_CHESTS = List.of(
-            new BlockPos(-3, ROOM_FLOOR_Y + 1, -3), new BlockPos(0, ROOM_FLOOR_Y + 1, -3),
-            new BlockPos(3, ROOM_FLOOR_Y + 1, -3));
+    private static final String ROOM_RESOURCE = "/data/crawlmode/saferoom/room.txt";
+    private static final FloorTemplate ROOM = loadRoom();
+    private static final BlockPos ROOM_EXIT = at(ROOM.markers(FloorTemplate.Furniture.EXIT_DOOR).getFirst());
+    private static final BlockPos ROOM_SPAWN = at(ROOM.markers(FloorTemplate.Furniture.ARRIVAL).getFirst());
+    private static final BlockPos ROOM_BUFFET = at(ROOM.markers(FloorTemplate.Furniture.FOOD_POT).getFirst());
 
     private static final Map<UUID, ServerLevel> ROOMS = new HashMap<>();
     private static final Map<Integer, List<DoorPos>> DOORS = new HashMap<>();
@@ -84,7 +93,7 @@ final class SafeRoomAdapter {
                 events.accept(new Event.BuffetUsed(crawler));
                 return;
             }
-            if (isRoomOf(event.getLevel(), crawler) && p.equals(ROOM_EXIT)) {
+            if (isRoomOf(event.getLevel(), crawler) && (p.equals(ROOM_EXIT) || p.equals(ROOM_EXIT.above()))) {
                 event.setCanceled(true);
                 events.accept(new Event.SafeRoomExited(crawler));
                 return;
@@ -209,7 +218,7 @@ final class SafeRoomAdapter {
         if (player == null || room == null) {
             return;
         }
-        for (BlockPos at : ROOM_CHESTS) {
+        for (BlockPos at : roomPositions(FloorTemplate.Furniture.CHEST)) {
             if (room.getBlockEntity(at) instanceof Container chest) {
                 for (int slot = 0; slot < chest.getContainerSize(); slot++) {
                     ItemStack stack = chest.removeItemNoUpdate(slot);
@@ -286,15 +295,43 @@ final class SafeRoomAdapter {
     }
 
     private static void build(ServerLevel room) {
-        for (int x = -ROOM_HALF_SIZE; x <= ROOM_HALF_SIZE; x++) {
-            for (int z = -ROOM_HALF_SIZE; z <= ROOM_HALF_SIZE; z++) {
-                room.setBlockAndUpdate(new BlockPos(x, ROOM_FLOOR_Y, z), Blocks.STONE_BRICKS.defaultBlockState());
+        for (int y = 0; y < ROOM.height(); y++) {
+            for (int z = 0; z < FloorTemplate.SIZE; z++) {
+                for (int x = 0; x < FloorTemplate.SIZE; x++) {
+                    int px = x;
+                    int py = y;
+                    int pz = z;
+                    ROOM.blockAt(x, y, z, Set.<Side>of()).ifPresent(block -> room.setBlockAndUpdate(
+                            new BlockPos(ROOM_ORIGIN_X + px, ROOM_ORIGIN_Y + py, ROOM_ORIGIN_Z + pz),
+                            BuiltInRegistries.BLOCK.getValue(Identifier.parse(block.blockId())).defaultBlockState()));
+                }
             }
         }
-        room.setBlockAndUpdate(ROOM_EXIT, Blocks.CRYING_OBSIDIAN.defaultBlockState());
-        room.setBlockAndUpdate(ROOM_BUFFET, Blocks.HAY_BLOCK.defaultBlockState());
-        BlockState chest = Blocks.CHEST.defaultBlockState();
-        ROOM_CHESTS.forEach(at -> room.setBlockAndUpdate(at, chest));
+        BlockState door = Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.NORTH);
+        room.setBlock(ROOM_EXIT, door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), Block.UPDATE_ALL);
+        room.setBlock(ROOM_EXIT.above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), Block.UPDATE_ALL);
+        room.setBlockAndUpdate(ROOM_BUFFET, Blocks.CAULDRON.defaultBlockState());
+        BlockState chest = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
+        roomPositions(FloorTemplate.Furniture.CHEST).forEach(at -> room.setBlockAndUpdate(at, chest));
+    }
+
+    private static List<BlockPos> roomPositions(FloorTemplate.Furniture kind) {
+        return ROOM.markers(kind).stream().map(SafeRoomAdapter::at).toList();
+    }
+
+    private static BlockPos at(FloorTemplate.Marker marker) {
+        return new BlockPos(ROOM_ORIGIN_X + marker.x(), ROOM_ORIGIN_Y + marker.y(), ROOM_ORIGIN_Z + marker.z());
+    }
+
+    private static FloorTemplate loadRoom() {
+        try (InputStream in = SafeRoomAdapter.class.getResourceAsStream(ROOM_RESOURCE)) {
+            if (in == null) {
+                throw new IllegalStateException("Missing " + ROOM_RESOURCE);
+            }
+            return FloorTemplate.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static Object field(MinecraftServer server, String name) throws ReflectiveOperationException {

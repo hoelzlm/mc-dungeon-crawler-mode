@@ -49,7 +49,6 @@ class ArchitectureTest {
             "dev.crawlmode.adapter.LootBoxAdapter.BOXES",
             "dev.crawlmode.adapter.FactionMobs.factions",
             "dev.crawlmode.adapter.SafeRoomAdapter.PENDING_ENTRIES",
-            "dev.crawlmode.adapter.SafeRoomAdapter.ROOM_CHESTS",
             "dev.crawlmode.adapter.SafeRoomAdapter.DOORS",
             "dev.crawlmode.adapter.SafeRoomAdapter.ROOMS",
             "dev.crawlmode.adapter.BossAdapter.FLOORS",

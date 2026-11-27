@@ -1,0 +1,77 @@
+// Safe Room template, Floor template format. Markers: c chest (3), f food pot, d exit door (lower half, in the wall), a arrival spot.
+// Template cell (0,0) is placed at world x=-8, z=-8; layer 0 is y=64.
+name safe_room
+role safe_room
+height 5
+palette # minecraft:stone_bricks
+palette F minecraft:stone_bricks
+palette L minecraft:shroomlight
+palette C minecraft:spruce_planks
+layer 0
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF
+layer 1
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#....c..c..c...#
+#..............#
+#..............#
+#....f..a......#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+########d#######
+layer 2-3
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+########.#######
+layer 4
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCLCCCCCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCLCCCCCCLCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
