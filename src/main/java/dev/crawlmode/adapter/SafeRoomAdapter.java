@@ -151,6 +151,7 @@ final class SafeRoomAdapter {
             if (rules.pantry().size() > PANTRY_SLOTS) {
                 throw new IllegalStateException("More than " + PANTRY_SLOTS + " pantry lines in " + RULES_RESOURCE);
             }
+            ROOM.paletteBlocks().forEach(SafeRoomAdapter::parse);
             return rules;
         } catch (IOException e) {
             throw new UncheckedIOException(e);

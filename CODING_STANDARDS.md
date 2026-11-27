@@ -5,7 +5,7 @@ Read this during review. It holds the judgement calls; machines hold the mechani
 ## Standards
 
 - **The engine decides, adapters translate.** A rule, number, threshold or branch on game state lives in `src/engine` and is tested there (ADR 0002). An adapter converts a game callback into an engine `Event` and an engine `Effect` into world changes, and nothing more. When an adapter grows an `if` about the Crawl, move it into the engine.
-- **Adapters meet through the hub.** `CrawlAdapter` wires the others; a sibling adapter calls another only through the allowlist in `ArchitectureTest`. Reach for a new engine `Event` or `Effect` before adding an edge.
+- **Adapters meet through the hub.** `CrawlAdapter` wires the others; a sibling adapter calls another only through the allowlist in `ArchitectureTest`. Reach for a new engine `Event` or `Effect` before adding an edge. A stateless lookup that two adapters need goes into a shared helper listed in `SHARED_HELPERS` in `ArchitectureTest`, never a copy.
 - **One source of truth.** A constant, a resource path, a tag prefix, the mod id and the Host prefix (`[The Host] `) are each declared once and referenced everywhere else (`CrawlMode.MOD_ID`, `HostChat`). A second copy is a bug even when the values match today.
 - **Per-floor data over hard-coded floors.** Floor-specific behaviour is an entry in `FloorSpec` plus data files (ADR 0004). A `switch` or `if` on a floor number in code means the data model is missing a field.
 - **Content is data.** New mobs, loot, Achievements, Host lines and templates are text-file changes validated on load with a line number; code changes only when the format itself changes.
@@ -28,7 +28,7 @@ Run `./gradlew check` (also part of `./gradlew build` and the pre-commit hook). 
 - Engine stays Minecraft-free, adapters keep to the allowlist, no console output: `ArchitectureTest` (ArchUnit).
 - Map geometry stays in the engine: adapters do not construct `MapRect`, with a shrinking baseline in `ArchitectureTest`.
 - No string constant declared twice, mod id and Host prefix defined once: `ConstantsTest`.
-- Smoke run: `./gradlew smokeTest` boots the dedicated server, runs `crawl apocalypse`, and checks `build/smoke/server.log`, including a `Safe Room Doors reached the engine` line with a door count above 0. It needs the EULA accepted once in `run/eula.txt`; in a git worktree it copies that file from the main checkout only if the main checkout already accepted.
+- Smoke run: `./gradlew smokeTest` boots the dedicated server, runs `crawl apocalypse`, and checks `build/smoke/server.log`, including a `Safe Room Doors reached the engine` line with a door count above 0. Server start validates the Safe Room rules and every block in the Safe Room template, so a bad id fails the smoke run. It needs the EULA accepted once in `run/eula.txt`; in a git worktree it copies that file from the main checkout only if the main checkout already accepted. It seeds an empty `run/server.properties`, because a fresh `run/` logs a first-boot error that the log check would reject.
 - Enable the hook once per clone: `git config core.hooksPath .githooks`.
 - Gradle itself needs any JDK 17 or newer on `PATH` or `JAVA_HOME`; it provisions Java 25 through the foojay toolchain resolver. Never export `JAVA_HOME` to a JDK 25 by hand.
 

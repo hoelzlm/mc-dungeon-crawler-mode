@@ -88,8 +88,18 @@ var smokeEulaSync = tasks.register('smokeEulaSync') {
     }
 }
 
+var smokeServerPropertiesSeed = tasks.register('smokeServerPropertiesSeed') {
+    doLast {
+        var properties = file('run/server.properties')
+        if (!properties.exists()) {
+            properties.parentFile.mkdirs()
+            properties.text = ''
+        }
+    }
+}
+
 var smokeEulaCheck = tasks.register('smokeEulaCheck') {
-    dependsOn smokeEulaSync
+    dependsOn smokeEulaSync, smokeServerPropertiesSeed
     doLast {
         var accepted = eulaFile.exists() && eulaFile.readLines().any { it.trim() == 'eula=true' }
         if (!accepted) {
